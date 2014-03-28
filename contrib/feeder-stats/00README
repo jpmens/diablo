@@ -1,0 +1,37 @@
+$Id: 00README,v 1.3 2002/04/10 21:54:25 rv Exp $
+---------------------------------------------------------
+NOTE: feeder-stats was originally written by Iain Lea <iain@bricbrac.de>
+      and was maintained by Brad Knowles <brad@shub-internet.org> up till
+      version v3.101
+
+NOTE: This is a modified version of v3.101 that is shipped with Diablo.
+      Comments, patches etc. should be sent to the maintainers of Diablo.
+
+---------------------------------------------------------
+To use:
+
+1. copy feeder-stats.pl & diablo-stats.sh (or cyclone-stats.sh if you are
+   running Cyclone) to your bin directory
+2. edit diablo-stats.sh (or cyclone-stats.sh) to match your site requirements
+3. check that feeder-stats.pl '#!/path/perl' points to your copy of Perl5
+4. if you want graphs (PNG-format) you'll need the Chart and GD perl modules:
+   http://www.perl.com/CPAN/modules/by-module/GD/
+   http://www.perl.com/CPAN/modules/by-module/Chart/
+   (or get them at the nearest CPAN mirror)
+5. copy the feeder-stats.conf to your /news directory
+6. copy the logo.gif file to your $HtmlDir directory or put your own
+   (not too big) logo.gif there.
+7. install a crontab job to run diablo-stats.sh (or cyclone-stats.sh):
+   ie.  59 * * * * /usr/local/bin/diablo-stats.sh > /dev/null 2>&1
+
+Original additional notes from Iain kept for historical sake ;-)
+-----------------------------------------------------------
+8. send me money/pizza/your wife or anything you have handy
+
+Comments & patches to me but please 'Be brief, be blunt, be gone'.
+
+Enjoy
+
+Iain
+
+PS. please give credit where credit is due ie. don't say you wrote it!

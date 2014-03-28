@@ -1,0 +1,150 @@
+.\" $Revision: 1.3 $
+.TH DHISEXPIRE 8
+.SH NAME
+dhisexpire \- Diablo program to clean the history file
+.PP
+.SH SYNOPSIS
+.B dhisexpire
+[
+.B \-a
+[
+.B \-m
+]
+[
+.B \-o old-dhistory-file
+]
+[
+.B \-p
+]
+[
+.B \-r remember
+]
+[
+.B \-T seconds
+]
+[
+.B \-u
+]
+[
+.B \-v
+]
+[
+.B \-x
+]
+[
+.B \-C diablo.config
+]
+[
+.B \-d[n]
+]
+[
+.B \-V
+]
+dhistory-file
+[
+new-dhistory-file
+]
+
+.SH DESCRIPTION
+.IR DHisExpire 
+This program is used to remove stale history entries by doing a
+complete history rebuild. This process is required on a regular basis
+(usually weekly) to prevent the history file from growing too big.
+This program has been written to prevent any downtime to the server,
+apart from a short pause at the end while the history file is
+switched over (if the ``-a'' option is used). Incoming connections
+are not closed, unless an error is detected.
+.PP
+Note that if the ``-a'' option is not used, the new history file
+could become stale immediately and should not be used if the
+diablo server is accepting incoming articles, otherwise some articles
+will not be recorded in the new history.
+.PP
+When disabling the live history file to switch to the new one, the
+history header magic flag is modified to prevent diablo processes from
+using the file (they auto-detect and switch to the new one if
+available). The ``-u'' option can be used on the old history file
+to set the correct header magic, so that it can be used again.
+.PP
+The name of the history file is a required option. The new history
+path/filename can be (optionally) specified as an extra option.
+.PP
+.B \-a
+.PP
+This option is required if the rebuilt history file is to be
+used. The old history is renamed with ``.bak'' tagged onto the
+and the history header magic flag is marked as invalid. By default,
+the expire process doesn't move the new history file into place
+and creates the new history file with ``.new'' tagged into the end.
+.PP
+.B \-m
+.PP
+By default, dhisexpire can only rename files on the same filesystem
+Using this option, causes dhisexpire to do a full copy of the file
+rather than a rename, allowing the file to be moved across filesystems.
+.PP
+.B \-o old-dhistory-file
+.PP
+Specify the path/filename to use to store the backup of the old history
+file. By default, the file is path_to_history/dhistory.bak. Specifying
+a filename of ``0'' causes dhisexpire to not make a backup of the
+old history file.
+.PP
+.B \-p
+.PP
+With this option, the progress of the expire is displayed to stderr.
+Note that if the diablo server is running and receiving articles,
+the total entries may be lower than the actual entries and will be
+adjusted when dhisexpire reaches the end.
+.PP
+.B \-r nn
+.PP
+Set the number of days that expired articles are kept in the history
+file. The default is obtained from the ``rememberdays'' value in
+diablo.config.
+.PP
+.B \-T nn
+.PP
+This option can be used to prevent old history entries from being
+moved to the new history fule. The number specified is the number
+of seconds that entries are valid and anything older will be
+dropped from the history. WARNING: The old entries cannot be
+recovered. This option is not normally used.
+.PP
+.B \-u
+Set the history header magic flag to be valid again. When the history
+rewrite is complete, the history header magic flag is marked as
+invalid to prevent live processes from using it and to indicate to
+them that a new history file is available.
+.PP
+.B \-v
+This option turns on verbose mode.
+.PP
+.B -C
+allows the specification of the path of the diablo.config file to use.
+.PP
+.B -d[n]
+will set debug mode, at optional level n.
+.PP
+.B -V
+will print the version and exit.
+.PP
+
+.SH "SEE ALSO"
+diablo(8), 
+dicmd(8),
+didump(8),
+diload(8),
+dnewslink(8),
+doutq(8),
+dexpire(8),
+dexpireover(8),
+diconvhist(8),
+dilookup(8),
+dspoolout(8),
+dkp(8),
+dpath(8),
+diablo-kp(5),
+diablo-files(5)
+.PP
+

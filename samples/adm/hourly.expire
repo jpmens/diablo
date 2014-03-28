@@ -1,0 +1,21 @@
+#!/bin/csh -f
+#
+# We normally run expire once every 4 hours.  If we could not
+# for some reason, we retry every hour thereafter until we are
+# able to run it.
+#
+# If you want to run dexpire once an hour. get rid of the if/endif
+# surrounding the code segment below.
+#
+# The -s option is only really necessary if you are running 
+# on a softupdates-enabled partition, but it doesn't hurt if not
+# so...
+
+cd ~
+
+echo "`date` $0 BEGIN"
+
+dbin/plock -t ~/.lock ~/dbin/dexpire -a -s4
+
+echo "`date` $0 END"
+

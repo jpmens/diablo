@@ -1,0 +1,12 @@
+##  $Revision: 1.3 $
+##  Mailing addresses for moderators.
+##  Maintained by Simon Lyall <simon@darkmere.gen.nz>
+##  Format:
+##      <newsgroup>:<pathname>
+##  First match found is used.
+##      <newsgroup>     Shell-style newsgroup pattern or specific newsgroup
+##      <pathname>      Mail address, "%s" becomes newgroup name with dots
+##                      changed to dashes.
+#
+*:%s@moderators.isc.org
+

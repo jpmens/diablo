@@ -1,0 +1,36 @@
+
+#include "XMakefile.inc"
+
+.set OSRCS	thread.c reader.c dns.c mbuf.c subs.c list.c feed.c \
+		xover.c nntp.c misc.c post.c server.c group.c spool.c \
+		cache.c rtstatus.c control.c wildorcmp.c cancel.c \
+		post-addr-ck.c cleanfrom.c msg.c dfa.c
+.set SRCS	main.c $(OSRCS)
+.set LIBOBJS	$(OSRCS:"*.c":"$(BD)obj/dr_*.o")
+.set OBJS	$(SRCS:"*.c":"$(BD)obj/dr_*.o")
+.set PROG	$(BD)dbin/dreaderd
+
+.set PROTOS	$(BD)obj/dreaderd-protos.h
+
+all:	$(PROTOS) $(PROG) $(RLIB)
+
+$(PROG) : $(OBJS)
+	$(CC) $(CFLAGS) %(right) -o %(left) $(LFLAGS)
+
+$(OBJS) : $(SRCS)
+	$(CC) $(CFLAGS) %(right) -o %(left) -c
+
+$(PROTOS) : $(SRCS)
+	rm -f %(left).new
+	cat %(right) | fgrep Prototype > %(left).new
+	mv -f %(left).new %(left)
+
+$(RLIB) : $(LIBOBJS)
+	rm -f %(left).new
+	ar cr %(left).new %(right)
+	ranlib %(left).new
+	mv -f %(left).new %(left)
+
+clean:
+	rm -f $(OBJS) $(PROG) $(PROTOS) $(RLIB)
+

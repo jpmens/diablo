@@ -1,0 +1,84 @@
+.\" $Revision: 1.1 $
+.TH DREQUEUE 8
+.SH NAME
+drequeue \- requeue articles to all or a specified newsfeed
+.PP
+.SH SYNOPSIS
+.B drequeue
+[
+-a
+]
+[
+-C diablo.config
+]
+[
+-d[N]
+]
+[
+-f file
+]
+[
+-s
+]
+[
+-V
+]
+[
+label
+]
+
+.SH DESCRIPTION
+.IR DRequeue 
+will requeue articles to all or a specified newsfeed based on data
+read from standard input.
+.PP
+The input data consists of lines prefixed with ``SOUT'' and space
+delimited fields consisting of:
+.PP
+ArticlePath MsgID offset,size newsgroups
+.PP
+The output is written to newsfeed dqueue files if that feed requires
+the article. Note that the only article restricting that can currently
+be honoured is based on newsgroups and article size. All other dnewsfeeds
+restrictions will be ignored.
+.PP
+.B \-a
+Requeue articles to all labels in dnewsfeeds
+.PP
+.B \-C diablo.config
+Specify the diablo.config file to load for default options.
+.PP
+.B \-d[N]
+Enable debugging and specify an optional debug level.
+.PP
+.B \-f file
+Specifies the name of the dnewsfeeds file to use.
+.PP
+.B \-s
+Write all dqueue lines to stdout and the limited lines to the dqueue files.
+.PP
+.B \-V
+Print version number and exit.
+.PP
+.B label
+Only requeue articles for a specific dnewsfeeds label.
+.PP
+
+.SH "SEE ALSO"
+diablo(8), 
+dicmd(8),
+didump(8),
+diload(8),
+dnewslink(8),
+doutq(8),
+dexpire(8),
+dexpireover(8),
+diconvhist(8),
+dilookup(8),
+dspoolout(8),
+dkp(8),
+dpath(8),
+diablo-kp(5),
+diablo-files(5)
+.PP
+

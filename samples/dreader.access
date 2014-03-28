@@ -1,0 +1,423 @@
+#
+# Diablo dreaderd authentication control file
+#
+# Some options are required, others are optional
+#
+# Last match wins
+#
+# MOST THINGS IN THIS FILE ARE CASE SENSITIVE
+#
+# The format of this file is:
+#definition	name
+#  option   value
+#end
+#
+# RULES:
+#  - Lines starting with a '#' are skipped
+#  - Multiple of all definitions are allowed.
+#  - If you use 2 of the same name, the first one will be used.
+#  - A maximum of 128 characters is allowed for the name of each definition
+#  - A name of DEFAULT is reserved for each definition and using it
+#    will override the defaults. Use with caution.
+#
+###################################################
+# This defines a virtual server. A virtual server allows you set
+# different strings that are seen by the client or added to local
+# postings.
+#
+# hostname	 : The visible hostname - this defaults to the current hostname
+# clustername	 : The name of this cluster - used in various posting headers
+#		   Defaults to the same as the hostname
+#
+# postpath	 : The Path: entry to add to posts (Default: None)
+#
+# newsadmin	 : News Admin contact address added to connect banners
+#		   Defaults to news@hostname.
+# organisation	 : Organisation: line added to local posts (the US spelling
+#		   with a 'z' can be used too). (Default: None)
+# abuseto	 : X-Complaints-To: line. (Default: None)
+#
+# cryptpw	 : The password used to DES encrypt X-Trace, if set in vendor.h
+#		   Default: No crypting of X-Trace:
+#
+# interface	 : IP address for which we accept connections for this vserver
+#		   Default: All interfaces
+#		   This option is more useful when used in addition to the
+#		   'accessfile' directive and can effectively allow true
+#		   virtual server capability.
+# accessfile	 : Which access file to use if we matched on an interface
+#		   Note that the file only accepts 'access' lines - see below
+#		   All the definitions must exist in %s/dreader.access
+#		   If '%s' is used, the file is relative to PathLib
+#		   Default: %s/dreader.access
+#		   See also the 'interface' directive above.
+# noxrefhostupdate : Don't update the Xref: host to be the
+#		     clustername/hostname. Some clients get upset if the
+#		     last entry in the Path: doesn't match the Xref: host
+#		     so be careful about enabling this option. With it
+#		     enabled, you preserve where the Xref: was last
+#		     generated.
+# noreadpath	 : Don't include this hostname in the Path: header. This
+#		   is useful for a caching only dreaderd that doesn't
+#		   handle normal clients. Same conditions as noxrefhostupdate
+#		   apply.
+# welcome	 : Set the welcome banner for this vserver. Various options
+#		   can be specified and will be replaced by their corresponding
+#		   value (they must be defined in the vserver, otherwise
+#		   a blank will be displayed):
+#			%a : Show newsadmin
+#			%c : Show clustername
+#			%h : Show hostname
+#			%o : Show organisation
+#			%t : Show servertype (NNRP or NNTP-FEED)
+#			%v : Show diablo version
+#		   Default is: %h %t Service Ready - %a
+# postcomments	: Include the following string as an "X-Comments:" header on
+#		  outgoing posts.  Multiple-line comments are possible by
+#		  including a backslash-n character sequence, i.e.
+#		  postcomments	First\nLast
+#		  would result in
+#		  X-Comments-1:	First
+#		  X-Comments-2: Last
+#
+#
+#vserverdef ahost
+#  hostname	current.host.name
+#  clustername	cluster.host.name
+#  postpath	path.host
+#  newsadmin	news@current.host.name
+#  organisation	An Organisation
+#  abuseto	abuse@current.host.name
+#  cryptpw	apassword
+#  interface	1.2.3.4
+#  accessfile	%s/access.ahost
+#end
+#
+###################################################
+# This defines a group access list.
+# - A default of !* is implied at the beginning of the list if a list
+#   is defined.
+# - The value is a wildmat pattern.
+# - Use a single wildmat value per 'group' option.
+#
+#groupdef grouplist
+#  group		alt.*
+#  group		!alt.binaries*
+#end
+#
+###################################################
+# This defines a type of authentication. Any number of options
+# can be used, but the usage is currently undefined in such a case.
+# Rather use a single option per authdef definition.
+#
+# The user and pass options are a special case and both must be
+# used to allow a user to authenticate with AUTHINFO
+#
+# The user option can be used alone with ident to allow only
+# a specific user to match this definition based on the response
+# from the ident lookup. Note that you can specify an ident user
+# in the access line.
+#
+# The ident option is an integer to specify the timeout to be
+# used when doing ident lookups for this authdef. The default of
+# zero, disables ident lookups. This option also accepts an
+# option of 'y', which uses the default timeout specified by
+# "readeridenttimeout" in diablo.config
+#
+# The realm is used to match the 'domain' part of an AUTHINFO user
+# specified as 'user@domain'.
+# 
+# The addrealm option is used to add a 'domain' part onto any unqualified
+# AUTHINFO user info; 'user' becomes 'user@domain'.
+# 
+# The radius option specifies a radius configuration file. This option
+# needs to be enabled at compile time - see lib/vendor.h
+#
+# The cdb option specifies a CDB database for username/pass lookup. This
+# option needs to be enabled at compile time - see lib/vendor.h.
+#
+# The db option specifies a Berkeley DB database for username/pass lookup.
+# This option needs to be enabled at compile time - see lib/vendor.h
+# The username is used a key lookup, with the password as the data
+# returned from a lookup. An optional readerdef option can be added
+# to the password (separated by and terminated by a nul character)
+# and will be used for access rights. The value for this option specifies
+# the path/name of the database and can be prefixed with the db type.
+# Currently supported types are 'hash_', 'btree_' and 'recno_'.
+#
+# The netremote option specifies a NetRemote server for username/pass
+# authentication.  This option needs to be enabled at compile time - see
+# lib/vendor.h
+#
+# The ldap option specifies an LDAP URL for username/pass authentication.
+# This option needs to be enabled at compile time - see lib/vendor.h
+#
+# The pam option specifies a PAM service for username/pass authentication.
+# This option needs to be enabled at compile time - see lib/vendor.h
+#
+# The perl option specifies a perl script to be executed for username
+# and password authentication.
+# This option needs to be enabled at compile time - see lib/vendor.h
+#
+# The file option specifies the filename of a text file consisting of
+# colon (':') separated pairs of username and password, where each
+# username:password is on a different line. Comments are not recognised.
+# The passwords are in plaintext and not encrypted.
+#
+#authdef anauth
+#  file		/news/etc/userpass
+#  radius	/news/etc/radius.conf
+#  cdb		/news/db/users.cdb
+#  db		/news/db/users.db
+#  netremote	password@host.dom.ain
+#  user		username
+#  pass		password
+#  addrealm	domain
+#  realm	domain
+#  ident	yes
+#  ldap		ldap://hostname.example.com/dc=example.com?username?sub?(&(objectclass=inetLocalNewsUser)(username=%25s))
+#  pam		nntp
+#  perl		/news/dbin/ckpasswd.pl
+#end
+#
+###################################################
+# This is the basic authentication for an access line (see access below)
+# 
+# The groups, auth and vserver options refer to previous definitions.
+# If none of them is specified, suitable defaults are used. The vserver
+# defaults are the current hostname. The group defaults are '*'. The
+# auth defaults are empty (i.e: no authentication required)
+#
+# read   : connections can read articles (default is 'no')
+# post   : connections can post articles (default is 'no')
+# feed   : connections can feed articles to this server (default is 'no')
+# status : connections are given a short status report and disconnected.
+# quiet  : connects/disconnects are not logged
+#
+# groups	: name of a groupdef which indicates which groups the
+#		  client is permitted to access. Default is all groups.
+#		  Note that there can be severe performance implications
+#		  with the group options and they should be used sparingly.
+#		  This option doesn't limit articles retrieved with
+#		  the ARTICLE command.
+# listgroups	: name of a groupdef which restricts which groups are
+#		  listed for the client with the LIST commands. Defaults
+#		  to the groups option above.
+# postgroups	: name of a groupdef which restricts which groups a client
+#		  is allowed to post articles to. Defaults to the groups
+#		  option above.
+# controlpost	 : client is allowed to post non-cancel Control: messages
+#		   (default is 'yes')
+# maxconnperhost : Maximum connections from a specific IP address (across all
+#                  reader definitions
+# maxconnpergroup: Max connections allowed for hosts matching this group
+# maxconnperuser : Max connections for a specific user. This option is only
+#                  valid if the user name is available (via ident or
+#                  AUTHINFO - see authdef)
+#
+# ignoreauthinfo : Ignore any AUTHINFO data supplied by the client. This
+#		   allows clients to match an IP range even when they
+#		   supply unnecessary AUTHINFO data. Default: no
+# 
+# ratelimit    : A crude download rate limit in bytes/second. The option
+#		 takes an optional third parameter, which is a list of
+#		 commands for which the ratelimit applies. These commands
+#		 are a comma separated list of:
+#			article	: complete articles
+#			head	: article headers
+#			body	: article bodies
+#			list	: all commands that produce a list
+#			xover	: XOVER output
+#			xhdr	: XHDR output
+#			other	: All other commands
+#		 This option can be specified multiple times to set
+#		 different rate limits for different commands.
+#		 The default is no limit. A value of zero disables the
+#		 limit.
+# ratelimittax : A tax imposed on the ratelimit for each subsequent
+#                connection from a user/host. The ratelimit is decreased
+#                by (ratelimittax * number of existing connections) and
+#                only applied to the new connection, not to the old ones.
+# ratelimitrange: A way to randomly vary the rate limit on this session.
+#		  Set a range, like "80-120", and the otherwise applicable
+#		  rate limit will be varied from 80% to 120% of that number.
+#		  Minimum is 1%, maximum is 200%.
+# bytelimit    : Maximum bytes that can be transferred in a single session
+# idletimeout    : Time (in seconds) a connection is allowed to be idle
+#		   before being closed. Note that the check for idleness
+#		   is only done every minute + up to 20 seconds (depending
+#		   on machine load).
+# sessiontimeout : Time (in seconds) since the connection was established
+#		   before it is closed.
+#
+# pathcomponents : The number of Path: components allowed in local postings
+#		   before the article is rejected. The default is '0',
+#		   which means don't check.
+#
+# grouplog : Log groups accessed by reader in dreaderd.status and via
+#            syslog
+#
+# checkpostgroups : Verify that all groups in the Newsgroups: header of
+#		    a post request are actually valid on this server.
+#
+# logcmd : Log every reader command issued (via syslog). Overrides the
+#	   global configuration option "readerdetaillog" for this reader.
+#
+# xzver : Specify zlib-compression level to support for xzver; 1 is fairly
+#         fast but is not as compressed as 9.  Typical compression tradeoff
+#	  rules apply.
+#
+# The following options are only really valid when matching against
+# an IP address/range or CIDR pattern. The defaults are 'no'.
+#
+# denymismatcheddns : Deny hosts that have a mismatched Fwd/Rev DNS entry
+#			When matching against a host/domain, mismatched
+#			DNS entries are always rejected.
+#
+# useverifieddns    : If the Fwd/Rev DNS entries match, then use the DNS
+#			entry in logging. Default is to log with IP, unless
+#			we are matching against a host/domain in which case
+#			we log the FQDN.
+#
+# allownewnews      : Allow use of the NEWNEWS command. This defaults to
+#			as some of the developers do not want it available.
+#
+# denynodns         : Deny hosts with no DNS entry.
+#
+# rxbufsize	    : Set receive buffer size value.
+#
+# txbufsize	    : Set transmit buffer size value.
+#
+#readerdef areader
+#  read			yes
+#  post			yes
+#  feed			yes
+#  status		no
+#  auth			anauth
+#  groups		grouplist
+#  vserver		ahost
+#  maxconnperhost	5
+#  maxconnpergroup	2
+#  maxconnperuser	1
+#  ratelimit		20000
+#  ratelimit		0 list,xover,other
+#  ratelimittax		10
+#  pathcomponents	3
+#  grouplog		yes
+#  checkpostgroups	yes
+#  logcmd		yes
+#  xzver		1-9,n
+#  settos		<integer>
+#end
+#
+# Some suitable basic options are:
+
+# Allow reading and posting with no authentication required
+readerdef rp
+  read			yes
+  post			yes
+end
+
+# Allow read-only with no authentication
+readerdef ro
+  read			yes
+end
+
+# Allow feed-only
+readerdef feed
+  feed			yes
+end
+
+# Allow read-only, but only if the total connections for the server is < 50
+readerdef rolimit
+  read			yes
+  maxconn		50
+end
+
+# Define fred as a user and allow fred to read and post
+authdef fred
+  user			fred
+  pass			fredspass
+end
+
+readerdef userfred
+  read			yes
+  post			yes
+  auth			fred
+end
+
+# NOTE about the feeder: If the read/post options are not used for a
+# feed definition, the incoming feed will be allocated one of the
+# feed-only processes which greatly improves the incoming article
+# rate on busy servers
+#
+###################################################
+###################################################
+#
+# The following lines are the actual access lines and each connecting host
+# is checked against ALL entries. The logic is as follows:
+# 
+# If the hostpattern consists only of '0'..'9', '.', '/', '*', '?' then
+# it is considered to be an IP address or CIDR block.
+#
+# If the hostpattern contains any other character, then it is
+# considered to be a hostname.
+# 
+# If the hostpattern is an IP/CIDR, then it is only compared against
+# the IP address of the incoming host
+#
+# If the hostpattern is a host/domain pattern, then it is only
+# compared to the DNS hostname of the incoming entry.
+# 
+# If the hostpattern is a host/domain pattern and the DNS Fwd/Rev don't
+# match, then the connection is rejected. This is a security measure to
+# prevent DNS spoofing which could match certain patterns. If you need
+# to allow hosts with mismatched Fwd/Rev DNS , then use an IP hostpattern.
+#
+# If the hostpattern is prefixed with 'db:', then the IP address is
+# used as the key for a lookup into a Berkeley DB (if enabled at
+# compile-time). The database file is specified as that for the db
+# authdef option above. The data value returned from the DB must be
+# a nul ('\0') terminated string and should be:
+#	0 : IP is not allowed
+#	1 : IP is allowed with the readerdef specified on the access line
+#	All other values are reserved for future use in specifying the
+#	readerdef to be used. This feature is not yet enabled.
+#
+# identuser refers to the username retrieved via ident. Using this
+#           field forces an ident lookup on the host.
+#
+# hostpattern refers to an IP address/wildcard/CIDR or a hostname/wildcard.
+#	      Multiple hostpatterns can be specified as a comma separated
+#             list.
+#
+# readerdefname refers to a readerdef defined above.
+#
+# A '|' can be placed before a readerdefname to indicate that no further
+# pattern matching should be done if the pattern (and any auth, if used)
+# matches and that the matching readerdef must be used.
+#
+# The results are not cummulative.
+#
+# The following algorithm is used for matching:
+#
+# - If we are authenticating, then the first matching pattern and auth
+#   method applies
+# - Otherwise last matching pattern applies
+#
+#access [identuser@]hostpattern		areader
+#access [identuser@]db:[type_]dbfile	areader
+#
+# Anyone on the 1.* network can connect readonly
+access	1/8			ro
+# Anyone under example.com can read if there less than 50 total connections
+access	*.example.com		rolimit
+# Anyone under domain.example.com can read and post
+access	*.domain.example.com	rp
+# User fred an use AUTHINFO to read+post when coming from *.example.com
+access  *.example.com		userfred
+# Ident user jane from *.example.com can read+post
+access	jane@*.example.com	rp
+# Our feed machine gets a special process
+access	feed.example.com	feed
+

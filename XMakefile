@@ -1,0 +1,56 @@
+
+.set BD
+#include "XMakefile.inc"
+
+all:
+    (cd lib; xmake all)
+    (cd filter; xmake all)
+    (cd dreaderd; xmake all)
+    (cd util; xmake all)
+    (cd sup; xmake all)
+/*    (cd contrib; xmake all) */
+
+clean:
+    (cd lib; xmake clean)
+    (cd filter; xmake clean)
+    (cd dreaderd; xmake clean)
+    (cd util; xmake clean)
+    (cd sup; xmake clean)
+/*    (cd contrib; xmake clean) */
+
+install: all
+    xmake -f XMakefile.inst install
+
+bininstall: all
+    xmake -f XMakefile.inst bininstall
+
+/*
+ * NOTE: to make uninstall remove binaries you must first 'xmake'
+ */
+
+uninstall: 
+    xmake -f XMakefile.uninst uninstall
+
+distclean: clean
+    find . -name '.#*' -print | xargs rm -f
+    find . -name '*.orig' -print | xargs rm -f
+    find . -name '*.rej' -print | xargs rm -f
+
+dist: clean
+    (cd ..; ln -s diablo diablo-$(VERS)-$(SUBREV); tar --exclude "CVS" -czf $(DIST)/diablo.tgz.new diablo-$(VERS)-$(SUBREV)/; rm diablo-$(VERS)-$(SUBREV))
+    chmod 644 $(DIST)/diablo.tgz.new
+    chown news $(DIST)/diablo.tgz.new
+    chgrp news $(DIST)/diablo.tgz.new
+    mv $(DIST)/diablo.tgz.new $(DIST)/diablo-$(VERS)-$(SUBREV).tgz
+    cp RELEASE_NOTES $(DIST)/RELEASE_NOTES.new
+    chmod 644 $(DIST)/RELEASE_NOTES.new
+    chown news $(DIST)/RELEASE_NOTES.new
+    chgrp news $(DIST)/RELEASE_NOTES.new
+    mv $(DIST)/RELEASE_NOTES.new $(DIST)/RELEASE_NOTES.txt
+
+newdist: distclean
+    ( cd ..; rm -f diablo-$(VERS)-$(SUBREV); ln -s diablo diablo-$(VERS)-$(SUBREV); tar --dereference --exclude "CVS" -czf diablo-$(VERS)-$(SUBREV).tgz diablo-$(VERS)-$(SUBREV) )
+    rm -f ../diablo-$(VERS)-$(SUBREV)
+    chmod 644 ../diablo-$(VERS)-$(SUBREV).tgz
+    cp RELEASE_NOTES ../RELEASE_NOTES-$(VERS)-$(SUBREV).txt
+    chmod 644 ../RELEASE_NOTES-$(VERS)-$(SUBREV).txt

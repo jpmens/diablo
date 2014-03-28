@@ -1,0 +1,11 @@
+
+For some bizarre reason, I wanted to be able to collect Path lines for
+the news path survey.  I use the following program and hourly script
+to do so in a relatively efficient way.  (Obviously, it would be best
+if there were an option to Diablo to log Path lines somewhere, but
+this seems to be the best that can be done without changing the daemon
+itself.)  Of course, it's a real horrid, unportable hack, but it does
+work and I'm hoping that it will serve as inspiration to somebody...
+
+    Garrett Wollman <wollman@khavrinen.lcs.mit.edu>
+

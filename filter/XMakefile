@@ -1,0 +1,27 @@
+
+#include "XMakefile.inc"
+
+.set SRCS	diab-filter.c diab-read.c socket.c
+
+.set OBJS	$(SRCS:"*.c":"$(BD)obj/filter_*.o")
+
+.set PROTOS	$(BD)obj/filter-protos.h
+
+all:	$(PROTOS) $(FLIB)
+
+$(FLIB) : $(OBJS)
+	rm -f %(left).new
+	ar cr %(left).new %(right)
+	ranlib %(left).new
+	mv -f %(left).new %(left)
+
+$(OBJS) : $(SRCS)
+	$(CC) $(CFLAGS) %(right) -o %(left) -c
+
+$(PROTOS) : $(SRCS)
+	cat %(right) | fgrep Prototype > %(left).new
+	mv -f %(left).new %(left)
+
+clean:
+	rm -f $(OBJS) $(FLIB) $(PROTOS)
+

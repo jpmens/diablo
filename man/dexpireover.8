@@ -1,0 +1,256 @@
+.\" $Revision: 1.17 $
+.TH DEXPIREOVER 8
+.SH NAME
+dexpireover \- Diablo program to expire overview files for diablo reader side
+.PP
+.SH SYNOPSIS
+.B dexpireover
+[
+.B \-a
+]
+[
+.B \-e
+]
+[
+.B \-f dactive-kp-database
+]
+[
+.B \-l lockwait
+]
+[
+.B \-NB
+]
+[
+.B \-n
+]
+[
+.B \-O[n]
+]
+[
+.B \-o
+]
+[
+.B \-pN
+]
+[
+.B \-R
+]
+[
+.B \-s
+]
+[
+.B \-U
+]
+[
+.B \-v[N]
+]
+[
+.B \-w wildcard
+]
+[
+.B \-x
+]
+[
+.B \-y
+]
+[
+.B \-C diablo.config
+]
+[
+.B \-d[n]
+]
+[
+.B \-V
+]
+
+.SH DESCRIPTION
+.IR DExpireOver
+does an expire run on the overview information the Diablo reader stores
+in /news/spool/group.  It scans the directory tree for data. and over.
+files and matches them up against information in the active file database
+(defaults to dactive.kp).  If you do not give it the group wildcard option,
+it can detect and remove over. and data. files associated with non-existant
+(i.e. deleted) groups.
+.PP
+dexpireover will expire articles in the overview based on the 'x' option
+in the dexpire.ctl file.  If the -a or -NB options are given, it will update
+the active file.  dexpireover is usually run with just the -a option.
+.PP
+If the -e option is given, dexpireover will expire articles based on what
+articles are left in your local spool. This requires a local spool.
+.PP
+.B \-a
+.PP
+This option turns on -NB, -U, -s, and -y. These are the options used
+in a standard dexpireover run.
+.PP
+.B \-e
+.PP
+Tell dexpireover that spool-based expiration should be used. This option
+will cause dexpireover to look up every message stored in the overview database
+in the history file, and expire the article if the history entry is marked
+expired. This requires that your reader machine carries a local spool,
+and only articles in your local spool will be left in overview. You should
+not specify this option and -o at the same time.
+.PP
+.B \-f dactive-KP-database-file
+.PP
+Specify a different active file (KP database).  The default is 
+/news/dactive.kp.
+.PP
+.B \-l lockwait
+.PP
+Specify the amount of time (in seconds) to wait for a lock when resizing
+or rewriting files. The default is to not resize/rewrite if the file is
+locked. A value of greater than 30 seconds will have a much better chance
+of being able to resize/rewrite groups because reader processes flush
+their lock cache every 30 seconds (approx).
+.PP
+.B \-NB
+.PP
+Allow dexpireover to update the beginning article number in the active file.
+This option is implied by -a.
+.PP
+.B \-n
+.PP
+This option guarentees that the overview and active files will NOT be 
+updated, i.e. so you can do a dry run to see what dexpireover would have
+done.  The -n option also sets the verbose level to 1 if it hasn't been
+set with the -v option.
+.PP
+.B \-O[n]
+.PP
+Request that dexpireover delete groups which have not had new articles in 'n'
+days.  If 'n' is not specified, 90 days is used.  dexpireover will also
+add any missing LMTS fields to groups.  This option requires that you also specify
+a wildcard via the -w option.  This option is generally used to keep the
+alt groups clean.
+.PP
+When dexpireover deletes a newsgroup, it does not delete the overview data
+for that group until the next time dexpireover is run.
+.PP
+WARNING: Please note that this option uses the LMTS option to determine
+the age of a newsgroup. This option is updated each time an article is
+received for a group and only updated by dreaderd at this time. Running
+it on a feed-only server or a reader that does control-only groups may cause
+active groups to expire. Use with caution.
+.PP
+.B \-o
+.PP
+Tell dexpireover that it should use the file specified by path_dexpover_list
+in diablo.config (path_db based) to decide which articles should be removed
+from overview. This is similar to the spool-based expiration method, but does
+not perform history lookups on every article, and can be faster. This also
+requires that you run dexpire with the -o option.
+.PP
+The 'x' option in dexpire.ctl will also be used to safeguard against stale
+articles which somehow avoided being written to dexpover.dat and remain in
+overview. You should probably set your 'x' value high in order to avoid
+removing valid articles.
+.PP
+The dexpover.dat file will be removed after being read in by dexpireover.
+.PP
+You should not specify this option and -e at the same time.
+.PP
+.B \-pN
+.PP
+Spawn N working dexpireover processes, and one master process which
+waits for the parcount children to exit. Useful for speeding up the
+\-e option, when your dhistory disk(s) can support multiple dhistory
+lookups at one time without slowing down linearly. Twice the number
+of disks on your striped /news partition is probably not an
+unreasonable number to use.
+.PP
+Using a value of N greater than 16 is not currently supported. Values
+other than powers of 2 are likely to generate uneven load across forks.
+.PP
+.B \-R
+.PP
+Instruct dexpireover to rewrite the data.* and over.* files in
+/news/spool/group.   dexpireover will attempt to dynamically size index
+files based on the number of apparently valid articles in each group, and
+will rewrite data files to piecemeal remove unreferenced articles.  
+.PP
+This works somewhat differently then expireover with standard options, takes
+a lot more time, and should typically be run only once a week.  The standard
+dexpireover, 'dexpireover -a', does not resize index files or rewrite data
+files, it simply performs the expiration pass and deletes whole data files
+if none of the articles residing in them are referenced any longer.  This
+suffices for a daily expiration, but 'dexpireover -R -a' should be used once
+a week to clean up the tailings.   See samples/adm/weekly.reader
+.PP
+.B \-s
+.PP
+This options is like -R but only resizes the over.* files in /news/spool/group.
+It does not attempt to trim data.* files in /news/spool/group.  This option
+has no effect on over.* files that are already properly sized, unlike -R which
+rewrites the over.* files whether they are properly sized or not.
+.PP
+Overview index files may only be resized if no dreaderd's have them open.
+If any do, the resize will fail (dexpireover will not be able to obtain the
+lock).  Since dexpireover is typically run once an hour, the resize will be
+retried on each run until it succeeds.  If you need to resize a group in
+realtime and you cant due to existing locks, you must unfortunately kill 
+dreaderd, do the operation, then restart dreaderd.
+.PP
+.B \-U
+.PP
+Allow dexpireover to add missing CTS fields (group-creation-time-stamp field).
+Earlier test releases didn't add this field.  dexpireover can fixup these
+records.
+.PP
+.B \-v
+.PP
+This option turns on verbose output.
+.PP
+.B \-w wildcard
+.PP
+Restrict operations to the specified groups.  Note: if you specify a wildcard,
+dexpireover will not be able to prune deleted groups from the overview
+directory structure.
+.PP
+.B \-x
+.PP
+The normal operation for adjusting the maxarts value for a group is to
+reduce maxarts by 1/3 if numarts < than 1/2 of maxarts or to
+increase maxarts by 1/3 if numarts > 2/3 of maxarts. Under normal
+operation, this works well. The ``-x'' option changes this policy to
+adjust the maxarts depending on a factor of the max article age and
+the expire time of the group. This option has not been extensively
+tested and should be avoided in normal operation.
+.PP
+.B \-y
+.PP
+Perform the actual expire of headers as specified in dexpire.ctl.
+Without this option, no headers are expired although groups can
+still be resized or overview files rebuilt.
+.PP
+.B -C
+allows the specification of the path of the diablo.config file to use.
+.PP
+.B -d[n]
+will set debug mode, at optional level n.
+.PP
+.B -V
+will print the version and exit.
+.PP
+.SH INTERRUPTING
+Generally speaking, you should not interrupt a running dexpireover.  Doing
+so will cause, at worst, one newsgroup to lose its overview.
+.PP
+.SH "SEE ALSO"
+diablo(8), 
+dicmd(8),
+didump(8),
+diload(8),
+dnewslink(8),
+doutq(8),
+dexpire(8),
+diconvhist(8),
+dilookup(8),
+dspoolout(8),
+dkp(8),
+dpath(8),
+diablo-kp(5),
+diablo-files(5)
+.PP

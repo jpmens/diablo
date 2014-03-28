@@ -1,0 +1,41 @@
+# DIABLO.HOSTS SAMPLE
+#
+# file contains hostname/ip + label pairs, tab or space delimited, one 
+# host per line.  '*' and '?' Wildcarding for the hostname/ip is allowed.
+#
+# The second field is a label which matches an appropriate entry in
+# the dnewsfeeds file.  The label is NO LONGER OPTIONAL.   It is now a
+# REQUIRED field.
+#
+# See also the 'inhost' option in dnewsfeeds, which can be used in addition
+# to or as a replacement for this file.
+#
+
+newsx.best.com		newsx
+news1.best.com		newsx
+
+# SGI
+#
+# Contact: xxxx@yyyy.com
+
+sgiblab.sgi.com		sgigate
+192.82.208.3		sgigate
+sgigate.sgi.com		sgigate
+204.94.209.1		sgigate
+news.sgi.com		sgigate
+204.94.214.20		sgigate
+
+# HP
+#
+# Contact: xxxx@yyyy.com
+
+hpsdlo.sdd.hp.com	hp
+15.255.160.64		hp
+
+# TEXAS.NET
+#
+# Contact: xxxx@yyyy.com
+
+*.texas.net		texas
+206.127.0.35		texas
+206.127.0.36		texas

@@ -1,0 +1,17 @@
+diablo-inpaths.pl v1.0  Iain Lea  iain@ecrc.de  970824
+------------------------------------------------------
+
+This script allows you to collect Path: header infomation from
+a DIABLO news relay system.  It scans the /news/spool/news dir
+and logs the results by default to /var/log/news/path.log
+
+diablo-inpaths -h  gets you an help page of cmd line options.
+
+Use the driver script diablo-inpaths.sh by setting the values
+at the top of the script to your site values and run from a
+cronjob every couple of hours or once a day depending on how
+large your spool is and how fast news is expired at your site.
+
+Comments and code patches appreciated.
+
+Enjoy

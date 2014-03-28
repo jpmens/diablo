@@ -1,0 +1,68 @@
+
+.set BD 
+#include "XMakefile.inc"
+
+.set IDIRS	dbin samples samples/adm samples/feeder \
+		samples/feeder+reader samples/reader
+.set IFILES	`find $(IDIRS) \( -type f -o -type l \) -print | sort | uniq | fgrep -v CVS`
+.set TFILES	samples/dactive.kp samples/dcontrol.ctl samples/dexpire.ctl \
+		samples/diablo.config samples/distrib.pats samples/dnewsfeeds \
+		samples/dreader.access samples/dserver.hosts \
+		samples/dspool.ctl samples/moderators
+.set IMAN	`find man \( -type f -o -type l \) -print | fgrep -v CVS`
+.set MDIRS	dqueue spool spool/news spool/group spool/cache
+.set ODIRS	man man/man5 man/man8 run log
+
+.set DDIRS	$(IDIRS:"*":"$(IDIR)/*") 
+.set DMDIRS	$(MDIRS:"*":"$(IDIR)/*")
+.set OTDIRS	$(ODIRS:"*":"$(IDIR)/*")
+.set DTFILES	$(TFILES:"samples/*":"$(IDIR)/*")
+.set DFILES	$(IFILES:"*":"$(IDIR)/*")
+.set DMAN	$(IMAN:"man/*.?":"$(MDIR)/man%2/%1.%2")
+
+install: $(IDIR) $(DMDIRS) $(OTDIRS) $(DDIRS) $(DFILES) $(DTFILES) $(DMAN)
+
+bininstall: $(IDIR) $(DMDIRS) $(OTDIRS) $(DDIRS) $(DFILES) $(DMAN)
+
+$(IDIR) : $(IDIR)
+    @echo "no $(IDIR) directory/partition"; exit 1
+
+$(DDIRS) : $(DDIRS)
+    test -d %(left) || mkdir %(left)
+    chown news %(left)
+    chgrp news %(left)
+    chmod 755 %(left)
+
+$(DMDIRS) : $(DMDIRS)
+    test -d %(left) || mkdir %(left)
+    chmod 755 %(left)
+    chown news %(left)
+    chgrp news %(left)
+    @echo "%(left): WARNING!!!! directory may require its own mount point"
+    @sleep 2
+
+$(OTDIRS) : $(OTDIRS)
+    test -d %(left) || mkdir %(left)
+    chown news %(left)
+    chgrp news %(left)
+    chmod 755 %(left)
+
+/*
+ * note: modes 444 so user is reminded to break the link
+ *       if he customized a file.
+ */
+
+$(DFILES) : $(IFILES)
+    cp %(right) %(left).new
+    chmod 444 %(left).new
+    chown news %(left).new
+    chgrp news %(left).new
+    if [ -x %(right) ]; then chmod 755 %(left).new; else chmod 444 %(left).new; fi
+    mv -f %(left).new %(left)
+
+$(DTFILES) : $(TFILES)
+    if [ ! -f %(left) ]; then ln -s $(IDIR)/%(right) %(left); fi
+
+$(DMAN) : $(IMAN)
+    $(INSTALL) -c -g news -o news -m 644 %(right) %(left)
+

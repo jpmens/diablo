@@ -1,0 +1,363 @@
+.\" $Revision: 1.8 $
+.TH DIABLO-FILES 5
+.SH NAME
+diablo-files \- Synopsis of configuration and control files for Diablo
+.PP
+.SH GENERAL
+.PP
+This manual page provides a synopsis for various diablo configuration
+and control files.  It does not necessarily describe all commands or
+the specific file format.  You can obtain most of the latter by looking
+at the example config/control files in the 
+.B sample/
+directory.  What this manual page does is describe specific featurisms
+that would otherwise not be readily apparent.
+.PP
+The location of all diablo files is controlled by /news/diablo.config.
+The location of diablo.config itself can be specified with the 
+DIABLO_CONFIG_PATH environment variable or with the '-C diabloconfigpath'
+option to any command.  Diablo files are typically rooted at either
+the news root, the library root, or the database root (path_news, 
+path_lib, or path_db in diablo.config).  See samples/diablo.config
+for more information.
+
+.SH DNEWSFEEDS
+The
+.IR dnewsfeeds
+file specifies how diablo generates outbound feeds as well as specifies
+how diablo filters incoming feeds.  You specify each outbound feed
+with a
+.B label 
+keyword, followed by various other keywords and ending with an 
+.B end
+keyword.
+.PP
+.B alias
+specifies an outbound newspath alias, which may contain '*' and '?' wildcards.
+An inbound article whos path element matches any given alias for any
+given outbound feed is not requeued to that outbound feed.
+.PP
+.B addgroup
+and
+.B delgroup
+filters articles to outbound feeds.  All add/delgroup commands are run
+against each newsgroup in the Newsgroups: header for the article and the
+last add/delgroup command effecting any given newsgroup is applied to the
+article.  Normally this means you start out more general at the beginning
+(i.e. '*') and become more specific at the end of your list.  When an 
+article is cross posted to multiple newsgroups, success with any of the
+groups will cause the article to be propogated.
+.PP
+NOTE!  If you 'addgroup *', then use delgroup and delgroupany to remove
+groups that you do not want, beware that control messages for ALL groups
+will still be propogated unless you also do a 'delgroup control.*'.
+.PP
+.B delgroupany
+filters articles in a manner similar to delgroup, but if the specified groups
+exist in the Newsgroups: line *AT ALL*, no distribution to *any* of the
+other newsgroups will occur.  i.e. if you say 'delgroupany alt.warez*', it
+means that if an article is posted to comp.sys.amiga.misc and alt.warez*,
+the article will NOT be propogated.
+.PP
+.B requiregroup
+An extremely exclusive filter that is the inverse of delgroupany.  The 
+article's Newsgroups MUST contain a group matching the wildcard
+or it will not be propogated.  This is generally only used when splitting off
+control feeds.  Please see samples/dnewsfeeds for typical usage.
+.PP
+.B groupref
+allows a feed to recursively include a group access list defined by a groupdef
+command.  The groupdef command may occur before OR after the newsfeed that
+references it, and groupdef's can be recursive.  see
+.B groupdef
+for more information.
+.PP
+.B filter
+effects INBOUND feeds.  Articles coming FROM the specified label (see
+diablo.hosts on how to tie labels to incomming connections) are rejected
+if any listed newsgroup matches the wildcard specified in any of the
+filter commands.  You normally use this to reject articles cross posted
+to your local newsgroups that are propogated from outside entities.  Note
+that the history file is not updated, just in case the article is also
+brought in from a valid 'local' newsfeed.
+.PP
+.B maxpath
+(1.08 or higher) effects OUTBOUND feeds.  Diablo will not send an article
+to an outbound feed if the article's Path: line contains more then the
+specified number of path elements.
+.PP
+.B maxcross
+(1.04 or higher) effects OUTBOUND feeds.  Diablo will not send an article 
+to an outbound feed if the article's Newsgroups: line contains more then 
+the specified number of groups.
+.PP
+.B maxsize
+(1.04 or higher) effects OUTBOUND feeds.  Diablo will not send an article 
+to an outbound feed if the article is larger then the specified number of 
+bytes.  You may use 'k', 'm', and 'g' to denote kilobytes, megabytes, 
+and gigabytes.  For example, <I>maxsize 100k</I> .
+.PP
+.B rtflush
+(1.12 or higher) effects OUTBOUND feeds.  Diablo will write the queue file
+for this feed unbuffered.  Generally used along with 'realtime' in 
+dnntpspool.ctl.
+.PP
+There is an (unimposed) arbitrary limit of 256 add/delgroup entries
+per feed.  Currently this is due to the fact that Diablo scans the
+wildcard list linearly and cannot really support group-specific
+wildcards (where a feed wants 10,000 specific groups rather then
+fewer wildcarded groups).
+.PP
+A special label, called
+.B ME
+may be specified.  This label generally only contains
+.B filter
+commands.  Diablo will revert to this label for any incoming
+connections that have not been associated with a specific label.
+.PP
+There is also the 
+.B groupdef
+command, which must occur outside any feed commands.  The groupdef command
+is followed by a set of groupadd, groupdel, groupdelany, and/or groupref
+commands to create a grouplist.  The groupdef command is terminated by an
+end command.  Grouplist definitions may be referenced by feeds via the
+groupref command, and may be referenced by other grouplists.
+
+.SH DEXPIRE.CTL
+.PP
+The
+.IR dexpire.ctl
+file controls the length of time articles are stored for each group
+in the reader header database and the maximum number of articles
+that can be stored in the article index per group for dreaderd.
+This index value is adjusted by dexpireover based on the number of
+articles in the newsgroup.
+.PP
+The various options are separated by a colon and appear in any order
+after a wildmat specification of the newsgroup names. The options are:
+
+.PP
+.B x
+to specify the number of days to keep articles matching this wildmat.
+Not specifying this option means that articles are not removed. Fractions
+of a day may also be used.
+
+.PP
+.B a
+to override the default 512 for the starting 'maxarts' value per group
+matching this wildmat. The starting value is only used when the group
+index is first created.
+
+.PP
+.B i
+to specify the minimum 'maxarts' that dexpireover may adjust to.
+
+.PP
+.B j
+to specify the maximum 'maxarts' that dexpireover may adjust to.
+
+.SH DEXPIRE.FACTOR
+
+The
+.IR dexpire.factor
+file is no longer used by Diablo and can be deleted.  It may be used again
+in the future.
+
+.SH DNNTPSPOOL.CTL
+
+The
+.IR dnntpspool.ctl
+file is used by the
+.B dspoolout
+program to manage the outbound queues.  Diablo will maintain a single
+outbound queue file for each feed.  dspoolout renames this file to a
+proper sequenced queue file, properly flushes Diablo's file descriptors,
+starts up dnewslink programs, and removes any sequenced queue files 
+backlogged beyond the specified limit.
+.PP
+This file allows you to specify the remote host, maximum number of 
+queue files, and maximum number of dnewslink processes to run for
+each outbound feed, and other options.  Please refer to the
+samples/dnntpspool.ctl file.
+
+.SH DISTRIB.PATS
+
+The
+.IR distrib.pats
+file is read and returned by the NNTP 'list distrib.pats' command.  It
+is also used to generate a Distribution: header internally when the POST
+command does not supply it (or supplies an empty Distributions header).
+
+.SH DISTRIBUTIONS
+
+The
+.IR distributions
+file is read and returned by the NNTP 'list distributions' command.
+
+.SH DIABLO.HOSTS
+
+The 
+.IR diablo.hosts
+file controls authentication for incoming connections.  Each
+line consists of a domain name or IP address wildcard and a label
+identifying which feed in dnewsfeeds the incoming connection is
+associated with.  THE LABEL IS NO LONGER OPTIONAL.  You must supply
+a label.
+.PP
+Diablo normally requires that the reverse lookup match the forward
+lookup for security purposes, but many sites set up their reverse
+to point to a CNAME or set up their reverse to point to an unassociated
+host yet still request that you put a common hostname in your hosts
+file which 'resolves' to all the IP addresses of their news machines.
+.PP
+Diablo will attempt to wildcard match the last two domain elements of 
+the reverse domain name with non-wildcard domain
+names in diablo.hosts then issue a forward lookup of the name in
+diablo.hosts and attempt to match the IP.  In otherwords, if you have
+an entry for 'newsfeeds.fubar.com' in diablo.hosts and an incoming
+connection's reverse lookup comes back 'news55.fubar.com', diablo
+will convert news55.fubar.com to *.fubar.com and attempt to match
+that against entries in diablo.hosts.  When a match occurs, it performs
+a forward lookup (in this case against 'newsfeeds.fubar.com') and tries
+to match up the IP address that way.  
+.PP
+This methodology has the advantage of not requiring diablo to do a 
+sequential forward lookup of all the entries in diablo.hosts.  Each
+connection's DNS load is consistent only with the domain/IP the connection
+is coming from which is very important for stability in the face of a 
+large number of feeds.
+
+.SH DREADER.HOSTS
+
+The
+.IR dreaderd.hosts
+file contains access permissions for NNTP readers for the dreaderd server.
+This file also contains access permissions for header-only feeds coming into 
+the dreaderd server.
+
+.SH DSERVER.HOSTS
+
+The
+.IR dserver.hosts
+file contains the outgoing spool and posting server configuration which
+dreaderd uses to make connections to outside servers for message retrieval
+and outgoing POSTed message propogation.
+
+.SH DQUEUE (directory)
+
+The
+.IR dqueue
+directory contains the queue files, both the ones generated by the
+diablo server and the ones maintained by dspoolout.  Files in this
+directory are generally named as the
+.B label
+(diablo outbound queue file for a label), as the
+.B label.Snnnnn
+(sequenced queue file maintained by dspoolout), or
+.B .label.seq
+(sequence number information maintained by dspoolout).
+.PP
+Note that the diablo queue format has changed as of V1.08.  Older versions
+of diablo dumped the filename and message id.  As of V1.08, an third field
+formatted as OFFSET,BYTES is added to support the new multi-article spool
+files.  DNewslink understands both formats.
+
+.SH FEEDS (directory)
+
+The
+.IR feeds
+directory contains automatic group add/del information as requested
+by a feed through the
+.B feedrset
+and other Diablo commands.  If a file exists for any given feed,
+it overrides the 
+.B addgroup 
+and 
+.B delgroup
+commands in the dnewsfeeds file for that feed.
+
+.SH NEWS SPOOL (/news/spool/news) (directory)
+
+Diablo implements a two-level news spool.  A directory of the form D.xxxxxxxx
+is created on the first level every 10 minutes.  Each discrete fork creates
+a distinct file in one or more of these directories when it receives an 
+article.  The directory is chosen based on the expiration and the filename
+is chosen starting with a hash of the incoming IP.  The diablo process then
+exclusively locks the file(s) in question.  In the case of contention, the
+loser will generate another filename and loop until it finds or creates one.
+The files or of the form B.xxxx where xxxx is basically random.  Multiple
+articles may be stored in each file.  An ascii NUL (code 0x00) is used as
+an out-of-band article separator.  The history and outgoing queue files
+reference articles by relative file path, offset, and size.
+.PP
+It should be noted that dnewslink explicitly looks for the separator as a
+double-check against corruption.
+
+.SH DACTIVE.KP (/news/dactive.kp)
+
+The
+.IR dactive.kp
+file is a key-token-pair database (see diablo-kp(5)).  It is NOT compatible
+with the INN active file.  The dsyncgroups program with -G and -F flags may
+be used to create dactive.kp from an active file in "list active" format
+(see dsyncgroups(8)).  A dactive.kp file may also be created based on an
+active file on a remote host (also see dsyncgroups(8)).
+.PP
+Diablo KP database files are human readable but should only be manipulated
+with the 
+.B dkp
+program while Diablo is active.  If Diablo is inactive, KP files may be
+manipulated with dkp OR can be edited by hand.  Diablo's dactive.kp file 
+serves the same purpose as INN's active file but, being a general token=value 
+database, may contain additional information.  The intention is to use this 
+database to track article number assigns and to store additional group 
+description, moderator email, and PGP keys for the reader portion of Diablo.
+.PP
+In Diablo, groups missing from dactive.kp do not normally effect the feeder
+side of the system.   However, Xref: headers are only generated for those
+newsgroups listed in dactive.kp.  This behavior can be changed through
+the 'activedrop' option in diablo.config
+.PP
+The dactive.kp database is keyed off the group name and uses the
+following tokens, some of which are optional: NE (last stored article
+number, %010d format), NB (first stored article number %010d format),
+S (status), M (moderator email), and CPGP (pgp key, hierarchically 
+recursive).  The status may contain multiple characters.  'n' indicates
+a disabled group, 'y' indicates an enabled group, 'm' indicates moderated.
+'y' is infered so S=ym is the same as S=m, which also means that the S option
+itself is entirely optional (defaults to 'y').  The group description, if any,
+is stored with the GD key.
+.PP
+When using the feeder to generate Xref: headers, the feeder creates a copy
+of the NE field called NX and uses that to track article number assignments.
+This way both the reader and feeder can use the same physical active file
+when both the reader and feeder are running on the same box.  The dsyncgroups
+command has options to manipulate NE and NX.  WARNING!  If NX is present, the
+reader will reset NE if NX < NE and an incoming article has been assigned
+a number less then NE.
+.PP
+if a group is marked moderated, the moderator email is obtained via the M key.
+If control messages related to the group (hierarchically speaking), the CPGP
+key contains the public key.  For example, there might be an entry for 'comp'
+with a CPGP key but since 'comp' is not a real newsgroup, the status would
+be blank.
+
+.SH "SEE ALSO"
+diablo(8), 
+dsyncgroups(8),
+dicmd(8),
+didump(8),
+diload(8),
+dnewslink(8),
+doutq(8),
+dexpire(8),
+dexpireover(8),
+diconvhist(8),
+dilookup(8),
+dspoolout(8),
+dkp(8),
+dpath(8),
+diablo-files(5),
+diablo-kp(5)
+.PP
+

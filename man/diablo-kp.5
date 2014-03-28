@@ -1,0 +1,75 @@
+.\" $Revision: 1.4 $
+.TH DIABLO-KP 5
+.SH NAME
+diablo-kp \- General KP database support in Diablo
+.PP
+.SH GENERAL
+.PP
+Diablo uses a key-token-pair database module to manage the active file
+(dactive.kp) and the intent is to use the same database module to manage
+the overview cache and (group,article)->messageid translation databases for
+the reader side.  Active KP databases can be manipulated through the
+.B dkp
+program and inactive KP databases can be manipulated with an editor.  An
+editor should never be used on an active KP database.
+.PP
+The KP database uses an append/replace approach for writing.  Any modification
+which does not change the length of a record is written in place.  Any
+modification which does change the length of a record invalidates the old
+record and appends a new record.  Thus things such as article number updates
+in dactive.kp may be done in place.
+.PP
+The KP database contains embedded sort information for each record.  Sorts
+are performed on the embedded information field without actually rearranging
+the database file.  An append to a KP database does not require an immediate
+resort.  Lookup failures go through unsorted records sequentially.  The resort
+threshold is nominally 64.   The KP system stores a 
+modification timestamp on close and detects a manual edit on open by comparing
+the modification time of the KP database against the stored timestamp.  This 
+assumes that manual edits only occur while the database is offline.  Since
+sort information is stored as file offsets, the KP system will force a resort 
+if a manual edit was detected.  You can also force a resort by setting
+the cccccccc field in the header (the last 8 digit field on the first line
+of the file) to 10000000.
+.PP
+Due to the resort requirement, the KP system is not designed to handle a 
+high append rate on large databases.  It is expected to work well enough
+with the active file (which does not require resorts under nominal operation),
+article translation databases which are relatively small and not appended to
+quickly, and overview caching databases for the same reason.
+You can create a KP database with .B dkp -w databasename.kp
+and read and write it with similar
+.B dkp
+commands.
+
+.SH CLEANING
+.PP
+KP databases must be cleaned up occassionally.  To clean a KP database you
+must first take it offline.  Then a simple egrep -v '^-' should suffice.  It is
+also usually a good idea to force a resort just in case the system time is 
+messed up and Diablo does not detect the edit.  See adm/biweekly.atrim for 
+an example.
+.PP
+It is possible to clean active KP databases only if they are being used for
+transient read operation.  By doing an egrep and then renaming the new file
+over the old one, transient programs with open descriptors will still be able
+to operate on the old version of the database.
+
+.SH "SEE ALSO"
+diablo(8), 
+dicmd(8),
+didump(8),
+diload(8),
+dnewslink(8),
+doutq(8),
+dexpire(8),
+dexpireover(8),
+diconvhist(8),
+dilookup(8),
+dspoolout(8),
+dkp(8),
+dpath(8),
+diablo-files(5),
+diablo-kp(5)
+.PP
+

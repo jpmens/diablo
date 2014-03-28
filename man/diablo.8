@@ -1,0 +1,537 @@
+.\" $Revision: 1.17 $
+.TH DIABLO 8
+.SH NAME
+diablo \- NetNews daemon for backbone article transit
+.SH SYNOPSIS
+.B diablo
+[
+.B \-A newsadminname
+]
+[
+.B \-B ip/hostname[:port]
+]
+[
+.B \-c " commonpathname"
+]
+[
+.B \-d[n]
+]
+[
+.B \-e pctimeout
+]
+[
+.B \-F filterpath
+]
+[
+.B \-h reportedhostname
+]
+[
+.B \-M maxforkper
+]
+[
+.B \-P port
+]
+.BI \-p " newspathname/0"
+[
+.B \-R rxbufsize
+]
+[
+.B \-S[Bn[sn]][Nn[sn]]
+]
+[
+.B \-s argv-buffer-space-for-ps-status
+]
+[
+.B \-T txbufsize
+]
+[
+.B \-X " xrefhost"
+]
+[
+.B \-x
+]
+.BI server
+
+.SH DESCRIPTION
+.IR Diablo
+is an internet news backbone storage and transit server.  Diablo sits
+on the NNTP port of the machine and accepts inbound news articles from
+.IR Innd
+or
+.IR Diablo
+based servers... really anything that can run innxmit or the newslink.
+Diablo stores the articles and handles the queueing for outbound feeds.  
+Queue files are in an dnewslink compatible format and dnewslink
+is supplied with the distribution.  Diablo is about 10-20 times as efficient
+as Innd when dealing with inbound traffic, mainly due to the fact that it
+is a forking server.  Diablo's memory footprint of less then a megabyte is
+tiny compared to innd.  Diablo was initially written by Matt Dillon over
+a weekend and has grown from there.
+.PP
+Many of the options below can be configured in diablo.config.
+.PP
+.B \-A newsadminname
+.PP
+The news administrator email address that is reported in the banner
+message for new connections. This defaults to ``news@hostname''.
+.PP
+.B \-B ip/hostname[:port]
+.PP
+Specify the IP address or hostname for an interface that diablo should
+sit on.  The port can be specified after a ':'. The default is all interfaces.
+.PP
+.B \-c commonpathname
+sets the common path name.  The path is prepended to the Path: header only
+if it does not already exist in the Path: header.  Usually both -p and -c
+options are used.  The newspathname is placed in front of the commonname
+in this case (assuming it does not exist elsewhere in the path), as in
+'newspathname!commonname!...'. Multiple -c options can be specified and
+wil be added (along with -p) in the order specified on the command-line.
+.PP
+.B \-d[n]
+turns on debugging. Specifying a number increases the debug level.
+.PP
+.B \-e pctimeout
+sets the precommit cache timeout.  The default is 30 seconds.  Setting it to 0
+disables the precommit cache.  The precommit cache is a check/ihave message-id
+lockout used to prevent simultanious article reception of the same article.
+The first client to send a check for a message-id wins.  Other clients will
+get a dup or reject return code for that message-id for 30 seconds.
+.PP
+.B \-F path
+.PP
+Specifies the path to the external spamfilter. The path must be fully
+qualified.
+.PP
+.B \-h reportedhostname
+.PP
+Diablo calls gethostbyname() to set the hostname it reports on connect.  On
+some systems this will not necessarily be what you want so you can override
+it with the -h option.
+.PP
+.B \-M maxforkper
+.PP
+Set the maximum number of simultanious connections from any given remote
+host.  For example, if you set this to 10, each of your feeds will be allowed
+to make up to 10 simultanious connections to you.  The default is 0 (unlimited)
+.PP
+.B \-P port
+.PP
+Specify the port that the diablo should sit on.  The default is 119.  This
+is commonly used to run a server on a different port (say, 434) so you can
+run a reader on the main port.
+.PP
+.B \-p newspathname
+.PP
+.B \-p0
+sets the domain name to prepend to the Path: header.  This option
+is required.  If you specify -p0, diablo will not insert anything into 
+the Path: header, i.e. when you use Diablo as a bridge rather then a full
+router.  The use of -p0 is NOT RECOMMENDED.  Also note that ipaddress.MISMATCH
+Path: elements will still be added in either case if the first element of the
+Path: on the incoming article does not match an alias in the appropriate
+dnewsfeeds file entry. Multiple -p options may be used and will be added
+(along with -c) options in the order specified on the command-line. The
+last -p option is used for Xref: generation.
+.PP
+.B \-R rxbufsize
+.PP
+Set the TCP receive buffer size.
+.PP
+.B \-S[Bn[sn]][Nn[sn]
+.PP
+
+This option enables the internal spamfilter and will override the
+'internalfilter' option in diablo.config. NOTE: There must also be
+an ISPAM entry in dnewsfeeds before any articles will reach the
+filter even if it is enabled here. The ISPAM entry determines which
+articles are sent to the internal filter.  There are two internal
+filters available:
+.PP
+Duplicate body detection
+NNTP-Posting-Host rate detection
+.PP
+Each type is enabled with a different option, which also sets
+the trip value for that type.
+.PP
+.B Bn
+- enables duplicate body detection and sets the number
+of allowed duplicates before further articles are rejected.
+.PP
+.B Nn
+- enables the NNTP-Posting-Host rate detection and the
+number specifies how many duplicate hosts are allowed
+in an hour before extra articles from that host are
+rejected.
+.PP
+.B en - set the expire time (in seconds) for the previous
+'B' or 'N' option. Default is 3600 (1 hour).  
+.PP
+.B sn
+- set the number of entries in the filter hash table to
+n for the previous 'B' or 'N' optiopn. The size must be
+a power of 2. Default is 65536 entries.
+.PP
+Both types of filters also make a note of the number of lines in
+the body of the article to reduce the possibility of false
+duplicates.
+.PP
+Use of this option causes the creation of 2 files in path_db
+that are used to store the filter hash tables.
+.PP
+e.g: B6s32768 N16 would set the body filter trip to 6, with
+a hash table size of 32768 entries and the nph filter trip to 16
+with the default hash table size of 65536.
+.PP
+The default is disabled (B0 N0).
+.PP
+The spam filter utilizes a fixed-size hash table cache and rate-limits
+postings with the same number of lines from the same NNTP-Posting-Host:
+source or with the same body hash.  If the rate exceeds n articles
+over a period of e seconds, all further matching articles will be
+rejected.
+.PP
+.B \-s argvbufferspace
+Generally used to reserve buffer space so diablo can generate a real time
+status in its argv that the system's ps command can read.  This does not
+work with all operating systems.
+.PP
+.B \-T txbufsize
+.PP
+Set the TCP transmit buffer size.  A minimum size of 4K is imposed to 
+guarentee lockup-free operation in streaming mode.
+.PP
+.B \-X xrefhost
+sets the XRef: hostname used when generating Xref: lines. The default
+is to use the newspathname if Xref: generation is enabled.
+.PP
+.B \-x
+.PP
+If active file is enabled and we are not an Xref: slave, then use the
+Xref: line to update the NX field in the active file. This is useful
+for a backup to the Xref: generator in large installations.
+.PP
+Diablo understands a subset of the NNTP protocol.  The basic commands it
+understands are
+.B ihave, check,
+and
+.B takethis.
+Diablo also understands
+.B stat, head, mode stream,
+and
+.B quit.
+Diablo also implements a number of commands to support remotely configured
+.B newsfeeds
+files on a site-by-site basis.  These are
+.B feedrset, feedadd, feeddel,
+and
+.B feedcommit.
+Remote sites may query the state of outgoing feeds directed to them with
+the
+.B outq
+command.
+.PP
+Diablo is strictly a news holding and transit server.  It does not maintain
+a
+.IR newsgroup
+, or
+.IR active
+file, and it does not store articles in a hierarchy based on the group name.
+Diablo stores files in a hierarchy based on the time received and a randomly
+generated iteration number.  A new directory is created every 10 minutes
+and each incomming connection creates its own file.  Multiple articles may
+be stored in each file.  Connections that last more then 10 minutes will
+close their current file and reopen a new one in the new directory.
+Diablo also maintains a history database, called
+.B dhistory,
+which references articles based on their hash code and stores reception
+date and expiration information.  The history database is headed by a
+four million entry hash table then followed by linked lists of
+.B History
+structures in a machine-readable (but not human-readable) format.  It
+should be noted that the Message-ID is not stored anywhere but in the 
+article and in the outbound feed queue files.  If two different Message-IDs
+wind up with the same hash code, one of the articles will be lost.
+Given a (as of this writing) full feed of 250,000 articles a day, a
+maximum lifetime of 16 days, and 62 significant bits in the hash code,
+collisions will statistically occur only once every 4 billion articles or
+so.  This is the price for using Diablo, and I consider it a minor one.
+.PP
+The file names also have an iteration tagged onto the end.  The iteration
+is used to group files within a 10 minute-span directory.  If an article
+collision on input occurs, whichever diablo process missed the history
+commit will remove the data associated with the article from its spool file.
+.PP
+Critical-path operations in diablo are extremely efficient due to the
+time-locality for most of its operations.  From a time-local point of
+view, files are created in the same reasonably-sized directory.  The
+diablo expiration program,
+.IR dexpire
+, does not rewrite the history file (see 
+.IR didump
+and
+.IR diload
+for that), Instead it simply scans it, removes
+expired files, and updates the history file in-place to indicate the fact.
+There are no softlinks, because the spool is not based on the group name(s).
+Cleaning the spool directory is trivial because, frankly, there aren't
+many files in it.  In a very heavily loaded system, approximately 80 files
+are created every 10 minutes.  The only real random access is the
+history file itself.  Due to the fixed-length records, 
+.B dhistory
+is around 1/2 the size of a typical INN history file.  Since there is no
+active or newsgroups file to maintain, no renumbering mechanism is required.
+Diablo forks for each inbound connection allowing history file lookups and
+file creates to run in parallel.  Diablo uses true record locking for
+history database updates and none at all for lookups.
+.PP
+Finally, being strictly transit in nature, Diablo does not attempt to act on 
+the contents of the message...  For example, control messages are ignored,
+and Diablo makes no header modifications except to the 
+.B Path:
+header and to remove the 
+.B Xref:
+header, if it exists.  The source of the feed is expected to generate a
+properly formatted article, and very little article checking is done until
+after the article has propogated to a newsreader site (beyond Diablo).
+Any content-specific action which you wish to support must be dealt with
+through an external medium using the outbound feed mechanism.
+.PP
+Diablo's 
+.IR dexpire
+program uses a dynamic expiration mechanism whereby you give it a
+free-space goal and it scales the 
+.B dexpire.ctl
+expirations accordingly to reach that goal.  It should be noted that
+the expiration is stored in the history file at the time of article
+reception and NOT calculated when
+.IR dexpire
+is run.  The
+.B dexpire.ctl
+file has a number of features that allow you to scale the expiration based
+on the number of cross posts and message-size, and to reject messages for
+certain groups that are too large.
+.PP
+Diablo maintains a pipe between each forked child and the master
+acceptor server and has a mechanism which may be used to issue commands
+to the running system.  The master acceptor server handles all outbound
+feed file queueing which makes feed file flushing a very simple command
+to issue.  You may also request the master server to exit, which propogates
+to the forked slaves and guarentees that all outbound feed files have 
+been flushed.  The program used to issue commands to Diablo is called
+.IR dicmd
+, and is generally run with
+.B flush
+or
+.B exit
+as an argument.  Queue file flushing works in a manner similar to Innd in
+that you are supposed to rename the server-created queue file and then
+flush it with
+.IR dicmd
+, but unlike Innd, the file is not wiped out if you do not rename it.  It
+is instead reopened for append.  Diablo includes two separate programs,
+.IR dspoolout
+and
+.IR dnewsfeed
+which do queue file sequencing, management, outbound feeds, and trimming.
+The
+.IR dnewsfeed
+program can run the non-streaming
+.B ihave 
+protocol, or can run the streaming
+.B check/takethis 
+protocol.  It dynamically figures out what the remote end can handle.  It
+should be noted that Diablo can run all of its commands fully streamed,
+not just the
+.B check/takethis 
+protocol.
+
+.SH "CRON JOBS"
+.PP
+Typically you set up a number of cron jobs to support the running Diablo
+server.
+.PP
+.B dspoolout -s 9
+, should generally be run every 5 minutes.  The -s argument should generally
+be 2x-1 the cron interval, see the manual page for
+.IR dspoolout
+for more information.
+.PP
+.B dexpire -r2000
+, should generally be run every 4 hours. -rFREESPACE tells dexpire to 
+remove files until the free-space target, in megabytes, is reached.  In this
+example, we have a 2GB free space target.  Once your system has stabilized, 
+you can reduced this to 1GB safely, and less if you are not taking a full
+feed.  It should roughly be equivalent to 5% of your available news spool 
+space.  You may have to run dexpire more often with tighter free-space
+margins.
+.PP
+The
+.B adm/biweekly.atrim
+script should generally be run twice a week.  The script shuts down
+the diablo server, then renames and rewrites the dhistory file using
+a combination of
+.IR didump
+and
+.IR diload
+to remove expired entries over 16 days old.  The dhistory file is typically
+about 1/2 the size of an INN history file for a full feed, so it is 
+not necessary to run this script more then once a week.  Diablo must
+be shut down during this procedure to prevent appends to the older version
+of the history file from occuring.
+.PP
+.B adm/daily.atrim
+, To rotate the log files in the
+.B log/
+directory.  If you are using syslog to generate a /var/log/news or other
+log files, you need to have appropriate crontab entries to rotate them
+as well.
+
+.SH LOGGING
+Diablo syslog's to NEWS.  It typically generates both per-connection statistics
+and global statistics.
+.PP
+The per-connection statistics are made up of two lines.  Each line contains
+key=value pairs as described below.  
+.PP
+secs - elapsed time of connection
+.PP
+ihave - number of IHAVE nntp commands received
+.PP
+chk - number of CHECK nntp commands received
+.PP
+rec - number of articles received from remote
+.PP
+rej - of the received articles, the number rejected
+.PP
+predup - number of duplicate articles via takethis determined to be duplicates
+prior to the first byte of the article being received.
+.PP
+posdup - (meaningless)
+.PP
+pcoll - pre-commit cache collision.  Typically indicates that either a history
+collision occurs against some other article simultaniously in-transit or that
+a history collision occured with recently received message-ids.
+.PP
+spam - number of articles determined to be spam by the spam filter
+.PP
+err - number of errors that occured.  Typically protocol errors
+.PP 
+added - of the received articles, the number committed to the spool
+.PP
+bytes - number of bytes committed to the spool
+.PP
+
+.PP
+The second statistics line contains key-value pairs as shown below.
+.PP
+acc - number of articles accepted
+.PP
+ctl - of the accepted articles, how many were control messages
+.PP
+failsafe - rejected due to failsafe, typically means that the spool directory
+structure got messed up.
+.PP
+misshdrs - rejected due to missing required headers.   Can also occur when the
+feeder sends an empty article ( typically occurs when the feeder cannot find
+the article in its spool ).
+.PP
+tooold - rejected for being too old.
+.PP
+grpfilt - rejected due to the incoming group filter for this feed in dnewsfeeds.
+.PP
+spamfilt - rejected due to the spam filter
+.PP
+earlyexp - of the articles received, the number that have been accepted but
+will be expired early, usually due to dexpire.ctl.
+.PP
+instantexp - rejected because dexpire.ctl indicated that the article would
+expire instantly.
+.PP
+notinactv - rejected because none of the newsgroups are in the active file
+( if you have 'activedrop' set in diablo.config ).
+.PP
+ioerr - rejected due to an I/O or other abnormal error
+
+.PP
+The global statistics are logged by the master diablo process and include 
+the key-value pairs shown below.
+.PP
+uptime - total uptime in hours and minutes.
+.PP
+arts - total number of articles accepted
+.PP
+bytes - total number of bytes accepted
+.PP
+fed - aggregate number of articles queued to outgoing feeds
+.PP
+
+.SH CONCEPTS
+The Diablo system employs a number of concepts to attain high throughput
+and efficiency.  Some, like the fork()ing server, are obvious.  Others
+are not so obvious.
+.PP
+The history file consists of a chained hash table
+with a four-million-entry base array.  History entries form a linked list 
+relative to their base index, which is itself calculated through a hashing
+function.  When new history entries are added, they are physically appended
+to the file but logically inserted at the base of the appropriate linked list,
+NOT at the end.  What this means is that certain programs such as
+.IR dexpire
+, which scan the history file linearly rather then follow the chains, 
+generally wind up accessing files grouped by directory.  This is very 
+efficient.  Searches, however, run through the chains and thus scan the
+chain in reverse-time order, with the most recent entries scanned first.
+While this hops through the history file (you hop through it anyway),
+it is well optimized by the fact that (a) the hash table array is so large,
+and (b) it is likely to be looking up more recently received articles and
+thus likely to hit them first.  Searches for which failures are expected
+only have the advantage of (a), but I had to compromise somewhere.
+.PP
+The spool directory itself is organized by time-received.  It is explicitly
+.B NOT
+organized by the Date: field or by group.  A new directory is created every
+10 minutes, and in a heavily loaded system does not generally contain more 
+then 80 or so spool files, each containing multiple articles.  Inbound
+articles have the advantage of being appended to open descriptors as well
+as being readily cacheable and in time-proximity localized directories, and 
+outbound articles have the same advantage.  Even when some of your feeds get
+behind, per-process accesses are readily cacheable and the kernel can 
+generally survive the partitioning effect.  This is quite unlike standard
+INN spool management which bounces files all over the group hierarchy and 
+makes article adds and accesses almost random. 
+.PP
+Direct access to the articles is supported by looking the article up
+in the history file.  The history file contains the time-received and 
+that combined with the iteration id, a byte offset, and byte count, allows
+you to access the physical article.
+
+.SH "SIGNALS"
+Sending a USR1 signal to Diablo will enable debugging.  Diablo will output
+debug info for each received article and will indicate the reason for any
+rejection.  More USR1's bump up the debug level.  A single USR2 signal will
+set the debug level back to 0.  It is suggested that signals only be sent
+to child processes and never the parent Diablo.
+
+.SH "TYPICAL PERFORMANCE, TUNING SUGGESTIONS"
+See the KERNEL_NOTES file for tuning suggestions and machine-specific
+configurations.
+
+.SH "SEE ALSO"
+diablo(8), 
+dicmd(8),
+didump(8),
+diload(8),
+dnewslink(8),
+doutq(8),
+dexpire(8),
+dexpireover(8),
+diconvhist(8),
+dilookup(8),
+dspoolout(8),
+dkp(8),
+dpath(8),
+diablo-kp(5),
+diablo-files(5)
+.PP
+

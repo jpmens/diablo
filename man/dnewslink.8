@@ -1,0 +1,264 @@
+.\" $Revision: 1.7 $
+.TH DNEWSLINK 8
+.SH NAME
+dnewslink \- Diablo program to feed news to remote systems
+.PP
+.SH SYNOPSIS
+.B dnewslink
+.B \-s 
+xxx...xxxx
+.B \-n
+.B \-i
+.B \-D
+.B \-f
+.B \-p
+.B \-P 
+port
+.B \-d[#]
+.B \-b 
+batchfile/template
+.B \-r
+.B \-S 
+beginSeq
+.B \-N 
+numSeq
+.B \-H
+.B \-L
+.B \-A[classes]
+.B \-h 
+remote-host
+.B \-w 
+delay
+.B \-t 
+timeout
+.B \-l 
+logFrequency
+.B \-c 
+reconnectFrequency
+.B \-T
+txbufsize
+.B \-R
+rxbufsize
+.B \-I
+rxbufsize
+.B \-B
+ip
+
+.SH DESCRIPTION
+.IR DNewslink 
+generally takes queue files from the dqueue directory that were generated 
+by the diablo server and uses them to transfer articles from the news spool
+to a remote host.  There are a horrendous number of options covering four
+modes of operation.  DNewslink can transmit articles based on a discrete 
+queue file, can transmit using multiple queue files based on a template, 
+can transmit based on input from a pipe, or can sit on a realtime queue
+file to transmit a feed in near real time.  DNewslink will usually rewrite
+the queue file with any entries that had to be defered.  When DNewslink
+connects to a remote host, it will attempt to negotiate a check/takethis
+streaming connection and, if that fails, will fallback to the non-streaming
+ihave protocol.
+.PP
+DNewslink locks queue files as it processes them, allowing multiple dnewslinks
+to operate in parallel on different queue files without the possibility of
+creating a conflict.  DNewslink uses a sophisticated non-blocking I/O model
+to keep the TCP pipeline full for streaming feeds and is capable of generating
+serious bandwidth.  The options are described below.
+
+.PP
+.B \-s xxx...xxxx
+.PP
+This option reserves space in the argv array, allowing dnewslink to store
+realtime status in it such that it shows up in a ps.  At least 23 characters
+must be given to reserve sufficient space.
+
+.PP
+.B \-n
+.PP
+This option is a NOP.  It does nothing, but is often used by other programs
+(aka dspoolout) to placehold optional arguments.
+
+.PP
+.B \-i
+.PP
+This option disables the streaming negotiation, forcing the non-streaming
+ihave protocol to be used.  If not given, DNewslink will attempt to 
+negotiate the streaming protocol and fallback to the non-streaming protocol
+if the negotiation fails.
+
+.PP
+.B \-D
+.PP
+This option causes dnewslink to detect when the batch file it is operating
+on is deleted out from under it.  DNewslink will not attempt to rewrite the
+batchfile, or will rewrite and remove the batchfile if it detects this case
+and the -D option is given.
+
+.PP
+.B \-f
+.PP
+This option has been depreciated.
+
+.PP
+.B \-p
+.PP
+This option specifies that the input is coming from a pipe rather then
+the batchfile (see -b option).  A batchfile must still be specified, but
+it will be used solely for the rewriting of defered lines.
+
+.PP
+.B \-P port
+.PP
+This option specifies the port on the destination host dnewslink should
+connect to.  The default is port 119 (nntp).
+
+.PP
+.B \-d [level]
+.PP
+This option turns on debugging.  Normally something like -d2 is specified
+when dnewslink is run manually in order to trace the protocol interaction.
+
+.PP
+.B \-b batchfile/template
+.PP
+This option specififes the batchfile.  The batchfile specification depends
+on the mode of operation.  For a pipe input, this is the spill file.  With
+a normal batch, this is simply a batch file such as 'label.S04522'.  When
+combined with -S, this is a template (usually 'label.S%05d').  For a realtime
+feed, this is the name of the realtime queue file... usually just 'label'.
+
+.PP
+.B \-r
+.PP
+This option turns on realtime operation, indicating that the batchfile is
+being actively appended to by another program (aka the diablo server).  This
+option enables a number of optimizations including detecting when dspoolout
+flushes/renames the active file.  When this occurs, DNewslink will attempt
+to reopen/lock the new realtime queue file and, when this succeeds, will
+delete the renamed file.  However, if deferals had to be made, DNewslink will
+not remove the renamed file which usually results in dspoolout rerunning the 
+file as a normal spool file.
+
+.PP
+.B \-S beginSeq
+.PP
+This option turns on multi-batch sequencing, causing DNewslink to attempt to
+feed several batch files in sequence.  If given, you must specify the beginning
+sequence number in this option and the batchfile name (-b option) must contain
+a template rather then a filename.
+
+.PP
+.B \-N numSeq
+.PP
+This option specifies the number of sequential sequence numbers to attempt
+to feed out.  DSpoolout usually specifies 32 here.  If there are more then
+32 batch files or if dnewslink gets interrupted before completion, dspoolout
+will simply start another one.  For realtime batches dspoolout specifies a
+higher number which reflects the number of new queue files it is allowed to
+rotate through before exiting.  For queue-delayed batches (qNNNN option in
+dspoolout.ctl), dspoolout will specify an appropriate number based on the
+number of queue files.
+
+.PP
+.B \-H
+.PP
+This option tells dnewslink to generate a header-only feed, used when feeding
+the diablo reader system and often coupled with diablo support for Xref:
+headers to assign article numbers.  The remote end must support
+'mode headfeed' as a safety feature to prevent a header-only feed from being
+sent to a normal feed and propogating outward.  Beyond that, the header-only
+feed uses the same ihave/check/takethis protocols that a normal feed uses.
+
+.PP
+.B \-L
+.PP
+This option will enable generation of Lines: headers in headfeed mode
+(see above); the reason for this option is to always have a meaningful
+lines count in overview. Specifying the 'genlines' option in dnntpspool.ctl
+will make dspoolout pass \-L to dnewslink.
+
+.PP
+.B \-h remote-host
+.PP
+This option specifies the remote system to connect to.  See also: -P option.
+
+.PP
+.B \-w delay
+.PP
+This option specifies the connection fail / reconnection delay in seconds.
+The default is 10 seconds.
+
+.PP
+.B \-t timeout
+.PP
+This option specifies the inactivity timeout.  The default is 10 minutes.
+
+.PP
+.B \-l logFrequency
+.PP
+This option specifies the log frequency.  The default is to log every 1000
+transactions.
+
+.PP
+.B \-c reconnectFrequency
+.PP
+This option specifies the forced disconnect/reconnect frequency to cause
+the remote end to generate a log line.  The default is to close and reopen
+the connection every 1000 transactions.
+
+.PP
+.B \-T txbufsize
+.PP
+.B \-R rxbufsize
+.PP
+These options set the TCP receive and transmit buffer sizes.  DNewslink
+will impose a minimum receive buffer size to prevent pipeline lockups.
+This option is normally used to tune the system.  You can usually reduce
+the receive buffer size to 4096 bytes without effecting efficiency.  Some
+people may want to increase the transmit buffer size from the system
+defaults.  These same options can be given to dspoolout and will be passed
+to dnewslink.
+.PP
+.B \-I
+.PP
+This option disables the "check" NNTP command.  Rather then check each message
+id, dnewslink will simply push the article out with "takethis", assuming
+a streaming feed was negotiated.  Useful for header-only feeds.
+.PP
+.B \-A [classes]
+.PP
+This option turns on article logging to <logpath>/feedlog.<hostname>. Classes is
+is either comma-separated list of any combination of "accept", "reject", "defer",
+"refuse" and "error", or "all". Not that specifying "refuse" can generate huge 
+logfiles. Default is "all" if classes is not specified, and no logging if this
+option is not given.
+.PP
+.B \-B
+.PP
+This option sets the source ip address for outbound connections. It
+can be either an ip address or a hostname which will be resolved by
+DNS.
+
+.SH "TYPICAL USE"
+.PP
+DNewslink is run by dspoolout and usually operated manually only for debugging 
+purposes.  Typical usage is something like:  
+.B dnewslink -b fubar.S23343 -h news.fubar.com
+
+.SH "SEE ALSO"
+diablo(8), 
+dicmd(8),
+didump(8),
+diload(8),
+dnewslink(8),
+doutq(8),
+dexpire(8),
+dexpireover(8),
+diconvhist(8),
+dilookup(8),
+dspoolout(8),
+dkp(8),
+dpath(8),
+diablo-kp(5),
+diablo-files(5)
+.PP
+

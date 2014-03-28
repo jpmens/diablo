@@ -1,0 +1,83 @@
+.\" $Revision: 1.6 $
+.TH DILOOKUP 8
+.SH NAME
+dilookup \- Diablo program to run searches on the dhistory file
+.PP
+.SH SYNOPSIS
+.B dilookup
+[
+.B \-s
+]
+[
+.B \-V
+]
+[
+message-id / h1.h2
+]
+
+.SH DESCRIPTION
+.IR DiLookup 
+will look a message-id or hash-code pair up in the dhistory database.
+The message-id must be surrounded by < >, while the hash-code pair 
+consists of two hex numbers separated by a dot.  For example:
+.PP
+.B dilookup '<sdf$sdlfk@asdlfjk.com>'
+.PP
+.B dilookup D.00d9513e/00183712.005b433b.0000
+.PP
+.B dilookup 00183712.005b433b.0000
+.PP
+.B dilookup 00183712.005b433b
+.PP
+As you can see, DiLookup also accepts a directory/filename form,
+just the filename form, or just the hash code pair.  It will silently
+discard everything but the hash code pair.  When given a message-id,
+DiLookup will convert the message-id to a hash code pair internally.
+DiLookup will also parse message-id's directory out of queue files
+which can be useful in a tail -f situation.
+
+Valid options are:
+.PP
+.B \-V
+.PP
+Print the version number and exit.
+.PP
+.B \-s
+.PP
+Take ids from standard input instead of the command line. This is useful
+if you want to look up many articles. In the mode, everything up to the
+first space in the standard input is ignored in the lookup, but 
+prepended to the output line.
+.PP
+For Diablo 3 style spools, the result is usually something like:
+.PP
+ [P.03/D.00fa6716/B.0b1b hv=aa63f9bf.36b5877a spool=03 gm=16410390 ex=103 off=0 len=1245 f=] GM=(15-Mar-2001 03:30:00) EX=(valid)
+.PP
+The hash code pair and iteration, the spool in which the article is stored,
+the time in gmt-minutes when the article was received (NOT when it was 
+posted!), the expiration (see EX), the offset in the spool file, the length of 
+the article and flags (header-only entry). If bit 15 is set in the expiration
+field, the spool is storing a header-only article. Otherwise the spool is
+storing a full article.
+.PP
+GM= is a decoding of the gm field in human-readable GMT.
+.PP
+EX= decodes some bits of the the ex field.
+.SH "SEE ALSO"
+diablo(8), 
+dicmd(8),
+didump(8),
+diload(8),
+dnewslink(8),
+doutq(8),
+dexpire(8),
+dexpireover(8),
+diconvhist(8),
+dilookup(8),
+dspoolout(8),
+dkp(8),
+dpath(8),
+diablo-kp(5),
+diablo-files(5)
+.PP
+

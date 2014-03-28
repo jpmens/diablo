@@ -1,0 +1,19 @@
+
+#include "XMakefile.inc"
+
+.set PROGS	plock showlocks
+.set SRCS	$(PROGS:"*":"*.c")
+.set OBJS	$(PROGS:"*":"$(BD)obj/sup_*.o")
+.set LPROGS	$(PROGS:"*":"$(BD)dbin/*")
+
+all: $(LPROGS)
+
+$(LPROGS) : $(OBJS)
+	$(CC) $(CFLAGS) %(right) $(LFLAGS) -o %(left)
+
+$(OBJS) : $(SRCS)
+	$(CC) $(CFLAGS) %(right) -o %(left) -c
+
+clean:
+	rm -f $(OBJS) $(LPROGS)
+

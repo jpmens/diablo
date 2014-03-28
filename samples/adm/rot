@@ -1,0 +1,29 @@
+#!/bin/csh -f
+#
+# used by other scripts to rotate
+# log file(s).
+#
+# ./rot number-of-days log-files
+
+set num  = $argv[1]
+set files = "$argv[2-]"
+
+foreach i ( $files )
+    set j = $num
+
+    while ( $j > 0 )
+        @ prev = $j - 1
+        if ( -f $i.$prev ) then
+            mv -f $i.$prev $i.$j
+        else
+            rm -f $i.$j
+        endif
+        set j = $prev
+    end
+
+    if ( -f $i ) then
+	mv -f $i $i.0
+    endif
+end
+
+

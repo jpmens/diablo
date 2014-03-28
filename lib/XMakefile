@@ -1,0 +1,34 @@
+
+#include "XMakefile.inc"
+
+.set SRCS	global.c node.c xopen.c buffer.c wildcmp.c history.c \
+		expire.c newsfeed.c parsedate.c sigs.c lock.c alloc.c \
+		subs.c xmap.c precommit.c spamfilter.c strerror.c memcpy.c \
+		zalloc.c config.c kpdb.c active.c msgid.c hash.c \
+		psstat.c runprog.c snprintf.c fatal.c log.c logtime.c \
+		iplist.c dgp.c pgp.c hostauth.c strsep.c groupfind.c spool.c \
+		arttype.c stats.c dmd5.c notify.c wildmat.c include.c \
+		hashfeed.c
+
+.set OBJS	$(SRCS:"*.c":"$(BD)obj/lib_*.o")
+
+.set PROTOS	$(BD)obj/lib-protos.h
+
+all:	$(PROTOS) $(DLIB)
+
+$(DLIB) : $(OBJS)
+	rm -f %(left).new
+	ar cr %(left).new %(right)
+	ranlib %(left).new
+	mv -f %(left).new %(left)
+
+$(OBJS) : $(SRCS)
+	$(CC) $(CFLAGS) %(right) -o %(left) -c
+
+$(PROTOS) : $(SRCS)
+	cat %(right) | fgrep Prototype > %(left).new
+	mv -f %(left).new %(left)
+
+clean:
+	rm -f $(OBJS) $(DLIB) $(PROTOS)
+

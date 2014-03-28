@@ -1,0 +1,174 @@
+				INSTALLATION
+
+Get and install XMake if you don't have it.  You can get XMake from
+http://www.backplane.com/xmake/.  XMake is a required package to build
+Diablo.
+
+Please read the README.READER and README.SERVER files if you haven't
+already.
+
+RELEASE_NOTES contains details on the revision history of Diablo.
+
+TUNING_NOTES contains general information on tuning of your new Diablo
+system.  It is somewhat dated, though.  The information is still valid
+but some of the configurations have changed over the years.
+
+Edit lib/vendor.h if required.
+
+	You may wish to set certain options or just read the file.
+	Most people shouldn't have to change anything, however.  Note
+	that many things can be set in diablo.config and need not be
+	hardwired in lib/vendor.h
+
+	#define POST_CKADDRESS if you wish to check the validity of
+	the From: address of a users post.
+
+	#define POST_CKPATHLOOP if you have users that suck news from
+	you and then repost them back upstream through your servers.
+	This will disallow such activity and reject the article.
+
+	#define POST_FORCEMSGID if you wish to be facist and force new
+	posts from your users to follow a specific message-ID format.
+	This is considered extremely controversial, DO NOT ENABLE THIS
+	UNLESS YOU ABSOLUTELY HAVE A NEED TO.  You must also enable
+	POST_CKPATHLOOP as well.
+
+	#define POST_BOFHCLEANUP to remove old and obsolete headers
+	from newly posted articles.
+
+	#define POST_RESTRICTCANCEL to verify that the message being
+	cancelled originated on this server/cluster.  Requires
+	POST_FORCEMSGID as well to operate.
+
+	#define POST_CRYPTXTRACE to encryupted the X-Trace: header
+	line.  This is highly recommended.
+
+	#define RADIUS_ENABLED to enable RADIUS authentication on your
+	server.  Requires an operational RADIUS server and
+	understanding of how to update and maintain RADIUS
+	configurations.
+
+Edit lib/config.h
+
+	You shouldn't need to modify anything in here, but this is
+	where the port-specific defaults reside.
+
+xmake clean
+xmake
+
+Create a news home called /news (in recognition that usenet news is a
+major subsystem, we have no need of this /usr/local/news crap :).
+/news can also be a symlink to wherever the real news home is.
+
+Create a news user-id and a news group-id.  Determine whether you are
+going to run the Diablo feeder side, the Diablo reader side, or both
+subsystems on your box.  Anything marked MOUNTED PARTITION below is
+recommended to be a separately mounted partition.  The suggested
+MINIMUM partition sizes for a full feed are shown.
+
+	mkdir /news		(reader and feeder, MOUNTED PARTITION/ 4G)
+	mkdir /news/dbin	(reader and feeder)
+	mkdir /news/spool	(reader and feeder)
+	mkdir /news/log		(reader and feeder)
+	mkdir /news/dqueue	(feeder only)
+	mkdir /news/spool/news	(feeder only, MOUNTED PARTITION, 8G)
+	mkdir /news/spool/cache	(reader only, MOUNTED PARTITION, 2G)
+	mkdir /news/spool/group	(reader only, MOUNTED PARTITION, 16G)
+	chown -R news.news /news
+
+	xmake install
+
+Make sure that all *underlying* mount points are properly chown'd and
+chmod'd to prevent weirdness on a number of UNIX platforms.  These
+mount points should be owned by the same user you will be running news
+as.  For most configurations, this will be user 'news'.
+
+Generally speaking, when you do an 'xmake install', Diablo will
+install defaults for all system files.  The following systems files
+must be in /news/etc or placed in /news/etc if not placed there by the
+'xmake install'.  The required files are:
+
+	diablo.config	(reader and feeder)
+	dhistory	(feeder only, created on startup of diablo)
+	dspool.ctl	(feeder only)
+	dnewsfeeds	(feeder only)
+	dactive.kp	(required for reader, optional for feeder (1))
+	dcontrol.ctl	(reader only)
+	dexpire.ctl	(reader only)
+	moderators	(reader only)
+	dreader.access	(reader only)
+	dserver.hosts	(reader only)
+
+	(1): The dsyncgroups program can be used to generate an initial
+	  dactive.kp database, see the manual page for dsyncgroups.
+	  You can configure either the Diablo feeder OR the Diablo
+	  reader to master the article numbering.  If you want the
+	  feeder to master article numbering in order to then push out
+	  a slave feed to one or more readers, dactive.kp must be
+	  maintained on the machine running the feeder.  Otherwise the
+	  feeder does not need to use dactive.kp.  See diablo.config
+	  for more information.
+
+Don't forget the adm directory with the sample crontabs.  You will
+have to edit the sample crontab as appropriate for your system, and
+then install it for the 'news' user.
+
+And you are off.
+
+			WHEN UPGRADING FROM AN EARLIER RELEASE
+
+We now recommend that if you are upgrading from 1.13 or earlier, that
+you completely wipe and reinstall diablo including wiping the history
+file and spool.  Large changes were done to the Diablo codebase since
+1.13 and starting fresh will save you a lot of headaches going
+forward.
+
+If upgrading from a later release you should be able to simply install
+over the previous release (though making a backup is highly
+recommended).  Do remember that since the 1.x days, dreader.hosts file
+is no longer valid as the configuration has changed significantly and
+is now read from the dreader.access file instead.
+
+			CHECKLIST ONCE IT IS RUNNING
+
+Here's a checklist for once you have Diablo running:
+
+* Make sure syslog is logging news.  Read your /etc/syslog.conf file
+  to determine if you are logging news related syslog message, and to
+  figure out the location of your log files.  Usually located in
+  /var/log/news/*.
+
+* If you are running a feeder system:
+  'grep DIABLO /var/log/news/news.notice' (or wherever your syslog
+  puts the log) and use the uptime and 'arts' numbers to calculate
+  the articles per minute.  The uptime is in HH:MM, so calculate:
+  arts / (HH * 60 + MM) .  For a full feed as of March 2001, you
+  should wind up with between 500 and 800 articles/min if you
+  properly primed the history file.  If you have not primed the
+  history file and are taking multiple feeds, you may see a higher
+  article rate for several days until the history file stabilizes.
+
+* After Diablo has been running for a day, check the logs generated by
+  the cron scripts.  Make sure that the expire is being run every four
+  hours.  These logs are located in /news/logs/.  Ensure that your
+  cronjobs are rotating these logs as they can grow very large.
+
+* After Diablo has been running for a few days, check the logs again.
+  Make sure that expire is still running properly, and that the 
+  history rewrite (biweekly.atrim) is running properly.
+
+* After a few weeks of operation, double check that biweekly.atrim has
+  been running properly and that the dhistory file has stabilized to a
+  reasonable size (as of July 1997, between 200 and 300 MBytes).  This
+  size will vary greatly depending on your diablo.config setting of
+  'remember'.
+
+  If you have a lot of feeds and a lot of memory, it may be worthwhile 
+  increasing the dhistory table hash size from 4 million entries to 
+  8 or 16 million, see adm/biweekly.atrim and the manual page to diload for
+  more information.
+
+* When running Diablo in a reader configuration, you need to periodically
+  (like once a month) clean dactive.kp.  This is not yet automated... you
+  have to shut the whole diablo system down and do 'dkp -t dactive.kp'.
+

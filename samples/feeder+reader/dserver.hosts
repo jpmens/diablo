@@ -1,0 +1,6 @@
+#
+# Example dserver.hosts for use on a feeder+reader server
+#
+# Out spool server is used for fetching and posting
+localhost	s1o1p120
+

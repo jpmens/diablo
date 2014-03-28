@@ -1,0 +1,65 @@
+diff -rc stunnel-4.27/src/options.c stunnel-w-prox-4.27/src/options.c
+*** stunnel-4.27/src/options.c	Thu Apr 16 08:49:20 2009
+--- stunnel-w-prox-4.27/src/options.c	Mon Apr 20 14:51:04 2009
+***************
+*** 978,984 ****
+      case CMD_HELP:
+          s_log(LOG_RAW, "%-15s = protocol to negotiate before SSL initialization",
+              "protocol");
+!         s_log(LOG_RAW, "%18scurrently supported: cifs, connect, nntp, pop3, smtp", "");
+          break;
+      }
+  
+--- 978,984 ----
+      case CMD_HELP:
+          s_log(LOG_RAW, "%-15s = protocol to negotiate before SSL initialization",
+              "protocol");
+!         s_log(LOG_RAW, "%18scurrently supported: cifs, connect, nntp, proxnntp, pop3, smtp", "");
+          break;
+      }
+  
+diff -rc stunnel-4.27/src/protocol.c stunnel-w-prox-4.27/src/protocol.c
+*** stunnel-4.27/src/protocol.c	Thu Apr 16 08:55:27 2009
+--- stunnel-w-prox-4.27/src/protocol.c	Tue Apr 21 21:45:52 2009
+***************
+*** 55,60 ****
+--- 55,61 ----
+  static void imap_client(CLI *);
+  static void imap_server(CLI *);
+  static void nntp_client(CLI *);
++ static void proxnntp_server(CLI *);
+  static void connect_client(CLI *);
+  static char *ntlm1();
+  static char *ntlm3(char *, char *, char *);
+***************
+*** 97,102 ****
+--- 98,105 ----
+              pop3_server(c);
+          else if(!strcmp(c->opt->protocol, "imap"))
+              imap_server(c);
++         else if(!strcmp(c->opt->protocol, "proxnntp"))
++             proxnntp_server(c);
+          else if(!strcmp(c->opt->protocol, "pgsql"))
+              pgsql_server(c);
+          else {
+***************
+*** 396,401 ****
+--- 399,416 ----
+      }
+  }
+  
++ static void proxnntp_server(CLI *c) {
++     char line[STRLEN];
++ 
++     fdgetline(c, c->remote_fd.fd, line);
++     if(!isprefix(line, "200 ") && !isprefix(line, "201 ")) {
++         s_log(LOG_ERR, "Unknown server welcome");
++         longjmp(c->err, 1);
++     }
++     fdprintf(c, c->remote_fd.fd, "PROXIED %s", c->accepted_address);
++ }
++ 
++ 
+  static void connect_client(CLI *c) {
+      char line[STRLEN], ntlm2[STRLEN], *encoded;
+      long content_length;

@@ -1,0 +1,18 @@
+
+/*
+ * XMakefile for contrib.  non-working.  XXX contrib/ needs work
+ *
+ */
+
+#include "XMakefile.inc"
+
+.set PROGS `ls -1 | egrep -v CVS`
+
+all:
+	@echo "making contrib"
+	@for i in $(PROGS); do if [ -d $i ]; then echo $i; (cd $i; xmake all); fi; done
+
+clean:
+	@echo "cleaning contrib"
+	@for i in $(PROGS); do if [ -d $i ]; then echo $i; (cd $i; xmake clean); fi; done
+

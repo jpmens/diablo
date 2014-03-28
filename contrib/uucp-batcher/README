@@ -1,0 +1,26 @@
+Joe's UUCP Batcher for Diablo
+
+"It works - maybe." -JG
+
+I had a need to do UUCP batching under Diablo.  This is what I use.  It
+is very simple, and doesn't have a lot of options.
+
+There are some decisions wired into the code:
+
+batcher.c places a limit of 2MB on uncompressed batch sizes.
+
+send-uucp places a limit of 15 batches on the queue size.  It
+assumes that "uustat -ssystem" returns one line per queue entry.
+It does not make allowances for other types of traffic, such as
+e-mail, so it would need some improvements for that kind of
+use.
+
+send-uucp uses gzip -9.
+
+There's probably some other assumptions.  The code should be
+easy enough to read and to fix.
+
+Basically, it is minimalist code that did what I needed.  If it
+doesn't do what you need, fix it.  :-)
+
+JG19970918

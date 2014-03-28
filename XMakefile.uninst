@@ -1,0 +1,48 @@
+
+.set BD
+#include "XMakefile.inc"
+
+.set IDIRS	samples/adm samples
+.set XDIRS	dbin
+.set IFILES	`find $(IDIRS) -type f -print | sort | uniq`
+.set XFILES	`find $(XDIRS) -type f -print`
+.set IMAN	`find man -type f -print`
+.set MDIRS	dqueue spool group spool/news spool/group
+
+.set DDIRS	$(XDIRS:"*":"$(IDIR)/*.dummy") $(IDIRS:"*":"$(IDIR)/*.dummy") 
+.set DMDIRS	$(MDIRS:"*":"$(IDIR)/*.dummy")
+.set DFILES	$(IFILES:"*":"$(IDIR)/*.dummy")
+.set DTFILES	$(IFILES:"samples/*":"$(IDIR)/*.dummy")
+.set DTDIRS	$(IDIRS:"samples/*":"$(IDIR)/*.dummy")
+.set DXFILES	$(XFILES:"*":"$(IDIR)/*.dummy")
+.set DMAN	$(IMAN:"man/*.?":"$(MDIR)/man%2/%1.%2.dummy")
+
+uninstall: $(IDIR) $(DTFILES) $(DXFILES) $(DFILES) $(DMAN) $(DDIRS) $(DMDIRS) $(DTDIRS)
+    @echo "note: only files matching installation were deleted"
+
+$(IDIR) : $(IDIR)
+    @echo "no $(IDIR) directory/partition"; exit 1
+
+$(DDIRS) : $(DDIRS)
+    @-rmdir %(left:"*.dummy":"*") > /dev/null 2>&1
+    @if [ -d %(left:"*.dummy":"*") ]; then echo 'unable to remove %(left:"*.dummy":"*")'; fi
+
+$(DTDIRS) : $(DTDIRS)
+    @-rmdir %(left:"*.dummy":"*") > /dev/null 2>&1
+    @if [ -d %(left:"*.dummy":"*") ]; then echo 'unable to remove %(left:"*.dummy":"*")'; fi
+
+$(DMDIRS) : $(DMDIRS)
+    @echo "You must remove %(left:"*.dummy":"*") yourself"
+
+$(DFILES) : $(IFILES)
+    @-(cmp %(left:"*.dummy":"*") %(right) && rm -f %(left:"*.dummy":"*")) > /dev/null 2>&1
+
+$(DTFILES) : $(IFILES)
+    @-(cmp %(left:"*.dummy":"*") %(right) && rm -f %(left:"*.dummy":"*")) > /dev/null 2>&1
+
+$(DXFILES) : $(XFILES)
+    @rm -f %(left:"*.dummy":"*")
+
+$(DMAN) : $(IMAN)
+    @rm -f %(left:"*.dummy":"*")
+

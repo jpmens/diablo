@@ -1,0 +1,142 @@
+.\" $Revision: 1.5 $
+.TH DILOADFROMSPOOL 8
+.SH NAME
+diloadfromspool \- Diablo program to regenerate dhistory database from spool
+.SH SYNOPSIS
+.B diloadfromspool
+[
+.B \-a
+]
+[
+.B \-e
+]
+[
+.B \-F dhistory-file
+]
+[
+.B \-f
+]
+[
+.B \-h hashtablesize
+]
+[
+.B \-n
+]
+[
+.B \-Q
+]
+[
+.B \-q
+]
+[
+.B \-S nn
+]
+[
+.B \-u
+]
+[
+.B \-v
+]
+[spooldirs/spoolfiles]
+
+.SH DESCRIPTION
+.IR DILoadFromSpool
+will scan the entire spool, specified spool directories, or specified
+spool articles.  It extracts article location, size, message-id, and
+placement information and creates any missing dhistory file records.
+.PP
+This command is typically used to recover a lost or partially lost dhistory 
+database from the spool.  The program may be run without shutting down an 
+active Diablo system.
+.PP
+Articles are sanity-checked before being added.  The number of lines must
+match the Lines: header and the NUL guard character is expected to exist
+after each article.
+.PP
+.B -a
+Instruction DILoadFromSpool to scan the entire spool.  This could take
+a long time but since each spool file contains multiple articles, not as
+long as scanning an equivalent INN V1 spool might take.
+.PP
+.B -e
+A special unexpire option that only scans the history file and marks
+all expired articles as unexpired. This option doesn't scan the spool.
+Note that articles not found on the spool will be marked as expired
+by the next run of dexpire.
+.PP
+.B -F dhistory-file
+Allows you to specify the dhistory file to work on.  If not specified,
+the diablo default dhistory file is used.  Note, however, that you MUST
+specify a specific file if you use the -f option as a safety precaution.
+.PP
+.B -f
+Turn on special-fast mode.  This locks the history file through the
+entire procedure.  This also causes the base hash table to
+be cached and written then written out when the load operation has
+completed.  DiLoadFromSpool will create the history file you supply as 
+an argument and will refuse to run if it is already pre-existing.   This
+option should only be used to increase speed when creating a new dhistory
+file from scratch.
+.PP
+.B -h hashtablesize
+The default hash table size is 4 million entries (-h 4m).  You can set it to
+any power of two but the suggested size is 4m or 8m.  Do NOT forget the 'm'
+for million, or you will be a very unhappy camper.  If you do not specify
+this option, the default in diablo.config is used, or 4m if no default exists
+anywhere.
+.PP
+.B -n
+prevents the program from actually adding any new records
+.PP
+.B -Q
+Scan spool (ignores history and history options) for articles and
+print the articles found in a format suitable for drequeue. The output
+is effectively that of a queue file, with the Newsgroups: line appended.
+.PP
+.B -q
+Turn on quiet mode.  The program prints out its progress in a less verbose
+manner then usual.
+.PP
+.B -u
+May be used with special-fast mode to re-enable checking for duplicates.
+You have the advantage of locking the history file throughout the
+entire operation, but can still use a pre-existing history file to 'update'.
+.PP
+.B -S nn
+Instruct diloadfromspool to only scan the spool object specified. The
+spool object is the spool object number as specified in dspool.ctl.
+.PP
+.B -v
+Turn on verbose mode.  The program prints out its progress in a more verbose
+manner then usual.
+.PP
+.B D.xxxxxxxx
+Specify a spool directory to scan.  All B.xxxx spool files in the directory
+will be scanned.  You may specify multiple spool directories on the command
+line if you wish.  Note that you must be CD'd to the top of the news spool 
+and you must specify the directory name in the 'D.xxxxxxxx' form.
+.PP
+.B D.xxxxxxxx/B.xxxx
+Specify a spool file to scan.  You may specify multiple spool files
+on the command line.  Note that you must be CD'd to the top of the news
+spool and you must specify the spool file in the 'D.xxxxxxxx/B.xxxx' form.
+
+.SH "SEE ALSO"
+diablo(8), 
+dicmd(8),
+didump(8),
+diload(8),
+dnewslink(8),
+doutq(8),
+dexpire(8),
+dexpireover(8),
+diconvhist(8),
+dilookup(8),
+dspoolout(8),
+dnewsfeeds(5),
+dkp(8),
+dpath(8),
+diablo-kp(5),
+diablo-files(5)
+.PP
+

@@ -1,0 +1,148 @@
+.\" $Revision: 1.5 $
+.TH DSPOOLOUT 8
+.SH NAME
+dspoolout \- Diablo program to sequence and flush outbound queue files
+.PP
+.SH SYNOPSIS
+.B dspoolout
+[
+.B \-q
+]
+[
+.B \-v
+]
+[
+.B \-n
+]
+[
+.B \-s minutes
+]
+[
+.B \-m maxrun
+]
+[
+.B \-T txbufsize
+]
+[
+.B \-R rxbufsize
+]
+[
+.B \-B ip
+]
+[
+.B \-f configfile
+]
+[
+.B label
+]
+
+.SH DESCRIPTION
+.IR DSpoolout 
+reads the
+.B dnntpspool.ctl
+file and applies a sequence number to the outbound queue files maintained
+by diablo in the
+.B dqueue
+directory.  This involves renaming each queue file then running a dicmd
+to flush them.  DSpoolout is normally run from cron once every 5 minutes.
+The control file tells DSpoolout how many queue files to maintain for any
+given outbound feed and how many
+.B dnewslink
+processes to run in parallel for each outbound feed.  The default is 2,
+and may be changed by the
+.B \-m maxrun
+option.  The
+.B dnewslink
+program itself is able to process multiple queue files in sequence, and 
+judicious use of flock() prevents collisions when multiple processes are
+run on the same range of sequence numbers.  DSpoolout manages the whole
+affair.  DSpoolout can also run smart based on whether the feeds are able
+to stay caught up.  The 
+.B \-s minutes
+option tells DSpoolout how often to sequence out a new outbound queue
+file and (potentially) run more dnewslinks when the feed is unable to 
+stay caught up with our queue files.  If the feed is able to stay
+caught up, the option is ignored and DSpoolout attempts to handle the
+feed every time it is run.  This allows you to reduce the requeueing
+latency between incoming and outgoing feeds for those feeds able to
+handle your article rate without overloading the machine when you
+have many feeds.
+.PP
+The
+.B \-B
+option causes DSpoolout to pass the specified IP address to dnewslink,
+specifying the local address to be used for all outbound NNTP sessions.
+.PP
+The 
+.B \-n
+option causes dspoolout to flush and rotate the queue files without
+executing any dnewslink's.
+.PP
+An optional queue label may be specified to restrict dspoolout's operation
+to a single entry.  Otherwise, all entries are run.
+.PP
+.B \-f configfile
+Specify a configuration file other then dspoolout.ctl.  If the configuration
+file is not an absolute path, diablo's news home is prepended to it.
+.PP
+The
+.B \-T
+and
+.B \-R
+options set the transmit and receive TCP buffer size for dnewslink.  The
+defaults are usually ok, but if you want to be frugal you can usually
+reduce the receive buffer size without blowing the efficiency.
+.PP
+It is suggested, however, that you run DSpoolout from cron no more then
+once every 5 minutes.  Heavy backbone transit points with lots of cpu
+cycles can get away with running DSpoolout every 2 minutes if they really
+want to, in which case the -s option really comes in handy.  A typical
+news path of 8 elements will propogate in 5x8 = 40 minutes with a 5
+minute queue run, and 16 minutes with a 2 minute queue run.
+.PP
+Many people proscribe real-time feeds.  Diablo tries to avoid real-time
+feeds for two reasons:  First, they add complexity to the main server
+and the additional system calls slow it down.  Second, real time feeds
+can lead to a false sense of security and efficiency.  While it is true
+that a real-time feed will make better use of the kernel file cache
+then a queued feed, very few news servers can dependably rely on this
+to maintain their feed rates... they MUST be designed to handle article
+delays and failures.  A server running too close to the edge will experience
+a NASTY cascade failure if it relies on the efficiency of the real time
+feed to maintain the article feed rate.
+
+.SH "REALTIME FEEDS"
+.IR DSpoolout
+is capable of maintaining a dnewslink on designated realtime feeds.  A feed
+is specified as being realtime by using the 'realtime' option in the 
+dnntpspool.ctl file (see the sample dnntpspool.ctl file).  This is really only
+a near-real-time capability, since Diablo buffer's writes to outgoing queue
+files.  For a nominal full feed, the delay is approximately 5 seconds.
+.PP
+The way it works is as follows:  dspoolout starts a dnewslink with the -r
+option on the active outgoing feed file.  DSpoolout also operates normally,
+attempting to start dnewslinks on any existing queue files up to a specified
+limit.  When dspoolout is next run, it flushes and rotates as per normal.
+The dnewslink -r sitting on the active file will get it renamed out from under.
+It detects this condition and closes/reopens the new active file as well as 
+aattempts to remove the old one if it has finished processing it and no errors
+occured.
+
+.SH "SEE ALSO"
+diablo(8), 
+dicmd(8),
+didump(8),
+diload(8),
+dnewslink(8),
+doutq(8),
+dexpire(8),
+dexpireover(8),
+diconvhist(8),
+dilookup(8),
+dspoolout(8),
+dkp(8),
+dpath(8),
+diablo-kp(5),
+diablo-files(5)
+.PP
+

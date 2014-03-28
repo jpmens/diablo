@@ -1,0 +1,359 @@
+
+				README.DGP
+
+			Diablo Experimental Feature
+
+		    -------- Not Implemented Yet -------
+
+			DGP Key Signature Protocol Module
+			      Take 8, 01-Nov-98
+
+    The DGP module is designed to support the following administrative news
+    functions:
+
+	* Arbitrary signing of articles.
+
+	* Temporary and semi-permanent distribution of keys and certificates.
+
+	* Multiple entities can sign an article.  For example, the NNTP server
+	  might sign an article.  The user's news client might also sign the
+	  article.  A moderator might add his signature before posting the 
+	  article.
+
+	* Hierarchical delegation of both keys and certificates.  Keys for
+	  storage, certificates to glue hierarchy of access rights together.
+
+	* General keyword based set of (wildcarded) access rights, group 
+	  wildcarding attributes, and name-space rights, both logically
+	  AND propogated down the delegation chain.
+
+	* Used by the Control infrastructure to manage control messages
+	  for various functions, including newgroup, checkgroups, cancels,
+	  etc...
+
+	* Used by News admins to allow direct third party administrative 
+	  control (i.e. cancelbots and other features).
+
+	* Used by news servers to add their own signatures for later 
+	  administrative control (i.e. so a news admin can cancel/supersede
+	  his own user's articles).
+
+	* Used to allow users to sign messages in order to later 
+	  authenticate personal cancels & supersedes.
+
+
+		    CERTIFICATES, AUTHENTICATION KEYS, AND DELEGATIONS
+
+    DGP uses a chain of delegations.  The chain is typically based in your
+    key ring but can also be based in an article.  For example, a cancelbot
+    message is typically authenticated from your keyring while a user's
+    cancel is typically only authentication with information contained in the
+    two articles.  Infrastructure control messages uses a key-ring-based chain 
+    in a more sophisticated fashion to delegate portions of the hierarchy
+    to different entities which then send newgroup, checkgroups, etc...
+    controls through the system.
+
+    Certificates are used to glue the chain of delegations together.  A
+    certificate is an agreement between two entities, one of which typically
+    already has access rights and already resides in your keyring.  The
+    agreement gives the second entity some of the rights already owned by
+    the first.  Both certificates and authentication keys may be stored in 
+    the keyring.  Authentication keys alone do not confer any rights, except
+    in certain degenerate cases.  It is the certificates that glue the keys 
+    together that confer the rights.
+
+    In the DGP standard, certificates are always double-signed mutual 
+    agreements.  Due to the double-signing, the authentication key of the 
+    recipient of the certificate is not contained in the certificate itself. 
+    DGP will locate the authentication key by finding it in the control
+    message, articles effected by the control message, or from your keyring.
+
+    Due to the independance of the certificate, it is possible for there to
+    be multiple dependancies between keys... multiple delegation chains that
+    utilize overlapping keys.  If you have two keys with access rights, A, and
+    B, and both certify C, then C may use access rights confered by both A
+    and B.
+
+				ACCESS RIGHTS
+
+    The access rights list is a single string containing wildcarded elements
+    OR'd together with ','.  For example, "rmgroup,newgroup,cancel" is a
+    valid access rights list.  "rmgroup,save*,fubar?fubar" might be another
+    access rights lists.  Note that simple wildcarding is used, *not* regex.
+
+    Each certificate stored in the key ring contains an access rights string.
+    The actual access rights associated with an authentication key is based
+    on the delegation chain of certificates leading to that key (of which
+    there may be several).  The access rights confered through the chain
+    are logically AND'd together leading up to the key, so even if an
+    intermediate certificate grants "*", it is still restricted by access
+    rights granted by other certificates in the chain.
+
+    The news system will typically query for a specific right, such as 
+    'rmgroup'.  The queried right must match every access right string in the
+    delegation chain to return as being valid.
+
+    Access right keywords are described below:
+
+	cancel		The right to cancel an article
+
+	selfcancel	The right to cancel your own article (typically
+			given to everyone).
+
+	supersedes	The right to supersede an article
+
+	rmgroup		The right to send a rmgroup control
+
+	newgroup	The right to send a newgroup control
+
+	checkgroups	The right to send a checkgroups control
+
+	dgpstore	The right to send a dgpstore (store to ring) control
+			to store certificates and keys in your key ring.
+
+	delegate-*	The right to delegate access rights to children
+			(e.g. 'delegate-cancel').   i.e. you can give a key
+			or certification the ability to, say, issue a cancel,
+			without giving it the ability to further delegate 
+			the cancel right.
+
+				GROUP RIGHTS
+
+    The group rights list works in a manner similar to the access rights list.
+    In this case, a list of wildcarded groups is specified.  Any control
+    message or posting issuing a control function (such as rmgroup, a cancel,
+    a supersedes, and so forth) may only operate if both the access and group
+    rights are found to be valid throughout the chain of delegations.
+
+    Group rights are typically used in the Control infrastructure to delegate
+    the responsibility for different subhierarchies to different entities.
+
+				NAME SPACE RIGHTS
+
+    A delegation can restrict the key identification namespace.  This is 
+    typically used when the 'dgpstore' access right is passed to prevent
+    authorized entities from attacking other authorized entities through 
+    namespace collisions.
+
+	  EMBEDDING AUTHENTICATION KEYS IN MESSAGES VS STORING IN A KEYRING
+
+    There are cases where you want to store authentication keys in your 
+    keyring, and cases where you do not.  In order to save space, 
+    authentication keys relating to high volume functions must be stored in 
+    the key ring so they do not have to be included in each control message. 
+    The high volume control messages are then simply signed.  However,
+    authentication keys relating to personal cancels or supersedes typically
+    only have to be included in the article containing the cancel control or
+    supersedes.  Since such articles are relatively low volume, the additional
+    space overhead can be ignored.
+
+			    PROTOCOL HEADERS
+
+    X-DGPSig: I=identifier H=headerlist S=fmt:signature
+
+	This header allows you to sign portions of an article with your
+	private key, allowing those portions of the article to be 
+	authenticated with your public key.  It is typically used to sign the
+	Control: header, Date:, Message-ID, message body, and other critical
+	headers.   A 'body' header in the headerlist signifies that the 
+	body of the article should be part of the signature.  The data being
+	signed is always in plaintext.  The signature is inclusive of this
+	one signature header itself up to the 'S' field.  The 'S' field must 
+	be the last field in the header.
+
+	The signature is generated by running the data through the signature
+	algorithm (fmt), using the private authentication key to generate
+	the signature.  The signature is later checked by passing the data,
+	existing signature, and public authentication to the signature 
+	algorithm which then verifying the signature.
+
+	This header cannot be used to sign other X-DGP* headers, but other
+	DGP headers may exist to certify and/or specify the identifier.  These
+	headers are considered independant and do not have to be signed.  If
+	someone tried to spoof their own X-DGPKey or X-DGPCert, for example, 
+	it would not have any access or group rights because none of the 
+	certifications would match.
+
+	Signatures do not certify rights but can authenticate a control
+	message which associates it with rights already given to the key.
+	Most cancelbot controls need only be signed.  Individual cancels
+	or supersedes must typically be signed as well as include their public
+	key with an X-DGPKey header.
+
+    X-DGPKey: I=identifier P=fmt:authentication-key
+
+	This header allows you to embed an authentication key in an article.
+	Authentication keys are typically embedded only in Control: articles
+	and articles containing a Supersedes header, and then only when
+	necessary.  The authentication-key may be used to verify signatures
+	for the specified identifier.
+
+	This header is not signed.  Protection of this header stems from its
+	validation against certificates that specify the same key and in the
+	temporary nature of the identifier.  The header has no side effects
+	in the news system beyond its operation in helping authenticate 
+	the execution of the message (typically only a self-cancel).  To 
+	store public keys in your keyring would require a 'dgpstore' control
+	message and in such cases the keys to be stored are part of the body
+	of the message, not the headers of the message.
+
+    X-DGPCert:	I1=certifying-identifier I2=certified-identifier \
+		A=access-rights G=group-rights N=name-space-rights \
+		X=expiration ... S2=fmt:signature1 S1=fmt:signature2
+
+	This header defines a certificate.  The certificate is made 
+	up of the certifying entity's authentication key, the certified 
+	entity's authentication key, access rights, group rights, expiration,
+	other miscellanious token-value pairs, and ends with the S2 and
+	S1 signatures.
+
+	The contents of the header is always plaintext.
+
+	The ordering of the I1, I2, S2, and S1 signatures is important.  S2
+	and S1 must occur at the end of the header in the order specified,
+	I1 and I2 must occur at the beginning of the header in the order
+	specified.
+
+	The S2 signature signs the X-DGPCert header through to the S2 token,
+	inclusive of any whitespace preceding the token.  
+
+	The S1 signature signs the X-DGPCert header through to the S1 token,
+	inclusive of any whitespace preceding the token.
+
+	Any identifier that does not exist in your key ring must, if the
+	article represents an operational control, exist in the article 
+	in X-DGPKey headers.  However, you do not have to include a X-DGPKey
+	header for articles you are simply self-certifying, such as a 
+	normal posting.   Instead, you supply your authentication key when 
+	you later cancel or supersede the article.
+
+	Certificates do not contain the public keys associated with the 
+	identifiiers.  The public keys are obtained through other means,
+	such as from a X-DGPKey header, key ring, or other out-of-band methods.
+
+	Certificates are double-signed.  The double signing is necessary due 
+	to the out-of-band nature of the public keys associated with the
+	identifiers in order to match and authenticate the correct public keys.
+	The double-signing also avoids mistakes and makes the certificate 
+	more of an 'agreement' then a one-way delegation of rights.
+
+				NAME SPACE COLLISIONS
+
+    Name space collisions for identifiers are only relevant when related to 
+    stored public keys.   The identifiers used for self-cancels and supersedes
+    have a semantic locality of reference that is restricted to the article
+    doing the canceling and the article being cancled.  Thus, no namespace
+    collisions can occur outside of stored delegations ( unless the user 
+    involved is doing something dumb, but do we care?  No. ).
+
+    Namespace can be allocated through the delegation hierarchy to prevent
+    attacks from certified entities.  But, typically, it is not expected that
+    there will be significant problems here. 
+
+				HEADER FIELD DEFINITIONS
+
+    I=identifier
+    I1=identifier
+    I2=identifier
+
+	Specify label associated with authentication key.  Certificates are not
+	themselves labeled, but are made up of one or two authentication key
+	references plus certificate information.
+
+	The identifier may contain alpha-numerics, dot, slash, colon,
+	at-sign, comma.
+
+    S=fmt:signature
+    S1=fmt:signature
+    S2=fmt:signature
+
+	Specify a signature.  The signature is typically either on a portion
+	of the current header, or a portion of the current header and other
+	specified headers and/or the article body.  See X-DGPSig above
+	for a description of how signatures are generated and checked.
+
+    H=headers
+
+	Specify headers covered by the signature.  The special header 'body'
+	indicates the body of the message.  The signature is generated from
+	the 8-bit-clean version of the article, prior to any protocol escaping
+	(or after any protocol de-escaping).  The signature is inclusive of
+	any LF's in the header (otherwise multi-line headers are problematic).
+
+	The header names are comma delimited and may contain alpha-numerics
+	and dashes only.  Header names may be wildcarded ('*' and '?'), though
+	this is discouraged.
+
+	When processing control messages, all parts used by the control message
+	for processing purposes must be within the scope of the signature.
+
+    P=fmt:public-key
+
+	Specify a public key of a certain format.  The format is typically
+	'dsa'.
+
+    A=access-rights
+
+	Specify the access rights associated with a certificate.  Each access
+	right is an alpha-numeric string which may also contain dashes,
+	comma delimited.   Access rights may be wildcarded.
+
+	Used in a certificate
+
+    G=group-rights
+
+	Specify the group rights associated with a certificate.  Each group
+	is an alpha-numeric string which may also contain dashes and dots,
+	comma delimited.   Group rights may be wildcarded.
+
+	Used in a certificate
+
+    D=distrib-rights		(currently not used, reserved for future use)
+
+	Distribution rights.  Used in a certificate.
+
+    N=name-space-rights
+
+	Rights to the key identification namespace.
+
+    X=expiration
+
+	An expiration is specified in the form
+
+	    Y.M
+
+	The first component is the full year, GMT.  The second component is the
+	minutes from the beginning of the year, GMT.  The certificate expires
+	when the current time is larger or equal to the specified time. 
+
+	The idea here is that we use gmtime() to get the current time and
+	calculate Y.M using (tm_year + 1900) for Y and (tm_yday * 24 * 60) +
+	(tm_hour * 60) + (tm_min) for M.
+
+
+				SIGNATURE ALGORITHMS
+
+    The current DGP spec uses DSA signatures.
+
+				DGP CONTROL MESSAGES
+
+    dgpstore	- store keys and certifications in key ring
+
+	Requirements:
+
+	    The body of the message, Control:, Date:, and Message-ID: headers
+	    must be signed with a key certified with this access right.  The
+	    certification may be included in the article headers in which case
+	    the key itself must already exist in your key ring.
+
+	The body of the message will contain the certifications and
+	authentication key headers to be stored.  These are simply X-DGPCert
+	and X-DGPKey headers in the body of the message without the colon
+	that normally follows a header name.
+
+	Each certification is verified prior to being stored.  Only 
+	certifications and public keys which can be recursively delegated 
+	from keys/certifications already in the keyring can be stored in
+	the keyring.
+
+

@@ -1,0 +1,26 @@
+# CRONTAB.SAMPLE
+#
+# NOTE - many crons do not understand the */nn format, in which case you
+# 	 must explicitly list the field.  e.g. 0,5,10,15,20,...
+#
+# NOTE - FreeBSD ships with a news user that does not have /news as its
+#	 home directory.  Please make sure your news user has an appropriate
+#	 directory or the relative paths in this file will not work.
+#
+# Run dspoolout once every 5 minutes
+#
+# Attempt to run dexpire once every 4 hours, and if it fails,
+#
+# Retry the expire run once an hour until success
+# 
+# The daily script rotates the logs and cleans bogus article files
+#
+# The biweekly script regenerates the dhistory file, culling expired
+# entries over 16 days old.
+#
+#
+*/5 * * * *	dbin/dspoolout >>  `dbin/dpath log`/dspoolout.log 2>&1
+50 * * * *      (cd adm; for i in hourly.*; do ./$i; done) >> `dbin/dpath log`/daily.log 2>&1
+40 2 * * *      (cd adm; for i in daily.*; do ./$i; done) >> `dbin/dpath log`/daily.log 2>&1
+30 2 * * 1,4    (cd adm; for i in biweekly.*; do ./$i; done) >> `dbin/dpath log`/daily.log 2>&1
+30 2 * * 0	(cd adm; for i in weekly.*; do ./$i; done) >> `dbin/dpath log`/daily.log 2>&1

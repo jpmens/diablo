@@ -1,0 +1,10 @@
+This is a very basic set of example files for running a feeder and
+reader on the same machine. The sample files assume the reader is
+running on port 119 and the feeder on port 120. Both could run
+on the same port if they are bound to different interfaces, in
+which case, make sure that dserver.hosts connects to the
+correct hostname.
+
+Note that incoming feeds to the feeder will need to connect to
+port 120, instead of port 119.
+

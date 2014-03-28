@@ -1,0 +1,89 @@
+.\" $Revision: 1.4 $
+.TH DKP 8
+.SH NAME
+dkp \- Diablo program to manage DKP databases
+.PP
+.SH SYNOPSIS
+.B dkp [-x] [-r] [-w] [-d] [-s] [-t] filename [key [tok=data]] [ < input ]
+
+.SH DESCRIPTION
+.IR DKP 
+manages KP databases.  Currently Diablo has only one KP database,
+the active file, called dactive.kp.
+issues a command to the parent diablo server.  The command allows
+a key and optional tok=data (for writes) to be specified on the
+command line.  If no key/data is specified, DKP takes key or
+key tok=data lines from the standard input.  The data may not contain
+spaces, tabs, or newlines.
+.PP
+.B -x
+\- cause the specified key (or keys on stdin, one per line) to be 
+deleted from the database.
+.PP
+.B -r
+\- lookup the specified key and print the record.
+.PP
+.B -w
+\- write the specified tok=data to the database for the record
+specified by the given key.  A record can have multiple tokens
+associated with it but DKP currently accepts only one at a time.
+.PP
+.B -d
+\- Turn on debugging
+.PP
+.B -s
+\- Force the KP database to be sorted in-place.  This option is not
+normally necessary, but is useful as a safety precaution if you
+believe the database has been manually edited.
+.PP
+.B -t
+\- Trim the KP database, removing dead records.  This will only work
+if no other processes have the specified KP database open.  It should
+be done on dactive.kp once a month.  If you are generating a fresh dactive.kp
+from some other source, always run dkp -t on it to clear out all the temporary
+junk.
+.B filename
+\- specify the name of the KP database file.  This is a required
+parameter.
+
+.SH General KP database maintenance
+.PP
+KP databases can be manually edited, but only if there are no active
+references.  If you have an editor capable of performing an flock,
+such as nvi, your editor will warn you if other processes have active
+references to the database because the database code maintains several
+locks on the database file.
+.PP
+KP databases can be replaced by generating a new copy and renaming it
+over the old, but if active references exist they will continue to work
+on the old, possibly until they close.  Since the diablo reader code
+leaves active opens on the dactive.kp database, you should use only
+the dkp program to fix it unless you shut down the reader entirely.
+.PP
+KP databases handle changes in record size by marking the old record
+as deleted (a '-' instead of a '+') and appending a new record.  This
+means that garbage can collect in the database file.  The garbage can
+be pruned safely with 'dkp -t'.  DO NOT USE A GREP/RENAME TO PRUNE
+A KP DATABASE!
+.PP
+Diablo gives instructions on how to prune its various KP 
+databases by example, usually in the adm/ or samples/ directory.
+
+.SH "SEE ALSO"
+diablo(8), 
+dicmd(8),
+didump(8),
+diload(8),
+dnewslink(8),
+doutq(8),
+dexpire(8),
+dexpireover(8),
+diconvhist(8),
+dilookup(8),
+dspoolout(8),
+dkp(8),
+dpath(8),
+diablo-kp(5),
+diablo-files(5)
+.PP
+

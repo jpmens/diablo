@@ -1,0 +1,39 @@
+#!/bin/csh -f
+#
+# daily.reader
+#
+
+cd ~
+
+echo "`date` - $0 BEGIN"
+
+set cache = `dbin/dpath cache`
+set group = `dbin/dpath group`
+set news = `dbin/dpath home`
+
+# Remove cached articles over 3 days old.
+#
+
+if ( -d ${cache}/. ) then
+    cd ${cache}
+    find . -type f -name "????????.????????" -mtime +3 -print | xargs rm
+endif
+
+cd ~
+
+# Expire overview information
+#
+# The commented entry does a second pass to delete stale alt groups over
+# 180 days old that do not have any traffic.
+# WARNING: Use the '-O' option on a non-dreaderd server or a dreaderd that
+#	only receives control messages will cause problems. See the
+#	dexpireover man page for more details.
+
+if ( -d ${group}/. ) then
+    cd ${group}
+    ${news}/dbin/plock -t ~/.dexpireover ${news}/dbin/dexpireover -a -l180
+    # ${news}/dbin/plock -t ~/.dexpireover ${news}/dbin/dexpireover -w 'alt.*' -O180 -y
+endif
+
+echo "`date` - $0 END"  
+

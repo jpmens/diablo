@@ -1,0 +1,120 @@
+.TH DOVERCTL 8
+.SH NAME
+doverctl \- Perform functions on the overview directory and file structure
+.PP
+.SH SYNOPSIS
+.B overctl
+[
+.B \-f activefile
+]
+[
+.B \-w wildmat
+]
+[
+.B \-v
+]
+.B clean|convert
+[
+.B srchash dsthash
+]
+
+.SH DESCRIPTION
+.IR DOverCtl
+will perform function on the overview directory and file structure as
+used by dreaderd. The functions it performs are:
+.PP
+.B clean
+.PP
+cleans up the directory structure by removing empty directories and
+invalid or old files that are not used by the current overview hash
+method. This option can be used at any time.
+.PP
+.B convert
+srchash dsthash
+.PP
+converts from one overview hash format to another. This option can take
+a long time (depending on the size of the overview database and number
+of groups) and
+.B must not be run whilst other programs are accessing the overview database.
+Do not forget to set the new hash method in diablo.config. This change
+can be made before or after doverctl is run.
+The currently supported hash methods are:
+.PP
+.B crc
+\- the default hash method. This method is the original method used by
+dreaderd, but does have hash conflicts and doesn't allow a very flexible
+directory structure.
+.PP
+.B md5-32
+uses a 32 bit base64 type conversion of an md5 hash of the newsgroup name.
+.PP
+.B md5-64
+uses base64 type conversion of an md5 hash of the newsgroup name. This method
+uses a longer character set than md5-32.
+.PP
+The md5 hash methods can also take the following options:
+.PP
+.B /N
+sets the number of directories to be created. Multiple of these options can
+be specified, with successive options creating an extra level of directories.
+e.g: /8/512 would create 8 directories under /news/spool/group with each of
+those 8 directories containing 512 directories. The directory name is made
+by creating a hash of the remaining characters in the group filename after
+skipping the directory level number of characters. Full details of this
+algorithm can be found in the source.
+.PP
+.B \\\N
+sets the number of charatcers of the hash to use for the directory name (max
+of 9). e,g: For md5-32\\1\\2 on a hash of 'xhpgbjwwlrq2tl1pfq1epq', the
+directory structure would be:
+.PP
+/news/spool/group/x/hp/
+.PP
+giving 32 directories at the first level and 32*32 = 1024 dirs at the
+second level.
+.PP
+The following option can be used with all hash methods:
+.PP
+.B :B
+sets the number of bytes (characters) of the hash to use. The default is
+22, which is the maximum length. Using a shorter length will allow shorter
+filenames, but increases the chance of hash collisions.
+.PP
+.B \-v
+sets a more verbose logging level.
+.PP
+.B \-f activefile
+Sets which active file to use when obtaining the list of newsgroups.
+.PP
+.B \-w wildmat
+limits the newsgroups that are converted. This option is probably not useful
+outside testing as a hash method is global and not specific to groups.
+.PP
+.B \-m
+By default, doverctl uses the rename() library call for speed, but this
+is unlikely to work across filesystem boundaries. If your spool is split
+across filesystems, you will need to use this option to to force a
+file copy, instead of a rename.
+.PP
+WARNING: Be very careful running this utility - you can easily lose your
+entire header DB. Ensure that you set the new hash method in diablo.config
+otherwise the next run of dexpireover will remove everything. 
+.PP
+.SH "SEE ALSO"
+diablo(8), 
+dicmd(8),
+didump(8),
+diload(8),
+dnewslink(8),
+doutq(8),
+dexpire(8),
+dexpireover(8),
+diconvhist(8),
+dilookup(8),
+dspoolout(8),
+dkp(8),
+dpath(8),
+diablo-kp(5),
+diablo-files(5)
+.PP
+

@@ -1,0 +1,212 @@
+.\" $Revision: 1.14 $
+.TH DEXPIRE 8
+.SH NAME
+dexpire \- Diablo program to expire article files
+.PP
+.SH SYNOPSIS
+.B dexpire
+.B \-a|n
+[
+.B \-c0
+]
+[
+.B \-h0|1
+]
+[
+.B \-k
+]
+[
+.B \-n
+]
+[
+.B \-O[n]
+]
+[
+.B \-o
+]
+[
+.B \-q
+]
+[
+.B \-R nn:#
+]
+[
+.B \-Snn
+]
+[
+.B \-s[#[:#]]
+]
+[
+.B \-u
+]
+[
+.B \-v
+]
+[
+.B \-z
+]
+[
+.B \-C diablo.config
+]
+[
+.B \-d[n]
+]
+[
+.B \-V
+]
+
+.SH DESCRIPTION
+.IR DExpire 
+does an expire run on the history file, removing expired articles and 
+updating (but not rewriting) the history file as appropriate.  DExpire
+operates in a FIFO manner, removing the oldest spool files first.
+It will remove spool directories one at a time until one of the
+expire targets specified in dspool.ctl is reached. This process is
+run for each spool object and repeatedly until all requirements
+for all spools are met.
+.PP
+.B \-a
+.PP
+This option tells dexpire to actually remove files. The default is
+to just print the usage if no other options are used or to
+make no updates if they are. This options is required to actually
+do any expire work.
+.PP
+.B \-c0
+.PP
+Tell dexpire to not perform the file removal pass. i.e: Nothing will
+be done unless the ``-h1'' option is used, in which case only the
+history update will be done to expire entries not found on the spool.
+.PP
+.B \-h0|1
+.PP
+Tell DExpire to *not* update or to forcibly update the history file.
+The default is to only update the history files if directories were removed.
+The ``-h0'' option can be used to run dexpire on a tighter scheduler,
+such as once an hour, without having to eat the overhead of updating
+the history file (the overhead is not significant, unless you have
+a really big history file).  You should still run dexpire normally
+at least four times a day, though.
+The ``-h1'' option can be used to forcibly update the history file,
+even if no directories were removed by dexpire. This can be useful
+if you have another program/script that removes directories, or if
+you do it by hand.
+.PP
+.B \-k
+.PP
+This option tells dexpire to not make any actual changes to the
+history entries even if we need to do so. It is useful to get an
+estimate of how much time a history update will take, without
+actually making the individual updates.
+.PP
+.B \-n
+.PP
+This option tells dexpire to run through, but not make any updates.
+It useful for testing what a set of options will do and a status
+report will be printed (unless disabled with ``-q''). This is
+the default.
+.PP
+.B \-O[n]
+This option specifies the number of iterations to run before
+exiting. The default is to run until all space/age requirements
+for all spools are met, which means you could have a long running
+dexpire process if the rate of incoming articles exceeds the
+rate at which dexpire can remove old articles. If no number is
+specified, a single dexpire pass is made.
+.PP
+.B \-o
+.PP
+Tell dexpire to write the expired message IDs to a file for later
+use by dexpireover when expiring overview information. Writes to
+file specified by path_dexpover_list in diablo.config, defaults to
+%s/dexpover.dat, path_db based.
+.PP
+.B \-q
+.PP
+Be less verbose about what is happening. The default is to give
+a status report on what is being done to stdout.
+.PP
+.B \-R nn:#
+.PP
+This option allows you to specify a free space target (in MB) for a
+particular spool object. This will override the same option in dspool.ctl
+or peform a check if the option is not specified in dspool.ctl. The
+parameters are ``spool_number:target''.
+.PP
+.B \-S nn
+.PP
+This option is used to limit which spool objects dexpire works on. It
+can be used to reduce memory requirements and run multiple, concurrent
+instances of dexpire on different spools.
+.PP
+.B \-s[#]
+.PP
+This option tells dexpire that it is expiring on a softupdates-mounted 
+filesystem and that it needs to sync/sleep/sync/sleep after removing each
+directory in order for statfs() to return reasonable values.   The sleep
+time inbetween sync's may be specified.  If no number is specified, a sleep
+of 1 is used.  -s2 is suggested for softupdates-mounted partitions.
+If the sleep time has :10 appended, the sync's are only done after
+that number of filesystems space checks (usually after that number of
+file deletes).
+.PP
+.B \-u
+This option marks all expired entries in dhistory as unexpired. It should
+not be used with other options (except '-a', which is required if changes
+are to be made). Note that the articles will be expired
+again during the next normal dexpire run. The option is useful in the
+case of accidently expired articles (possibly due to a bug).
+.PP
+.B \-v
+This option turns on verbose mode.
+.PP
+.B \-z
+This option is used to specify that dexpire should only check the
+filesystem free space (if required) once through each iteration.
+By default, dexpire checks during the initial scan and after removing
+each directory. This could be a slight performance win on systems
+with a slow statfs().
+.PP
+.B -C
+allows the specification of the path of the diablo.config file to use.
+.PP
+.B -d[n]
+will set debug mode, at optional level n.
+.PP
+.B -V
+will print the version and exit.
+.PP
+After clearing out sufficient disk space, DExpire will scan the spool
+directory and then update the history file in place.  This is relatively
+self repairing, so you can remove spool files manually without getting things
+out of synch.  However, to be completely safe you should rename a D.xxxxxxxx
+directory to A.xxxxxxxx prior to rm -rf'ing it if diablo is running.
+.PP
+.B \-s[#]
+.PP
+Tell dexpire to be more verbose (this is the default).
+.PP
+.B \-d[#]
+.PP
+Turn on debugging. The higher the number specified, the more verbose
+the debugging messages.
+.PP
+
+.SH "SEE ALSO"
+diablo(8), 
+dicmd(8),
+didump(8),
+diload(8),
+dnewslink(8),
+doutq(8),
+dexpire(8),
+dexpireover(8),
+diconvhist(8),
+dilookup(8),
+dspoolout(8),
+dkp(8),
+dpath(8),
+diablo-kp(5),
+diablo-files(5)
+.PP
+

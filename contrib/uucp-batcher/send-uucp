@@ -1,0 +1,28 @@
+#! /bin/sh -
+
+PATH=/bin:/usr/bin; export PATH
+
+site="${1}"
+
+cd /news/dqueue || exit 1
+
+if [ `uustat -s${1}|wc -l` -gt 15 ]; then
+	exit 0
+fi
+
+mv ${1} ${1}.old || exit 0
+/news/dbin/dicmd flush ${1} && sleep 5
+(
+	if [ -f ${1}.uucp ]; then
+		cat ${1}.uucp 
+	fi
+	if [ -f ${1}.old ]; then
+		cat ${1}.old 
+	fi
+) > ${1}.uucp.new
+rm -f ${1}.old ${1}.uucp
+mv ${1}.uucp.new ${1}.uucp || exit 1
+
+/usr/local/bin/diab-batcher ${1}.uucp "(echo '#! cunbatch' ; exec gzip -9 ) | uux - -r -gd ${1}!rnews" 
+
+exit 0

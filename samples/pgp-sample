@@ -1,0 +1,485 @@
+Path: news3.best.com!news1.best.com!uninett.no!news-feed.ifi.uio.no!uio.no!logbridge.uoregon.edu!news.Stanford.EDU!news.isc.org!bounce-back
+From: group-admin@isc.org (David C Lawrence)
+Newsgroups: news.announce.newgroups
+Subject: cmsg checkgroups
+Control: checkgroups
+Approved: newgroups-request@isc.org
+Message-ID: <900525604.12931@isc.org>
+Date: Wed, 15 Jul 1998 18:00:04 -0000
+Lines: 467
+X-Info: ftp://ftp.isc.org/pub/pgpcontrol/README.html
+	ftp://ftp.isc.org/pub/pgpcontrol/README
+X-PGP-Sig: 2.6.2 Subject,Control,Message-ID,Date,From,Sender
+	iQCVAwUBNazuJcJdOtO4janBAQHhjQP/bNJPBWnANsr7sRi/oqs31VA8cqu/AzqH
+	WzIL1xVzRc45CjsdYxsCl5TTvlaMX8UJK6091d+mR6xsq33feldOiDCD/8n6L4tq
+	UvLBuMUXzkwr1tGsjVmxgBqsgcmSqhFdLHjQiyVHT1aFUm+5Lz+ChrA40fzOCcqg
+	EdTAqz4V++4=
+	=wxWW
+
+humanities.answers	Repository for periodic USENET articles. (Moderated)
+humanities.classics	Discussion of ancient Greece and Rome.
+humanities.design.misc	Theory, practice, history & aesthetic issues in design.
+humanities.language.sanskrit	The Sanskrit language and related topics.
+humanities.lit.authors.shakespeare	Poetry, plays, history of Shakespeare.
+humanities.misc		General topics in the arts & humanities.
+humanities.music.composers.wagner	The life and works of Richard Wagner.
+humanities.philosophy.objectivism	The ideas of Ayn Rand. (Moderated)
+misc.activism.anti-fascism.announce	Announcing anti-fascist activities. (Moderated)
+misc.activism.anti-fascism.tactics	Planning anti-fascist activities. (Moderated)
+misc.activism.militia	Citizens bearing arms for the common defense. (Moderated)
+misc.activism.progressive	Information for Progressive activists. (Moderated)
+misc.answers		Repository for periodic USENET articles. (Moderated)
+misc.books.technical	Discussion of books about technical topics.
+misc.business.consulting	The business of consulting. (Moderated)
+misc.business.credit	Domestic and international business credit. (Moderated)
+misc.business.facilitators	Forum for group facilitation professionals. (Moderated)
+misc.business.marketing.moderated	Roundtable for marketing topics. (Moderated)
+misc.business.moderated	Roundtable for general business topics. (Moderated)
+misc.business.records-mgmt	All aspects of professional records management.
+misc.consumers		Consumer interests, product reviews, etc.
+misc.consumers.frugal-living	Practicing a frugal lifestyle.
+misc.consumers.house	Discussion about owning and maintaining a house.
+misc.consumers.house.homeowner-assn	Common interest housing developments.
+misc.creativity		Promoting the use of creativity in all human endeavors.
+misc.education		Discussion of the educational system.
+misc.education.adult	Adult education and adult literacy practice/research.
+misc.education.home-school.christian	Christian home-schooling.
+misc.education.home-school.misc	Almost anything about home-schooling.
+misc.education.language.english	Teaching English to speakers of other languages.
+misc.education.medical	Issues related to medical education.
+misc.education.multimedia	Multimedia for education. (Moderated)
+misc.education.science	Issues related to science education.
+misc.emerg-services	Forum for paramedics & other first responders.
+misc.entrepreneurs	Discussion on operating a business.
+misc.entrepreneurs.moderated	Entrepreneur/business topics. (Moderated)
+misc.fitness.aerobic	All forms of aerobic activity.
+misc.fitness.misc	All other general fitness topics.
+misc.fitness.walking	Fitness walking: help, instruction, events.
+misc.fitness.weights	Bodybuilding, weightlifting, resistance.
+misc.forsale.computers.discussion	Discussions only about items for sale.
+misc.forsale.computers.mac-specific.cards.misc	Macintosh expansion cards.
+misc.forsale.computers.mac-specific.cards.video	Macintosh video cards.
+misc.forsale.computers.mac-specific.misc	Other Macintosh equipment.
+misc.forsale.computers.mac-specific.portables	Portable Macintosh systems.
+misc.forsale.computers.mac-specific.software	Macintosh software.
+misc.forsale.computers.mac-specific.systems	Complete Macintosh systems.
+misc.forsale.computers.memory	Memory chips and modules for sale and wanted.
+misc.forsale.computers.modems	Modems for sale and wanted.
+misc.forsale.computers.monitors	Monitors and displays for sale and wanted.
+misc.forsale.computers.net-hardware	Networking hardware for sale and wanted.
+misc.forsale.computers.other.misc	Miscellaneous other equipment.
+misc.forsale.computers.other.software	Software for other systems.
+misc.forsale.computers.other.systems	Complete other types of systems.
+misc.forsale.computers.pc-specific.audio	PC audio equipment.
+misc.forsale.computers.pc-specific.cards.misc	PC expansion cards.
+misc.forsale.computers.pc-specific.cards.video	PC video cards.
+misc.forsale.computers.pc-specific.misc	Other PC-specific equipment.
+misc.forsale.computers.pc-specific.motherboards	PC motherboards.
+misc.forsale.computers.pc-specific.portables	Portable PC systems.
+misc.forsale.computers.pc-specific.software	PC software.
+misc.forsale.computers.pc-specific.systems	Complete PC systems.
+misc.forsale.computers.printers	Printers and plotters for sale and wanted.
+misc.forsale.computers.storage	Disk, CDROM and tape drives for sale and wanted.
+misc.forsale.computers.workstation	Workstation related computer items.
+misc.forsale.non-computer	Non-computer items for sale and wanted.
+misc.handicap		Discussions of interest to persons with disabilities.
+misc.headlines		Current interest: drug testing, terrorism, etc.
+misc.health.aids	AIDS issues and support.
+misc.health.alternative	Alternative, complementary and holistic health care.
+misc.health.arthritis	Arthritis and related disorders.
+misc.health.diabetes	Discussion of diabetes management in day to day life.
+misc.health.infertility	Treatment & support of infertility.
+misc.health.injuries.rsi.misc	All about Repetitive Strain Injuries.
+misc.health.injuries.rsi.moderated	Experts answer questions about RSI. (Moderated)
+misc.health.therapy.occupational	All areas of occupational therapy.
+misc.immigration.australia+nz	Migration forum for Australia and New Zealand.
+misc.immigration.canada	Canada immigration issues.
+misc.immigration.misc	Miscellaneous countries immigration issues.
+misc.immigration.usa	USA immigration issues.
+misc.industry.electronics.marketplace	Electronics products & services.
+misc.industry.insurance	General forum for all insurance issues. (Moderated)
+misc.industry.printing	A forum for the printing industry. (Moderated)
+misc.industry.pulp-and-paper	Technical topics in the pulp and paper industry.
+misc.industry.quality	Quality standards and other issues.
+misc.industry.safety.personal	Personal protective equipment. (Moderated)
+misc.industry.utilities.electric	The electric utility industry.
+misc.int-property	Discussion of intellectual property rights.
+misc.invest.canada	Investing in Canadian financial markets.
+misc.invest.financial-plan	Financial planning in general. (Moderated)
+misc.invest.futures	Physical commodity and financial futures markets.
+misc.invest.marketplace	All other ads/promotions.
+misc.invest.misc	Investments not in other misc.invest.* groups.
+misc.invest.mutual-funds	Mutual Funds.
+misc.invest.options	Financial options on stocks and futures.
+misc.invest.real-estate	Property investments.
+misc.invest.stocks	Forum for sharing info about stocks and options.
+misc.invest.technical	Analyzing market trends with technical methods.
+misc.jobs.contract	Discussions about contract labor.
+misc.jobs.fields.chemistry	Employment in the chemical sciences.
+misc.jobs.misc		Discussion about employment, workplaces, careers.
+misc.jobs.offered	Announcements of positions available.
+misc.jobs.offered.entry	Job listings only for entry-level positions.
+misc.jobs.resumes	Postings of resumes and "situation wanted" articles.
+misc.kids		Children, their behavior and activities.
+misc.kids.breastfeeding	Information, support, and decisions re breastfeeding.
+misc.kids.computer	The use of computers by children.
+misc.kids.consumers	Products related to kids.
+misc.kids.health	Children's health.
+misc.kids.info		Informational posts related to misc.kids hierarchy. (Moderated)
+misc.kids.moderated	Parenting questions, ideas, and experiences. (Moderated)
+misc.kids.pregnancy	Pre-pregnancy planning, pregnancy, childbirth.
+misc.kids.vacation	Discussion on all forms of family-oriented vacationing.
+misc.legal		Legalities and the ethics of law.
+misc.legal.computing	Discussing the legal climate of the computing world.
+misc.legal.moderated	All aspects of law. (Moderated)
+misc.misc		Various discussions not fitting in any other group.
+misc.news.bosnia	News, articles, reports & information on Bosnia. (Moderated)
+misc.news.east-europe.rferl	Radio Free Europe/Radio Liberty Daily Report. (Moderated)
+misc.news.internet.announce	News bulletins from the Internet. (Moderated)
+misc.news.internet.discuss	Discussion of news bulletins from the Net.
+misc.news.southasia	News from Bangladesh, India, Nepal, etc. (Moderated)
+misc.predictions.registry	Predictions of the future. (Moderated)
+misc.rural		Devoted to issues concerning rural living.
+misc.survivalism	Disaster and long-term survival techniques and theory.
+misc.taxes		Tax laws and advice.
+misc.taxes.moderated	Tax professionals meeting place and answers to queries. (Moderated)
+misc.test		For testing of network software.  Very boring.
+misc.test.moderated	Testing of posting to moderated groups. (Moderated)
+misc.transport.air-industry	Airlines, airports, commercial aircraft. (Moderated)
+misc.transport.air-industry.cargo	Questions/comments regarding air cargo. (Moderated)
+misc.transport.marine	Maritime and inland waterways transportation.
+misc.transport.misc	General transportation issues.
+misc.transport.rail.americas	Railroads & railways in North & South America.
+misc.transport.rail.australia-nz	Railways in Australia & New Zealand.
+misc.transport.rail.europe	Railroads & railways in all of Europe.
+misc.transport.rail.misc	Rail issues not in other geographic groups.
+misc.transport.road	Road and highway transportation.
+misc.transport.trucking	Commercial trucking related issues.
+misc.transport.urban-transit	Metropolitan public transportation systems.
+misc.wanted		Requests for things that are needed (NOT software).
+misc.writing		Discussion of writing in all of its forms.
+misc.writing.screenplays	Aspects of writing and selling screenplays.
+news.admin.announce	Announcements for news adminstrators. (Moderated)
+news.admin.censorship	Censorship issues in news administration.
+news.admin.hierarchies	Network news hierarchies.
+news.admin.misc		General topics of network news administration.
+news.admin.net-abuse.bulletins	Bulletins of action about net abuse. (Moderated)
+news.admin.net-abuse.email	Discussion of abuse of email systems.
+news.admin.net-abuse.misc	Network facility abuse, including spamming.
+news.admin.net-abuse.policy	Discussion of net abuse policy. (Moderated)
+news.admin.net-abuse.sightings	Sightings of net abuse. (Moderated)
+news.admin.net-abuse.usenet	Discussion of abuse of the Usenet system.
+news.admin.nocem	NoCeM protocol policy issues and information.
+news.admin.technical	Technical aspects of maintaining network news. (Moderated)
+news.announce.conferences	Calls for papers and conference announcements. (Moderated)
+news.announce.important	General announcements of interest to all. (Moderated)
+news.announce.newgroups	Calls for newgroups & announcements of same. (Moderated)
+news.announce.newusers	Explanatory postings for new users. (Moderated)
+news.answers		Repository for periodic USENET articles. (Moderated)
+news.groups		Discussions and lists of newsgroups.
+news.groups.questions	Where can I find talk about topic X?
+news.groups.reviews	What is going on in group or mailing list named X? (Moderated)
+news.lists.filters	Notices for automated news filtering systems.
+news.lists.misc		News-related statistics and lists. (Moderated)
+news.misc		Discussions of USENET itself.
+news.newusers.questions	Q & A for new users of Usenet. (Moderated)
+news.software.anu-news	VMS Usenet software from Australian National Univ.
+news.software.b		Discussion about Usenet B-news-compatible software.
+news.software.misc	Usenet-related software other than readers and servers.
+news.software.nn	Discussion about the "nn" Usenet news reader package.
+news.software.nntp	The Network News Transfer Protocol.
+news.software.readers	Discussing software for reading network news (Usenet).
+soc.adoption.adoptees	Discussion of adoption by adoptees. (Moderated)
+soc.adoption.parenting	Adoptive parenting by adoptive parents.
+soc.answers		Repository for periodic USENET articles. (Moderated)
+soc.atheism		Living as an atheist and atheism in society. (Moderated)
+soc.bi			Discussions of bisexuality.
+soc.college		College, college activities, campus life, etc.
+soc.college.admissions	The university admissions process.
+soc.college.financial-aid	Financial aid issues, college and beyond.
+soc.college.grad	General issues related to graduate schools.
+soc.college.gradinfo	Information about graduate schools.
+soc.college.org.aiesec	The Int'l Assoc. of Business and Commerce Students.
+soc.college.teaching-asst	Issues affecting collegiate teaching assistants.
+soc.couples		Discussions for couples (cf. soc.singles).
+soc.couples.intercultural	Inter-cultural and inter-racial relationships.
+soc.couples.wedding	Wedding planning.
+soc.culture.afghanistan	Discussion of the Afghan society.
+soc.culture.african	Discussions about Africa & things African.
+soc.culture.african.american	Discussions about Afro-American issues.
+soc.culture.african.american.moderated	African-American perspectives. (Moderated)
+soc.culture.albanian	Albania and Albanians around the world.
+soc.culture.algeria	From A to Z about Algeria.
+soc.culture.arabic	Technological & cultural issues, *not* politics.
+soc.culture.argentina	All about life in Argentina.
+soc.culture.asean	Countries of the Assoc. of SE Asian Nations.
+soc.culture.asian.american	Issues & discussion about Asian-Americans.
+soc.culture.assyrian	Assyrian culture, history, language, current diaspora.
+soc.culture.asturies	Asturian culture.
+soc.culture.australian	Australian culture and society.
+soc.culture.austria	Austria and its people.
+soc.culture.baltics	People of the Baltic states.
+soc.culture.bangladesh	Issues & discussion about Bangladesh.
+soc.culture.basque	Basque culture and related issues. (Moderated)
+soc.culture.belarus	All things about Belarus. (Moderated)
+soc.culture.belgium	Belgian society, culture(s) and people.
+soc.culture.bengali	Sociocultural identity of worldwide Bengali population.
+soc.culture.berber	The berber language, history, and culture.
+soc.culture.bolivia	Bolivian people and culture.
+soc.culture.bosna-herzgvna	The independent state of Bosnia and Herzegovina.
+soc.culture.brazil	Talking about the people and country of Brazil.
+soc.culture.breton	All about Breton culture and Brittany.
+soc.culture.british	Issues about Britain & those of British descent.
+soc.culture.bulgaria	Discussing Bulgarian society.
+soc.culture.burma	Politics, culture, news, discussion about Burma.
+soc.culture.cambodia	Cambodia and its people.
+soc.culture.canada	Discussions of Canada and its people.
+soc.culture.caribbean	Life in the Caribbean.
+soc.culture.catalan	The Catalan language and the lands where it is spoken.
+soc.culture.celtic	Irish, Scottish, Breton, Cornish, Manx & Welsh.
+soc.culture.chile	All about Chile and its people.
+soc.culture.china	About China and Chinese culture.
+soc.culture.colombia	Colombian talk, social, politics, science.
+soc.culture.cornish	All things Cornish and Cornwall, worldwide.
+soc.culture.costa-rica	Topics about Costa Rica.
+soc.culture.croatia	The lives of people of Croatia.
+soc.culture.cuba	Cuban culture, society and politics.
+soc.culture.czecho-slovak	Bohemian, Slovak, Moravian and Silesian life.
+soc.culture.dominican-rep	The life and people of the Dominican Republic.
+soc.culture.ecuador	The culture and people of Ecuador.
+soc.culture.egyptian	Egypt, and its society, culture, heritage, etc.
+soc.culture.el-salvador	Topics about El Salvador, Central America.
+soc.culture.esperanto	The neutral international language Esperanto.
+soc.culture.estonia	Estonian culture, language, news, politics. (Moderated)
+soc.culture.ethiopia.misc	Unmoderated forum to discuss Ethiopian culture.
+soc.culture.ethiopia.moderated	Ethiopian culture. (Moderated)
+soc.culture.europe	Discussing all aspects of all-European society.
+soc.culture.filipino	Group about the Filipino culture.
+soc.culture.french	French culture, history, and related discussions.
+soc.culture.galiza	Galicia, on the Iberian Peninsula. (Moderated)
+soc.culture.german	Discussions about German culture and history.
+soc.culture.greek	Group about Greeks.
+soc.culture.guinea-conakry	Guinea (ne French Guinea, in West Africa).
+soc.culture.haiti	Haiti specific development and cultural issues.
+soc.culture.hawaii	Aloha kakou, E KOMO MAI! Eh, no forget hemo da shoes. (Moderated)
+soc.culture.hmong	Discussion of Hmong people and its culture.
+soc.culture.honduras	General topics regarding Honduras and Central-America.
+soc.culture.hongkong	Discussions pertaining to Hong Kong.
+soc.culture.hongkong.entertainment	Entertainment in Hong Kong.
+soc.culture.indian	Group for discussion about India & things Indian.
+soc.culture.indian.delhi	Information related to Delhi, capital of India.
+soc.culture.indian.gujarati	Gujarati cultural group.
+soc.culture.indian.info	Info group for soc.culture.indian, etc. (Moderated)
+soc.culture.indian.jammu-kashmir	The culture of Jammu & Kashmir.
+soc.culture.indian.karnataka	Karnataka's culture, history, and present.
+soc.culture.indian.kerala	Culture of the people of Keralite origin.
+soc.culture.indian.marathi	Discussion related to Marathi Culture.
+soc.culture.indian.telugu	The culture of the Telugu people of India. (Moderated)
+soc.culture.indonesia	All about the Indonesian nation.
+soc.culture.intercultural	People of mixed "culture", "ethnicity", "race".
+soc.culture.iranian	Discussions about Iran and things Iranian/Persian.
+soc.culture.iraq	Iraq, its society, culture and heritage.
+soc.culture.irish	Ireland and Irish culture.
+soc.culture.israel	Israel and Israelis.
+soc.culture.italian	The Italian people and their culture.
+soc.culture.japan	Everything Japanese, except the Japanese language.
+soc.culture.japan.moderated	Anything Japanese. (Moderated)
+soc.culture.jewish	Jewish culture & religion (cf. talk.politics.mideast).
+soc.culture.jewish.holocaust	The Shoah. (Moderated)
+soc.culture.jewish.parenting	Issues about raising Jewish children. (Moderated)
+soc.culture.jordan	All topics concerning The Hashemite Kingdom of Jordan.
+soc.culture.kenya	Kenyan peoples, politics, culture, and affairs.
+soc.culture.korean	Discussions about Korea & things Korean.
+soc.culture.kurdish	People from Kurdistan and Kurds around the world.
+soc.culture.kuwait	Kuwaiti culture, society, and history.
+soc.culture.kuwait.moderated	Kuwaiti culture, society, and history. (Moderated)
+soc.culture.laos	Cultural and Social Aspects of Laos.
+soc.culture.latin-america	Topics about Latin-America.
+soc.culture.lebanon	Discussion about things Lebanese.
+soc.culture.liberia	The culture of Liberia.
+soc.culture.maghreb	North African society and culture.
+soc.culture.magyar	The Hungarian people & their culture.
+soc.culture.malagasy	Madagascar and the Malagasy culture.
+soc.culture.malaysia	All about Malaysian society.
+soc.culture.mexican	Discussion of Mexico's society.
+soc.culture.mexican.american	Mexican-American/Chicano culture and issues.
+soc.culture.misc	Group for discussion about other cultures.
+soc.culture.mongolian	Everything related to Mongols and Mongolia.
+soc.culture.native	Aboriginal people around the world.
+soc.culture.nepal	Discussion of people and things in & from Nepal.
+soc.culture.netherlands	People from the Netherlands and Belgium.
+soc.culture.new-zealand	Discussion of topics related to New Zealand.
+soc.culture.nicaragua	Topics related to the country of Nicaragua in general.
+soc.culture.nigeria	Nigerian affairs, society, cultures, and peoples.
+soc.culture.nordic	Discussion about culture up north.
+soc.culture.occitan	Speakers of Provencal/Occitan/Langue d'Oc.
+soc.culture.pacific-island	Culture of the pacific islands (except Hawaii).
+soc.culture.pakistan	Topics of discussion about Pakistan.
+soc.culture.pakistan.education	Education in Pakistan. (Moderated)
+soc.culture.pakistan.history	History of Pakistan. (Moderated)
+soc.culture.pakistan.moderated	Discussions on Pakistan. (Moderated)
+soc.culture.pakistan.politics	Political discussions on Pakistan.
+soc.culture.pakistan.religion	Religious discussions related to Pakistan.
+soc.culture.pakistan.sports	Sports in Pakistan.
+soc.culture.palestine	Palestinian people, culture and politics.
+soc.culture.peru	All about the people of Peru.
+soc.culture.polish	Polish culture, Polish past, and Polish politics.
+soc.culture.portuguese	Discussion of the people of Portugal.
+soc.culture.puerto-rico	Puerto Rican culture, society and politics.
+soc.culture.punjab	Punjab and Punjabi culture.
+soc.culture.quebec	Quebec society and culture.
+soc.culture.rep-of-georgia	The Caucasian Republic of Georgia and Georgians.
+soc.culture.romanian	Discussion of Romanian and Moldavian people.
+soc.culture.russian	All things Russian in the broadest sense.
+soc.culture.russian.moderated	Moderated discussion of Russian culture. (Moderated)
+soc.culture.scientists	Cultural issues about scientists & scientific projects.
+soc.culture.scottish	Anything regarding Scotland or things Scots.
+soc.culture.sierra-leone	The culture of Sierra Leone.
+soc.culture.singapore	The past, present and future of Singapore.
+soc.culture.singapore.moderated	Singapore & Singaporeans. (Moderated)
+soc.culture.slovenia	Slovenia and Slovenian people.
+soc.culture.somalia	Somalian affairs, society, and culture.
+soc.culture.south-africa	South African society, culture, & politics.
+soc.culture.south-africa.afrikaans	The Afrikaans language and speakers.
+soc.culture.soviet	Topics relating to Russian or Soviet culture.
+soc.culture.spain	Spain and the Spanish.
+soc.culture.sri-lanka	Things & people from Sri Lanka.
+soc.culture.swiss	Swiss culture.
+soc.culture.syria	Syrian cultural matters and affairs.
+soc.culture.taiwan	Discussion about things Taiwanese.
+soc.culture.tamil	Tamil language, history and culture.
+soc.culture.thai	Thai people and their culture.
+soc.culture.turkish	Discussion about things Turkish.
+soc.culture.turkish.moderated	Issues related to Turks/Turkey. (Moderated)
+soc.culture.ukrainian	The lives and times of the Ukrainian people.
+soc.culture.uruguay	Discussions of Uruguay for those at home and abroad.
+soc.culture.usa		The culture of the United States of America.
+soc.culture.venezuela	Discussion of topics related to Venezuela.
+soc.culture.vietnamese	Issues and discussions of Vietnamese culture.
+soc.culture.welsh	The people, language and history of Wales.
+soc.culture.yugoslavia	Discussions of Yugoslavia and its people.
+soc.culture.zimbabwe	Culture and other issues pertaining to Zimbabwe.
+soc.feminism		Discussion of feminism & feminist issues. (Moderated)
+soc.genealogy.african	Genealogy of Africa and the African Diaspora. (Moderated)
+soc.genealogy.australia+nz	Australia, New Zealand, and their territories.
+soc.genealogy.benelux	Genealogy in Belgium, the Netherlands and Luxembourg.
+soc.genealogy.britain	Genealogy in Great Britain and the islands.
+soc.genealogy.computing	Genealogical computing & net resources.
+soc.genealogy.french	Francophone genealogy.
+soc.genealogy.german	Family history including a German background.
+soc.genealogy.hispanic	Genealogy relating to Hispanics.
+soc.genealogy.ireland	Genealogy in Ireland (both North and South).
+soc.genealogy.italian	Italian genealogy and family heraldry.
+soc.genealogy.jewish	Jewish genealogy group. (Moderated)
+soc.genealogy.marketplace	Genealogy services and products.
+soc.genealogy.medieval	Genealogy in the period from roughly AD500 to AD1600.
+soc.genealogy.methods	Genealogical methods and resources. (Moderated)
+soc.genealogy.misc	General genealogical discussions.
+soc.genealogy.nordic	Genealogy in the Scandinavian countries.
+soc.genealogy.slavic	Genealogy of Slavic peoples.
+soc.genealogy.surnames.britain	Surnames queries - Great Britain. (Moderated)
+soc.genealogy.surnames.canada	Surnames queries - Canada. (Moderated)
+soc.genealogy.surnames.german	Surnames queries - German speaking countries. (Moderated)
+soc.genealogy.surnames.global	Surnames queries central database. (Moderated)
+soc.genealogy.surnames.ireland	Surnames queries - Ireland & Northern Ireland. (Moderated)
+soc.genealogy.surnames.misc	Surnames - regions not covered elsewhere. (Moderated)
+soc.genealogy.surnames.usa	Surnames queries - USA. (Moderated)
+soc.genealogy.west-indies	Genealogy of the West Indies.
+soc.history		Discussions of things historical.
+soc.history.african.biafra	History of Biafra (Eastern Nigeria). (Moderated)
+soc.history.ancient	Ancient history (up to AD 700).
+soc.history.living	Living history and reenactment, issues and info.
+soc.history.medieval	The historic period of the middle ages.
+soc.history.moderated	All aspects of history. (Moderated)
+soc.history.science	History of science and related areas.
+soc.history.war.misc	History & events of wars in general.
+soc.history.war.us-civil-war	Aspects of the U.S. Civil War. (Moderated)
+soc.history.war.us-revolution	American Revolution/international perspectives.
+soc.history.war.vietnam	The Vietnam War. (Moderated)
+soc.history.war.world-war-ii	History & events of World War Two. (Moderated)
+soc.history.what-if	Alternate history.
+soc.libraries.talk	Discussing all aspects of libraries.
+soc.men			Issues related to men, their problems & relationships.
+soc.misc		Socially-oriented topics not in other groups.
+soc.motss		Issues pertaining to homosexuality.
+soc.net-people		Announcements, requests, etc. about people on the net.
+soc.org.freemasonry	Discussion group for the Fraternity "Freemasonry". (Moderated)
+soc.org.nonprofit	Nonprofit organizations.
+soc.org.service-clubs.misc	General info on all service topics.
+soc.penpals		In search of net.friendships.
+soc.personals		Personal ads -- people in search of (ISO) others. (Moderated)
+soc.politics		Political problems, systems, solutions. (Moderated)
+soc.politics.anti-fascism	The politics of fighting fascism. (Moderated)
+soc.politics.arms-d	Arms discussion digest. (Moderated)
+soc.politics.marxism	Karl Marx and his legacy in theory and practice. (Moderated)
+soc.religion.bahai	Discussion of the Baha'i Faith. (Moderated)
+soc.religion.christian	Christianity and related topics. (Moderated)
+soc.religion.christian.bible-study	Examining the Holy Bible. (Moderated)
+soc.religion.christian.promisekeepers	The Christian group Promise Keepers. (Moderated)
+soc.religion.christian.youth-work	Christians working with young people. (Moderated)
+soc.religion.eastern	Discussions of Eastern religions. (Moderated)
+soc.religion.gnosis	Gnosis, marifat, jnana & direct sacred experience. (Moderated)
+soc.religion.hindu	Discussion about the Hindu dharma, philosophy, culture. (Moderated)
+soc.religion.islam	Discussions of the Islamic faith. (Moderated)
+soc.religion.mormon	The Church of Jesus Christ of Latter-day Saints. (Moderated)
+soc.religion.paganism	Networking for Pagans. (Moderated)
+soc.religion.quaker	The Religious Society of Friends.
+soc.religion.shamanism	Discussion of the full range of shamanic experience. (Moderated)
+soc.religion.sikhism	Sikh Religion and Sikhs all over the world. (Moderated)
+soc.religion.unitarian-univ	Unitarian-Universalism & non-creedal religions. (Moderated)
+soc.religion.vaishnava	All aspects of Vishnu and Vaishnavism. (Moderated)
+soc.retirement		For seniors:  retirement, aging, gerontology issues.
+soc.rights.human	Human rights & activism (e.g., Amnesty International).
+soc.senior.health+fitness	Health, fitness, health-care for seniors.
+soc.senior.issues	Issues relevant to seniors and aging.
+soc.sexuality.general	Human sexuality in general. (Moderated)
+soc.sexuality.spanking	Adult sexual spanking. (Moderated)
+soc.singles		Newsgroup for single people, their activities, etc.
+soc.singles.moderated	Conversations among people who are or were single. (Moderated)
+soc.subculture.bondage-bdsm	Bondage/Dominance/S&M discussion & support.
+soc.subculture.bondage-bdsm.femdom	Sensual domination by females.
+soc.subculture.expatriate	Issues of interest to expatriates.
+soc.support.aids-hiv+	Messages to and from people living with HIV. (Moderated)
+soc.support.depression.crisis	Personal crisis situations.
+soc.support.depression.family	Coping with depressed people.
+soc.support.depression.manic	Bipolar/manic-depression.
+soc.support.depression.misc	Depression and mood disorders.
+soc.support.depression.seasonal	Seasonal affective disorder.
+soc.support.depression.treatment	Treatments of depression.
+soc.support.fat-acceptance	Self-acceptance for fat people.  No diet talk.
+soc.support.loneliness	Mutual help and chat for those of us who feel alone. (Moderated)
+soc.support.pregnancy.loss	Issues and support related to pregnancy loss. (Moderated)
+soc.support.transgendered	Transgendered and intersexed persons.
+soc.support.youth.gay-lesbian-bi	Gay youths helping each other. (Moderated)
+soc.veterans		Social issues relating to military veterans.
+soc.women		Issues related to women, their problems & relationships.
+soc.women.lesbian-and-bi	Lives of lesbian and bisexual women. (Moderated)
+talk.abortion		All sorts of discussions and arguments on abortion.
+talk.answers		Repository for periodic USENET articles. (Moderated)
+talk.atheism		Debate about the validity and nature of atheism.
+talk.bizarre		The unusual, bizarre, curious, and often interesting.
+talk.environment	Discussion the state of the environment & what to do.
+talk.euthanasia		All aspects of euthanasia.
+talk.origins		Evolution versus creationism (sometimes hot!). (Moderated)
+talk.philosophy.humanism	Humanism in the modern world.
+talk.philosophy.misc	Philosophical musings on all topics.
+talk.politics.animals	The use and/or abuse of animals.
+talk.politics.china	Discussion of political issues related to China.
+talk.politics.crypto	The relation between cryptography and government.
+talk.politics.drugs	The politics of drug issues.
+talk.politics.european-union	The EU and political integration in Europe.
+talk.politics.guns	The politics of firearm ownership and (mis)use.
+talk.politics.libertarian	Libertarian politics & political philosophy.
+talk.politics.medicine	The politics and ethics involved with health care.
+talk.politics.mideast	Discussion & debate over Middle Eastern events.
+talk.politics.misc	Political discussions and ravings of all kinds.
+talk.politics.soviet	Discussion of Soviet politics, domestic and foreign.
+talk.politics.theory	Theory of politics and political systems.
+talk.politics.tibet	The politics of Tibet and the Tibetan people.
+talk.rape		Discussions on stopping rape; not to be crossposted.
+talk.religion.buddhism	All aspects of Buddhism as religion and philosophy.
+talk.religion.course-miracle	A Course in Miracles.
+talk.religion.misc	Religious, ethical, & moral implications.
+talk.religion.newage	Esoteric and minority religions & philosophies.
+talk.religion.pantheism	Pantheism in general.
+talk.rumors		For the posting of rumors.

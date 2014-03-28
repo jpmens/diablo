@@ -1,0 +1,57 @@
+##  $Revision: 1.1 $
+##  Mailing addresses for moderators.
+##  Maintained by Simon Lyall <simon@darkmere.gen.nz>
+##  Format:
+##      <newsgroup>:<pathname>
+##  First match found is used.
+##      <newsgroup>     Shell-style newsgroup pattern or specific newsgroup
+##      <pathname>      Mail address, "%s" becomes newgroup name with dots
+##                      changed to dashes.
+alt.gothic.announce:%s@maekong.ohm.york.ac.uk
+alt.irc.undernet.bards:elfin1@best.com
+arkane.*:%s@arkane.demon.co.uk
+be.*:%s@innet.be
+best.*:news@best.net
+bionet.*:%s@net.bio.net
+bln.*:%s@fu-berlin.de
+christnet.bible.revelation:cjaneway@fdma.com
+christnet.christianlife:cherith@fdma.com
+christnet.ethics:borisoff@saltcreek.beach.net
+christnet.general:borisoff@saltcreek.beach.net
+christnet.healing.herbs:borisoff@saltcreek.beach.net
+christnet.ladies:denise@saltcreek.beach.net
+christnet.philosophy:borisoff@saltcreek.beach.net
+christnet.poetry:borisoff@saltcreek.beach.net
+christnet.theology:cnt@spss.com
+christnet.writers:borisoff@saltcreek.beach.net
+christnet.*:%s@fdma.com
+clari.*:modreply@clari.net
+concordia.*:%s@concordia.ca
+cz.*:%s@moderator.vslib.cz
+es.*:%s@news.rediris.es
+fido7.*:%s@fido7.ru
+gnu.*:%s@prep.ai.mit.edu
+gov.*:%s@govnews.org
+hun.*:%s@sztaki.hu
+it.*:%s@news.nis.garr.it
+linux.act.*:linux-submit@yggdrasil.com
+linux.*:submit-%s@yggdrasil.com
+medlux.*:%s@news.medlux.ru
+mensa.*:%s@newsgate.mensa.org
+mgate.*:in-%s@news1.best.com
+nl.*:%s@nl.net
+no.*:%s@moderators.usenet.no
+nz.*:%s@usenet.net.nz
+pl.*:%s@usenet.pl
+relcom.*:%s@news.ussr.eu.net
+sk.*:%s@news.ke.sanet.sk
+tnn.*:%s@news.iij.ad.jp
+uk.answers:news-answers@mit.edu
+uk.food+drink.archives:mark@alexr.co.uk
+uk.net.news.announce:control@usenet.org.uk
+uk.org.bcs.announce:mcramm@tay.ac.uk
+uk.org.epsrc.hpc.news:alison.wall@rl.ac.uk
+uk.org.starlink.announce:announce@starlink.rutherford.ac.uk
+uk.*:%s@usenet.org.uk
+worldforum.*:moderator@clearthink.com
+*:%s@moderators.isc.org

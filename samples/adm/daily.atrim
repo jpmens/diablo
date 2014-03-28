@@ -1,0 +1,17 @@
+#!/bin/csh -f
+#
+# rotate non-SYSLOG maintained log files
+#
+
+cd ~
+
+echo "`date` - $0 BEGIN"
+
+set log = `dbin/dpath log`
+
+adm/rot 4 ${log}/{daily.log,dspoolout.log,{new,rm,check}group*.{alt,other,log},control.log}
+
+adm/rot 4 ${log}/{miscctl}
+
+echo "`date` - $0 END"  
+

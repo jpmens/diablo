@@ -1,0 +1,16 @@
+This distribution of feeder-stats.pl contains an updated
+feeder-stats.conf which is based on the so called OLM,
+a list of News servers with online monitoring.
+
+A simple Perl-script (olm2fs.pl) is provided to convert the OLM-list
+to feeder-stats.conf format.
+
+The OLM list can be found at:
+
+   ftp://ftp.switch.ch/info_service/netnews/wg/config/olm-lookup
+
+Please see the OLM list about where to send additions & corrections.
+
+Since the old feeder-stats.conf might contain links not (yet) in the OLM
+it is kept as feeder-stats.conf.v3.
+

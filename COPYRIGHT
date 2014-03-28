@@ -1,0 +1,55 @@
+
+			  COPYRIGHT FILE FOR DIABLO
+
+    This entire archive, except for pieces explicitly labeled with another
+    copyright, is (c)Copyright 1996-1999, Matthew Dillon.
+
+    Some portions Copyright (C) 1998-2002 by Joe Greco and sol.net Network
+    Services.  Portions not bearing explicit conditions for redistribution
+    and use are distributed under the terms described in this file.
+
+    Some portions Copyright (C) 2000-2005 by Russell Vincent.
+    Portions not bearing explicit conditions for redistribution
+    and use are distributed under the terms described in this file.
+
+    Some portions Copyright (C) 2002 by Francois Petillon.
+    Portions not bearing explicit conditions for redistribution
+    and use are distributed under the terms described in this file.
+
+    Some portions Copyright (C) 1991 Rich Salz, from inn-1.0.
+    See copyright statement at beginning of lib/wildmat.c
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+3. All advertising materials mentioning features or use of this software
+   must display the following acknowledgment:
+This product includes UNIX software developed by Matthew Dillon and other
+contributors.
+4. Neither Matthew Dillon's name nor the names of other contributors
+   may be used to endorse or promote products derived from this software
+   without specific prior written permission.
+5. When this software or any work derived from this software is used in a 
+   commercial product or bundled with a commercial product, the vendor must 
+   also produce the program this software is derived from for either the Linux 
+   or FreeBSD operating systems.  The Linux or FreeBSD version of the product
+   must be sold for substantially the same amount of money as the product
+   for other platforms, and the Linux or FreeBSD releases must be kept up to
+   date with the releases for other platforms.
+
+THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, 
+INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
+FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL MATTHEW
+DILLON OR OTHER CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR 
+OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ OF THE POSSIBILITY OF SUCH DAMAGE.
+

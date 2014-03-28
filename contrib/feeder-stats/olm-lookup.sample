@@ -1,0 +1,153 @@
+# List of News servers with online monitoring
+# created Sun Apr  7 02:40:02 CEST 2002
+# DATE 1020407
+#
+# format: searchstr[TAB]official_name[TAB]isp_code[TAB]moni_url
+#
+# This table is updated daily and available from
+#   ftp://ftp.switch.ch/info_service/netnews/wg/config/olm-lookup
+#
+# Please send all additions & corrections regarding this
+# list to newsadmin@switch.ch
+#
+# Currently this table is supported by the inflow package, available
+#   ftp://ftp.switch.ch/info_service/netnews/wg/tools/inflow.tar.gz
+#
+# Note: since 20010409, the second field official_name shows the server's pathalias if available
+HSNX	HSNX	US-ATGI	http://hsnx.atgi.net
+HSNX.atgi.net	HSNX	US-ATGI	http://hsnx.atgi.net
+Quza.UK.peer	Quza.UK.peer	UK-QUZA	http://extranet.global-crossing.co.uk/public/
+ams-newsfeed.speedport.net	ams-newsfeed.speedport.net	NL-SPEEDPORT	http://ams-newsfeed.speedport.net/usenet/
+analog.skynet.be	skynet.be	BE-SKYNET	http://seymour.skynet.be/
+bambam.wirehub.nl	newsfeed.wirehub.nl	NL-WIREHUB	http://doema.wirehub.nl/news/
+bignews.mediaways.net	feedme.news.mediaways.net	DE-MEDIAWAYS	http://www.mediaways.net/spezial/news.shtml
+broadway.wirehub.nl	newsfeed.wirehub.nl	NL-WIREHUB	http://doema.wirehub.nl/news/
+cmir.arnes.si	cmir.arnes.si	SI-ARNES	http://www.arnes.si/~beni/news-stats/news.html
+cube.news.surf.net	surfnet.nl	NL-SURFNET	http://info.news.surf.net/
+cw-insnet-peer-00	cw-insnet-peer-00	UK-CWINS	http://peer-00.news.insnet.cw.net:8080/newsbone-info.html
+drone.news.surf.net	surfnet.nl	NL-SURFNET	http://info.news.surf.net/
+dumdum.wirehub.nl	newsfeed.wirehub.nl	NL-WIREHUB	http://doema.wirehub.nl/news/
+fanta.algonet.se	fanta.algonet.se	SE-ALGONET	http://newsfeed1.algonet.se/
+feed2.news.luth.se	feed2.news.luth.se	SE-LUTH	http://feed2.news.luth.se
+feeders.news.surf.net	surfnet.nl	NL-SURFNET	http://info.news.surf.net/
+feedme.news.mediaways.net	feedme.news.mediaways.net	DE-MEDIAWAYS	http://www.mediaways.net/spezial/news.shtml
+feedme.newsmediaways.net	feedme.news.mediaways.net	DE-MEDIAWAYS	http://www.mediaways.net/spezial/news.shtml
+iol	iol	IE-IOL	http://nuacht.iol.ie/NewsBone/Statistics/
+island.idirect.com	island.idirect.com	CA-IDIRECT	http://island.idirect.com/
+kanja.arnes.si	kanja.arnes.si	SI-ARNES	http://www.arnes.si/~beni/news-stats/news.html
+ldn-newsfeed.speedport.net	ldn-newsfeed.speedport.net	NL-SPEEDPORT	http://ldn-newsfeed.speedport.net/usenet/
+mobster.newyork.wirehub.net	mobster.newyork.wirehub.net	US-WIREHUB	http://doema.wirehub.nl/news/nyc/
+nanoprobe.news.surf.net	surfnet.nl	NL-SURFNET	http://info.news.surf.net/
+news-atm.rediris.es	news.rediris.es	ES-REDIRIS	http://www.rediris.es/netnews/nb/stats-info.en.html
+news-feed.inet.tele.dk	news-feed.inet.tele.dk	DK-TELEDANMARK	http://www.news.inet.tele.dk/
+news-fra1.dfn.de	news-fra1.dfn.de	DE-DFN	http://www.dfn.de/service/news/newsbone/newsbone-mon.html
+news-ge.switch.ch	news-ge.switch.ch	CH-SWITCH	http://tungurahua.switch.ch/news/index.html
+news-in.belnet.be	news.belnet.be	BE-BELNET	http://news.belnet.be/stats/news/
+news-in.maxwell.syr.edu	news.maxwell.syr.edu	US-MAXWELLSYR	http://nntprelay.maxwell.syr.edu/stats.htm
+news-in.news.iol.ie	iol	IE-IOL	http://nuacht.iol.ie/NewsBone/Statistics/
+news-in.skynet.be	skynet.be	BE-SKYNET	http://seymour.skynet.be/
+news-m01.ny.us.ibm.net	newsm.ibm.net	US-IBMNET	http://newsm.ibm.net
+news-out.de.ibm.net	newsfeed.de.ibm.net	DE-IBMNET	http://www.news.eu.ibm.net/
+news-out.news.iol.ie	iol	IE-IOL	http://nuacht.iol.ie/NewsBone/Statistics/
+news-out.skynet.be	skynet.be	BE-SKYNET	http://seymour.skynet.be/
+news-out.uk.ibm.net	newsfeed2.uk.ibm.net	UK-IBMNET	http://www.news.eu.ibm.net/
+news-peer.bt.net	news-peer.bt.net	UK-BTNET	http://news-peer.bt.net/
+news-spur1.maxwell.syr.edu	news-spur1.maxwell.syr.edu	US-MAXWELLSYR	http://nntprelay.maxwell.syr.edu/stats.htm
+news-x.support.nl	news-x.support.nl	NL-SUPPORT	http://noc.support.nl/diablo
+news-x2.support.nl	news-x2.support.nl	NL-SUPPORT	http://news-x2.support.nl
+news-xfer.atlantic.net	news-xfer.atlantic.net	US-INTERNETCC	http://news-xfer.atlantic.net
+news-xfer.siscom.net	news-xfer.siscom.net	US-SISCOM	http://news-xfer.siscom.net
+news-zh.switch.ch	news-zh.switch.ch	CH-SWITCH	http://pinatubo.switch.ch/news/index.html
+news.abs.net	news.abs.net	US-ABSNET	http://news.abs.net
+news.amsterdam.surf.net	surfnet.nl	NL-SURFNET	http://info.news.surf.net/
+news.arnes.si	kanja.arnes.si	SI-ARNES	http://www.arnes.si/~beni/news-stats/news.html
+news.belnet.be	news.belnet.be	BE-BELNET	http://news.belnet.be/stats/news/
+news.bofh.it	news.bofh.it	IT-BOFH	http://news.bofh.it
+news.cineca.it	newsfeed.cineca.it	IT-CINECA	http://www.news.cineca.it/
+news.computerville.it	news.computerville.it	IT-COMPUTERVILLE	http://news.computerville.it/
+news.enteract.com	news.enteract.com	US-ENTERACT	http://news.enteract.com/
+news.eu.ibm.net	newsfeed2.uk.ibm.net	UK-IBMNET	http://www.news.eu.ibm.net/
+news.franken.de	news.franken.de	DE-KNF	http://news.franken.de/
+news.ftech.net	news.ftech.net	UK-FRONTIER	http://status.news.ftech.net/diablo
+news.grnet.gr	news.grnet.gr	GR-GRNET	http://news.grnet.gr/
+news.hub.org	news.hub.org	CA-HUB	http://www.hub.org/~news/innreport/
+news.insnet.cw.net	cw-insnet-peer-00	UK-CWINS	http://peer-00.news.insnet.cw.net:8080/newsbone-info.html
+news.ip-plus.ch	news.ip-plus.ch	CH-IP-PLUS	http://news.ip-plus.net/
+news.ip-plus.net	news.ip-plus.ch	CH-IP-PLUS	http://news.ip-plus.net/
+news.mathworks.com	news.mathworks.com	US-MATHWORKS	http://usenetstats.mathworks.com/
+news.maxwell.syr.edu	news.maxwell.syr.edu	US-MAXWELLSYR	http://nntprelay.maxwell.syr.edu/stats.htm
+news.netcologne.de	news.netcologne.de	DE-NETCOLOGNE	http://news.netcologne.de/index.html
+news.new-york.net	news.new-york.net	US-NEWYORKNET	http://www.new-york.net/terrypub/news-stats/
+news.nijmegen.surf.net	surfnet.nl	NL-SURFNET	http://info.news.surf.net/
+news.panservice.it	news.panservice.it	IT-PNSRVC	http://news.panservice.it/
+news.rediris.es	news.rediris.es	ES-REDIRIS	http://www.rediris.es/netnews/nb/stats-info.en.html
+news.ruhrgebiet.individual.net	news.ruhrgebiet.individual.net	DE-RUHR	http://news.ruhrgebiet.individual.net
+news.skynet.be	skynet.be	BE-SKYNET	http://seymour.skynet.be/
+news.uniovi.es	news.uniovi.es	ES-UNIOVI	http://www.si.uniovi.es/logs/
+news.unisource.ch	news.ip-plus.ch	CH-IP-PLUS	http://news.ip-plus.net/
+news.usc.es	news.usc.es	ES-USC	http://www.usc.es:8080/secus/stadis/innstats/
+news.uv.es	news.uv.es	ES-UV	http://peque.uv.es/news/
+news.wind.surfnet.nl	news.wind.surfnet.nl	NL-SURFNET	http://news.wind.surfnet.nl/
+news.wirehub.nl	news.wirehub.nl	NL-WIREHUB	http://doema.wirehub.nl/newsserver/news-notice.html
+news01.eh.ibm.net	newsfeed.de.ibm.net	DE-IBMNET	http://www.news.eu.ibm.net/
+news01.pt.uk.ibm.net	newsfeed2.uk.ibm.net	UK-IBMNET	http://www.news.eu.ibm.net/
+newsbo.news.garr.it	newsbo.news.garr.it	IT-GARR	http://www.news.garr.it/stats
+newscore.univie.ac.at	newscore.univie.ac.at	AT-ACONET	http://www.aco.net/admin/news/newscore/index.html
+newsfeed-east.remarq.com	newsfeed-east.remarq.com	US-REMARQ	http://newsfeed-east.remarq.com/
+newsfeed-zh.ip-plus.net	newsfeed-zh.ip-plus.net	CH-IP-PLUS	http://newsfeed-zh.ip-plus.net
+newsfeed.a2000.nl	newsfeed.a2000.nl	NL-A2000	http://people.a2000.nl/sico
+newsfeed.axxsys.net	newsfeed.axxsys.net	US-AXXSYS	http://www.axxsys.net/news/
+newsfeed.cineca.it	newsfeed.cineca.it	IT-CINECA	http://www.news.cineca.it/
+newsfeed.de.ibm.net	newsfeed.de.ibm.net	DE-IBMNET	http://www.news.eu.ibm.net/
+newsfeed.esat.net	newsfeed.esat.net	IE-ESAT	http://newsfeed.esat.net
+newsfeed.mathworks.com	newsfeed.mathworks.com	US-MATHWORKS	http://newsfeed.mathworks.com
+newsfeed.nyu.edu	newsfeed.nyu.edu	US-NYU	http://newsfeed.nyu.edu/
+newsfeed.uk.ibm.net	newsfeed2.uk.ibm.net	UK-IBMNET	http://www.news.eu.ibm.net/
+newsfeed.uni-erlangen.de	newsfeed.uni-erlangen.de	DE-UNI-ERLANGEN	http://newsfeed.uni-erlangen.de/stats/
+newsfeed.visi.com	newsfeed.visi.com	US-VISI	http://newsfeed.visi.com/
+newsfeed.wirehub.nl	newsfeed.wirehub.nl	NL-WIREHUB	http://doema.wirehub.nl/news/
+newsfeed1.nl.uu.net	newsfeed1.nl.uu.net	NL-UUNET	http://newsfeed1.nl.uu.net/
+newsfeed1.telenordia.se	newsfeed1.telenordia.se	SE-ALGONET	http://newsfeed1.telenordia.se/
+newsfeed1.uni2.dk	newsfeed1.uni2.dk	DK-TELE2	http://newsfeed1.uni2.dk/stats/
+newsfeed2.de.ibm.net	newsfeed.de.ibm.net	DE-IBMNET	http://www.news.eu.ibm.net/
+newsfeed2.uk.ibm.net	newsfeed2.uk.ibm.net	UK-IBMNET	http://www.news.eu.ibm.net/
+newsgate.cistron.nl	newsgate.cistron.nl	NL-CISTRON	http://newsgate.cistron.nl/
+newsm.ibm.net	newsm.ibm.net	US-IBMNET	http://newsm.ibm.net
+newsm2.ibm.net	newsm2.ibm.net	US-IBMNET	http://newsm2.ibm.net
+newsmi-eu.news.garr.it	newsmi-eu.news.garr.it	IT-GARR	http://www.news.garr.it/stats
+newsmi-us.news.garr.it	newsmi-us.news.garr.it	IT-GARR	http://www.news.garr.it/stats
+newspeer.monmouth.com	newspeer.monmouth.com	US-MONMOUTH	http://newspeer.monmouth.com/
+newsrm.news.garr.it	newsrm.news.garr.it	IT-GARR	http://www.news.garr.it/stats
+newsxfer.cs.ubc.ca	newsxfer.cs.ubc.ca	CA-UBC	http://newsxfer.cs.ubc.ca/~news/
+newsxfer.visi.net	newsxfer.visi.net	US-VISINET	http://newsxfer.visi.net
+newton.a2000.nl	newsfeed.a2000.nl	NL-A2000	http://people.a2000.nl/sico
+nntp-out.panservice.it	news.panservice.it	IT-PNSRVC	http://news.panservice.it/
+nntp.primenet.com	nntp.primenet.com	US-PRIMENET	http://www.nntp.primenet.com/
+nntp1.chi.cifnet.com	nntp1.chi.cifnet.com	US-CIFNET	http://nntp1.chi.cifnet.com/
+nntprelay.mathworks.com	nntprelay.mathworks.com	US-MATHWORKS	http://usenetstats.mathworks.com/
+ns2.intergrafix.net	ns2.intergrafix.net	US-INTERGRAFIX	http://bb.intergrafix.net/news.html
+nuacht.iol.ie	iol	IE-IOL	http://nuacht.iol.ie/NewsBone/Statistics/
+ny-newsfeed.speedport.net	ny-newsfeed.speedport.net	NL-SPEEDPORT	http://ny-newsfeed.speedport.net/usenet/
+pacific.ochin.on.ca	pacific.ochin.on.ca	CA-OCHIN	http://www.ochin.on.ca/~news
+paix-newsfeed.speedport.net	paix-newsfeed.speedport.net	NL-SPEEDPORT	http://paix-newsfeed.speedport.net/usenet/
+pascal.a2000.nl	newsfeed.a2000.nl	NL-A2000	http://people.a2000.nl/sico
+peer-00.news.insnet.cw.net	cw-insnet-peer-00	UK-CWINS	http://peer-00.news.insnet.cw.net:8080/newsbone-info.html
+peer.news.zetnet.net	peer.news.zetnet.net	UK-ZETNET	http://peer.news.zetnet.net/
+peer0.news.uk.quza.net	Quza.UK.peer	UK-QUZA	http://extranet.global-crossing.co.uk/public/
+pinatubo	news-zh.switch.ch	CH-SWITCH	http://pinatubo.switch.ch/news/index.html
+pinatubo-2.switch.ch	news-zh.switch.ch	CH-SWITCH	http://pinatubo.switch.ch/news/index.html
+pinatubo.switch.ch	news-zh.switch.ch	CH-SWITCH	http://pinatubo.switch.ch/news/index.html
+seymour.skynet.be	skynet.be	BE-SKYNET	http://seymour.skynet.be/
+sienna.impulse.net	sienna.impulse.net	US-IMPULSE	http://sienna.impulse.net
+skynet.be	skynet.be	BE-SKYNET	http://seymour.skynet.be/
+small.news-x.support.nl	news-x.support.nl	NL-SUPPORT	http://noc.support.nl/diablo
+surfnet.nl	surfnet.nl	NL-SURFNET	http://info.news.surf.net/
+teufel.wirehub.nl	newsfeed.wirehub.nl	NL-WIREHUB	http://doema.wirehub.nl/news/
+thor.wirehub.nl	news.wirehub.nl	NL-WIREHUB	http://doema.wirehub.nl/newsserver/news-notice.html
+tungurahua	news-ge.switch.ch	CH-SWITCH	http://tungurahua.switch.ch/news/index.html
+tungurahua-2.switch.ch	news-ge.switch.ch	CH-SWITCH	http://tungurahua.switch.ch/news/index.html
+tungurahua.switch.ch	news-ge.switch.ch	CH-SWITCH	http://tungurahua.switch.ch/news/index.html
+uni-erlangen.de	newsfeed.uni-erlangen.de	DE-UNI-ERLANGEN	http://newsfeed.uni-erlangen.de/stats/
+usenet73.supernews.com	usenet73.supernews.com	US-REMARQ	http://usenet73.supernews.com/
+vishnu.flash.net	vishnu.flash.net	US-FLASH	http://vishnu.flash.net/
+www.supernews.co.uk	www.supernews.co.uk	US-REMARQ	http://www.supernews.co.uk/stats/

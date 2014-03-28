@@ -1,0 +1,29 @@
+#
+# Sample dnewsfeeds file for a feeder+reader on same machine setup
+#
+label	GLOBAL
+    #
+    # pathalias out 'bad neighbors' - news sites that don't seem to care
+    # about the rest of the usenet
+    #
+    # alias	*.badsite.example.com
+end
+
+# Allow an incoming feed from our peering machine
+label	peer
+    inhost	peer.example.com
+    alias	*
+    delgroup	*
+end
+
+# Setup a realtime header-only feed to dreaderd
+label reader
+    inhost	localhost
+    hostname	localhost
+    rtflush
+    realtime	yes
+    alias	dummy
+    addgroup	*
+    headfeed	yes
+end
+

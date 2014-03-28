@@ -1,0 +1,58 @@
+diff -rc stunnel-4.20/src/options.c stunnel-w-prox-4.20/src/options.c
+*** stunnel-4.20/src/options.c	Sun Nov  5 07:04:37 2006
+--- stunnel-w-prox-4.20/src/options.c	Sat Nov 17 08:32:06 2007
+***************
+*** 878,884 ****
+      case CMD_HELP:
+          log_raw("%-15s = protocol to negotiate before SSL initialization",
+              "protocol");
+!         log_raw("%18scurrently supported: cifs, connect, nntp, pop3, smtp", "");
+          break;
+      }
+  
+--- 878,884 ----
+      case CMD_HELP:
+          log_raw("%-15s = protocol to negotiate before SSL initialization",
+              "protocol");
+!         log_raw("%18scurrently supported: cifs, connect, nntp, proxnntp, pop3, smtp", "");
+          break;
+      }
+  
+diff -rc stunnel-4.20/src/protocol.c stunnel-w-prox-4.20/src/protocol.c
+*** stunnel-4.20/src/protocol.c	Sat Nov 11 05:02:51 2006
+--- stunnel-w-prox-4.20/src/protocol.c	Sat Nov 17 09:17:15 2007
+***************
+*** 46,51 ****
+--- 46,52 ----
+  static void imap_client(CLI *);
+  static void imap_server(CLI *);
+  static void nntp_client(CLI *);
++ static void proxnntp_server(CLI *);
+  static void connect_client(CLI *);
+  static char *ntlm1();
+  static char *ntlm3(char *, char *, char *);
+***************
+*** 86,91 ****
+--- 87,94 ----
+              pop3_server(c);
+          else if(!strcmp(c->opt->protocol, "imap"))
+              imap_server(c);
++         else if(!strcmp(c->opt->protocol, "proxnntp"))
++             proxnntp_server(c);
+          else {
+              s_log(LOG_ERR, "Protocol %s not supported in server mode",
+                  c->opt->protocol);
+***************
+*** 355,360 ****
+--- 358,368 ----
+      }
+  }
+  
++ static void proxnntp_server(CLI *c) {
++     fdprintf(c, c->remote_fd.fd, "PROXIED %s", c->accepted_address);
++ }
++ 
++ 
+  static void connect_client(CLI *c) {
+      char line[STRLEN], ntlm2[STRLEN], *encoded;
+  

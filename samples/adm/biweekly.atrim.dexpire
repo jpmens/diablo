@@ -1,0 +1,92 @@
+#!/bin/csh -f
+#
+# BIWEEKLY.ATRIM
+#
+#	This script trims the dhistory file.  We have to pause
+#	the server while we are doing this and we have to ensure
+#	that no other operations, such as an expire, are in progress.
+#	We do this by locking the .lock file AND pausing the server.
+#
+#	If you kill this script in the middle, you MUST remember
+#	to unpause the server!
+#
+#	ALWAYS RUN MANUALLY ONCE AFTER MAKING ANY CHANGE, TO BE SURE
+#	THE SCRIPT STILL WORKS!
+
+cd ~
+
+if ( "$argv" != "locked" ) then
+    dbin/plock ~/.lock adm/$0 locked
+    exit 0
+endif
+
+echo "`date` - $0 BEGIN"
+
+set dhistory = `dbin/dpath dhistory`
+set dactive = `dbin/dpath server_dactive`
+
+# pause diablo
+#
+
+dbin/dicmd flush
+dbin/dicmd readonly
+dbin/dicmd flush
+
+# rebuild the history file, removing
+# any expired entries over 16 days old.
+#
+# remove the old backup to give us more
+# disk space to play with.
+
+rm -f ${dhistory}.new
+rm -f ${dhistory}.bak
+
+# To increase the hash table size, change the hsize parameter
+# in diablo.config or use the -h option to diload, aka '-h 8m'.
+# see diablo.config for more information.
+#
+
+dbin/didump -x ${dhistory} | dbin/diload -f ${dhistory}.new
+
+set savestatus = $status
+
+# Kill read-only diablo processes which might be using dhistory
+
+dbin/dicmd pause
+
+#
+# always ensure that *some* dhistory file
+# exists no matter what the failure condition
+#
+
+if ( $savestatus == 0 ) then
+    rm -f ${dhistory}.bak
+    ln ${dhistory} ${dhistory}.bak
+    mv -f ${dhistory}.new ${dhistory}
+    echo "History file trim succeeded:"
+    ls -la ${dhistory} ${dhistory}.bak
+else 
+    rm -f ${dhistory}.new
+    echo "Unable to trim ${dhistory} file"
+endif
+
+# cleanup the active database.   NOTE!  Do not use 
+# egrep to cleanup the active database anymore, use
+# dkp -t.  egrep just isn't safe and will blow things
+# up if dreaderd is running.
+#
+#
+# This is safer, it will generate an error if it cannot
+# trim the dactive.kp file (which is basically: never while
+# dreaderd is running, but at least this won't blow things up)
+#
+dbin/dkp -t ${dactive}
+
+
+# resume diablo (it will reopen the history file)
+#
+
+dbin/dicmd go
+
+echo "`date` - $0 END"
+

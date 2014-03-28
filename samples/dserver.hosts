@@ -1,0 +1,139 @@
+# DSERVER.HOSTS - specify spool and news transit servers to backend dreaderd
+#
+# ip/host/wildcard	flags		# comment
+#
+# WARNING!!! dns resolution for hostnames resolved in this file are done
+#	     synchronously and may stall readers.  This is on the TODO.  Use
+#	     an IP address if you run into trouble.
+#
+# WARNING!!! when running dreaderd and diablo (feeder side) on the same 
+#	     machine, don't accidently specify dreaderd's port!
+#
+# WARNING!!! The priority value must occur after the s or o option, something
+#	     like:  sM2 will not work.  It must be 's2M'.
+#	     
+# flags:
+#	s[#]	spool server for article fetches, w/ optional priority
+#		article fetches are attempted from a random server
+#		at the lowest priority until that priority is exhausted
+#		by failure (a fetch may be issued on the next server
+#		while still being processed by the first to reduce
+#		downtime latencies). Articles are fetched using ARTICLE,
+#		HEAD, BODY and STAT.
+#
+#	o[#]	outgoing server for POSTs, w/ optional priority
+#		POSTed articles are sent to a random server at the
+#		lowest priority until that priority is exhausted by
+#		failure, then go on to the next priority. Articles
+#		are sent to the remote server as a feed and the
+#		dreaderd process must therefore have IHAVE access to
+#		the remote server. This may differ from 's' access
+#		and may need to have a separate line for connecting
+#		to a server that doesn't allow IHAVE and ARTICLE from
+#		the same connection (e.g: INN).
+#
+#	p#	specify port number on host
+#
+#	M	flag to indicate that a 'mode reader' command must be sent
+#
+#	R	flag to indicate that a 'mode readonly' should be sent; this
+#		is mostly for use with Diablo backend spools, and to allow
+#		read-only access to articles while dhistory is being rebuilt.
+#
+#	t[#]	Monitor for sluggish spool server connections.  Warn
+#		in log for each transaction taking more than # seconds
+#		(or if 't' is specified with no #, use default of 10).
+#
+#	T[#]	Reset sluggish or nonresponsive spool server connections.
+#		If a connection has a transaction pending older than #
+#		seconds, the connection is eligible to be closed, and the
+#		transactions will be requeued to other spool servers if
+#		possible.  Note that this isn't a precise mechanism, and
+#		that some additional time (up to as much as 30 seconds) may
+#		pass before the server notices and takes action.  Setting
+#		this value to less than 60 seconds is probably a bad idea
+#		(If 'T' is specified with no #, use default of 180).
+#
+# options:
+#	bind=	Set the local bind IP address/hostname
+#
+#	txbufsize= Set the local TCP transmit buffer size
+#	rxbufsize= Set the local TCP receive buffer size
+#
+#	groups=	Specify the groups/hierarchies that this server holds. This
+#		only applies to articles retrieved by article number, not
+#		by Message-ID (we don't know the group for those), so
+#		servers with limited groups will still gets requests for
+#		articles they may not hold. The groups are specified as
+#		a comma-delimited wildmat list. Large group lists are
+#		likely to affect performance.
+#
+#	localspool= Specify the path to a local spool where the articles
+#		can be retrieved. The normal path would be /news/spool/news.
+#		If a path of '/' is specified, paths returned from the
+#		spool server will be full and not relative, so the mount
+#		points must be the same as the spool.
+#		This is useful for an NFS mounted spool, where the
+#		article path is retrieved from a remote diablo server
+#		via the WHEREIS NNTP extension command.
+#
+#	hash= Specify which server of a group to send this request to
+#	      based on a hash of the MessageID. The value is specified as
+#	      n/n or n-n/n as described in dnewsfeeds.
+#
+#	login=	Specify an authinfo user/authinfo pass sequence needs to be
+#		used to log in to the remote spool.  This is handy when
+#		chaining dreaderd's between sites.  One must also specify
+#		password= as well.  Note that if this option is used, the
+#		initial "mode {reader,readonly}" options are ignored, as we
+#		are presumably already talking to a reader and not a spool
+#
+#	password=	Counterpart to login=
+#
+#	cache=[off|on|lazy|scoring(x,y)]	Specify whether to cache
+#			articles in the reader cache (if enabled in
+#			diablo.config).
+#			The lazy option specifies that articles will
+#			only be cached if requested a second time before
+#			expiration.
+#			The scoring option is used to activate caching only
+#			for groups "worthing" it. The first value defines
+#			the read_articles/new_articles ratio at which we
+#			may start to lazily cache articles. The second value
+#			defines the cache_hits/read_articles at which we may
+#			start to cache articles. You may use zero or a negative
+#			value to activate an option for all groups.
+#	cachemin=	The minimum size of articles to be cached (in bytes)
+#	cachemax	The mmaximum size of articles to be cached (in bytes)=
+#	cacheabletime=	Articles older than this many seconds will not be
+#			added to the cache.
+#
+#	retention=<time_in_second>	Don't fetch artciles from
+#			this server if that are older than the specified
+#			number of seconds.
+#
+#	groupdef=<list_of_groupdef>	Don't fetch articles from this
+#			server unless the current group matches the
+#			specified list.
+#
+# NOTE: This file is automatically re-read when it changes, but only
+#	new lines and the 's' and 'o' options make any changes to the
+#	live configuration.
+#	All other changes to existing lines need dreaderd to be restarted.
+#	If you need to adjust an entry whilst live, comment it out,
+#	wait and then uncomment.
+#	
+# Using an INN server as a spool when connecting to the INN port:
+#   hostname	s1M
+#
+# Using an INN server as a spool when connecting to the NNTP port:
+#   hostname	s1M
+#
+# Using an INN server as a spool when connecting to a secondary NNTP port:
+#   hostname	s1Mp434
+#
+# Using a Diablo backend server as a spool on a secondary NNTP port:
+#  hostname	s1Rp434
+#
+# Use a Diablo backend server as primary spool and post server with options
+#  hostname	s1o1 bind=10.0.0.1 rxbufsize=32768

@@ -1,0 +1,86 @@
+README OR ELSE.
+
+**************************************************************
+
+*** NOTE ***
+
+This code is now compiled into Diablo by default - see the
+'feederfilter' option in samples/diablo.config and the ESPAM
+label in samples/dnewsfeeds.
+
+**************************************************************
+
+This is an _experimental_ modification to Diablo.
+
+It is not guaranteed to work.  It is not guaranteed to compile.  It may,
+in fact, format your hard drives and render you sterile.
+
+Use at your own risk.
+
+USE AT YOUR OWN RISK.
+
+Read the remainder of the documentation if these conditions are acceptable.
+Erase it all if it's not.
+
+You have been WARNED. - JG19980321
+
+README.
+
+diab-filter is a modification to Diablo to provide for an external filter
+program, using a Cyclone-esque filter interface.  It has been tested 
+exclusively with Cfilter, but I suspect that it would work with either
+SpamHippo-for-Cyclone or CleanFeed-for-Cyclone.  (Anyone who cares to
+verify this, drop a note to <jgreco@ns.sol.net>).
+
+It is mildly different, in the following ways:
+
+1) It currently feeds the entire body of an article to the filter program.
+   This is optional behaviour with Cyclone.
+2) It does not have an "early abort" feature such as Cyclone does.  My
+   understanding is that a Cyclone filter may choose to return a response
+   code before having read the entire article, which will cause Cyclone
+   to stop sending the current article and start the next.  I'm not sure
+   of the details.
+3) It will attempt to respawn a failed filter process.  The respawn is
+   mildly intelligent in that it will back off in the case of repeated
+   failures (to avoid decimating your system).
+4) It is able to use a remote filter on a remote machine.  A single TCP
+   connection is utilized, and the remote filter is expected to both
+   send and receive on the connection.  This could be accomplished by
+   placing the filter in inetd.conf, for example.
+
+diab-filter works by wedging itself into Diablo's main process and by
+running each received article through an external filter before doing
+the dnewsfeeds file processing and batching of the received article.
+It does _not_ communicate the filter status back to the child process,
+although this is conceivably possible.  This means that the child 
+process does not "reclaim" the space occupied by the article.  diab-
+filter won't save you any disk space, in other words.
+
+Normal operation is unaffected by the presence of the filter.  Your
+newsfeeds WILL NOT BE FILTERED UNLESS SPECIFIED IN dnewsfeeds!
+
+You may tag each feed as "nospam" to eliminate articles identified
+by the filter (or you may tag a subset of feeds, of course).  Or,
+you may tag a feed as "onlyspam", which will result in ONLY articles
+identified by the filter being sent.
+
+Please do not write to me asking for support or "how do I..." types
+of questions.  I do not have time currently to provide support for
+this modification.  Ask your questions in "news.software.nntp".  If
+I can answer them, I will, otherwise someone else might be able to.
+
+I'm interested in hearing bug reports though.  :-)
+
+INSTALL.
+
+    To install Joe's filter, edit lib/vendor.h and add:
+
+	#define DIABLO_FILTER	1
+
+    Then 'xmake clean; xmake'.   If your filter is not
+    /news/cfilter/run then set the path by adding a
+    define in lib/vendor.h for PATH_FILTER, such as:
+
+	#define PATH_FILTER     "/news/cfilter/run"
+

@@ -1,0 +1,26 @@
+vserverdef DEFAULT
+  hostname	host.example.com
+end
+
+# Allow reading and posting with no authentication required
+readerdef rp
+  read			yes
+  post			yes
+end
+
+# Allow read-only with no authentication
+readerdef ro
+  read			yes
+end
+
+# Allow feed-only
+readerdef feed
+  feed			yes
+end
+
+# Anyone under example.com can read and post
+access	*.example.com		rp
+
+# Our feed machine gets a special process
+access	feed.example.com	feed
+

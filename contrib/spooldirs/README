@@ -1,0 +1,35 @@
+This is a quick little program I wrote one night when I changed my
+diablo.config:spooldirs directive from 8 to 9.  We had retired the
+RAID controller on an array, giving me some extra disks, and I wanted
+to use the space for articles.  (yes, the details of what happened
+are more gory and complex, but basically I wound up with N.00..N.07
+in a filled state and N.08 not).
+
+PLEASE NOTE that the new setting for spooldirs must be compiled into
+this program, see the #define near the top.
+
+Example usage:
+
+% cd /news/spool/news
+% find N* -name 'D.*' -print | fixup > /tmp/out
+
+will generate a list in /tmp/out of dirs that need to be moved, and
+of already-correctly-placed dirs.
+
+You can then do something like
+
+% grep "mv N." /tmp/out | sh -x
+
+or maybe
+
+% foreach i (0 1 2 3 4 5 6 7 8)
+> grep "mv N.0${i}" /tmp/out | sh -x&
+> end
+
+to actually move the stuff around, as long as your system handles moving
+of directories across filesystems properly.
+
+This will take a while to run.  It took about six hours to move 324GB of
+data around as needed.
+
+JG200008161040

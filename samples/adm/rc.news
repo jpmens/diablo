@@ -1,0 +1,158 @@
+#!/bin/csh -f
+#
+# RC.NEWS, must be run as root
+#
+# THIS FILE MUST BE EDITED APPROPRIATELY OR IT WILL NOT DO ANYTHING.
+# Please read the comments.  There is a section that is appropriate
+# to a feeder-only installation, a section that is appropriate to a 
+# reader/feeder or reader-only installation, and a section for general
+# stuff.  You will need to uncomment appropriate commands,
+#
+# --------------------------------------------------------------------
+# General stuff
+# --------------------------------------------------------------------
+#
+# Not all operating systems have a maxproc and/or descriptor
+# resource limit.  Edit as appropriate.  However, note that
+# Diablo needs to have at least 128 descriptors available for
+# most moderate installations and, being a forking server
+# plus dealing with all the outgoung feeds, the maximum number
+# of news processes should be bumped up pretty high too.
+#
+# Check the csh manual on your system to determine the appropriate
+# commands.
+#
+
+#limit maxproc 1024
+#limit openf   1024
+#unlimit
+
+
+if ( ! -d /news ) then
+    echo "Unable to startup Diablo, /news does not exist."
+    exit 1
+endif
+
+cd /news
+
+#
+# You may wish to automatically trim and sort the dactive.kp file
+# while restarting news.  This will, however, cause problems if your
+# reader or feeder systems are currently running.  Uncomment this if
+# you are sure that you will only run rc.news if the entire news
+# system is stopped at the time.
+#
+# set dactive = `dbin/dpath server_dactive`
+# if ( -f ${dactive} ) then
+#	dbin/dkp -t ${dactive}
+#	dbin/dkp -s ${dactive}
+# endif
+#
+# set dactive = `dbin/dpath reader_dactive`
+# if ( -f ${dactive} ) then
+#	dbin/dkp -t ${dactive}
+#	dbin/dkp -s ${dactive}
+# endif
+
+#
+# --------------------------------------------------------------------
+# Reader/feeder stuff
+# --------------------------------------------------------------------
+#
+# If running a diablo feeder on the same machine, I recommend the diablo
+# feeder run on port 435, not 434, because something like trn/inews will
+# use both 119 and 434 for the reader side of things.
+#
+# In this example I am starting up a diablo feeder on port 435 and 
+# dreaderd on port's 119 and 434.  Note that I am actually specifying 
+# TWO DIFFERENT PATH ELEMENTS, one for the locally running diablo and 
+# one for the reader.  Also, readers generally do not need huge TCP 
+# buffers and you can save considerable memory by reducing the buffer
+# size.  
+#
+# In this example, I've turned off diablo's spam cache under the 
+# assumption that some prior feeder is filtering.  Remove the -S0 option
+# to leave the spam cache enabled.
+#
+# In this example, this machine is expected to be fed from one or more 
+# remote machines.  THE REMOTE MACHINE(S) MUST FEED THE DIABLO PROCESS 
+# SITTING ON PORT 435!!!.  The diablo process will handle the history 
+# and then feed the headers to the reader.
+#
+# if your kernel/ps 'sees' argv modifications, include the -s option.
+# if not, you can get rid of it.  -s with a large number of spaces after it
+# is used to display status information via 'ps' on systems that support this
+# feature.
+#
+# Common diablo options (see also diablo.hosts, where some of the
+# options can also be specified - the command-line options will
+# override the diablo.config options):
+#
+#	-e n	set the precommit cache timeout to n seconds
+#	-p str	set my path name
+#	-c str	set a common (cluster) path name
+#	-T n	set n byte transmit buffer
+#	-R n	set n byte receive buffer
+#	-M n	set maximum number of simultaneous client connections
+#	-h str	set the reported hostname
+#	-A str	set the news admin contact address
+#	-S0	disable internal (not external) spam filter
+#	-F n	set max article size to feed to external spam filter
+#	-P n	set the port to bind to
+#
+# dbin/diablo -S0 -M 0 -P 435 -p MYNEWSPATHNAME server "-s                                                          "
+# If we wanted the feeder to master the article numbers and run the reader
+# as a slave, we would turn on the 'active' option in diablo.config and
+# add the '-x MASTERPATHNAME' option to dreaderd.
+#
+# NOTE!  HOME environment variable must be set for pgp program to
+# work properly.  PGP keys should be entered into the ~news user's
+# keyring.  See ftp://ftp.isc.org/pub/pgpcontrol/PGPKEYS
+#
+# Common dreaderd options (see also diablo.hosts, where some of the
+# options can also be specified - the command-line options will
+# override the diablo.config options):
+#
+#	-f0	turn off fast-copy (default: on)
+#	-T n	set n byte transmit buffer
+#	-R n	set n byte receive buffer
+#	-F n	set maximum number of feed-only forks
+#	-D n	set number of DNS/auth resolver procs (use diablo.config
+#		instead)
+#	-M n	set number of reader procs (use diablo.config instead)
+#	-N n	set number of threads per reader proc (use diablo.config
+#		instead)
+#	-c n	number of seconds to sleep on close of a failed connect
+#	-h str	set the reported hostname
+#	-P str	set the [ip.addr:]port to bind to
+#	-p str	set my path name
+#	-x str	set the name of the master we are slaved to
+#
+# setenv HOME ~news
+# dbin/dreaderd -T 8192 -R 4096 -F 4 -P 119 -P 434 -p DIFFNEWSPATHNAME "-s                                                          "
+#
+# --------------------------------------------------------------------
+# Feeder only stuff
+# --------------------------------------------------------------------
+#
+# if your kernel/ps 'sees' argv modifications, include the -s option.
+# if not, you can get rid of it.
+#
+# Common diablo options (see also diablo.hosts, where some of the
+# options can also be specified - the command-line options will
+# override the diablo.config options):
+#
+#	-e n	set the precommit cache timeout to n seconds
+#	-p str	set my path name
+#	-c str	set a common (cluster) path name
+#	-T n	set n byte transmit buffer
+#	-R n	set n byte receive buffer
+#	-M n	set maximum number of simultaneous client connections
+#	-h str	set the reported hostname
+#	-A str	set the news admin contact address
+#	-S	enable internal spam filter
+#	-F	enable the external spam filter (if compiled)
+#	-P n	set the port to bind to
+#
+#
+# dbin/diablo -p MYNEWSPATHNAME server "-s                                                          "

@@ -1,0 +1,884 @@
+
+# DNEWSFEEDS	SAMPLE
+#
+#  This file is used by diablo and dspoolout to determine what articles
+#  are sent to a host (and written to the path_dqueue directory) and
+#  to dtermine what parameters to use when sending an article to a host
+#
+#  The GLOBAL label is applied prior to the label assigned to the incoming
+#  or outgoing connection.  It may be used to specify global defaults for 
+#  both the incoming and outgoing sides of a feed.
+#
+#  The ISPAM and ESPAM labels are defined for articles sent to the
+#  internal and external spam filters respectively. This allows
+#  fine control over what articles are sent to the spam filters.
+#
+#  The IFILTER label is applied to all incoming articles and allows
+#  articles to be rejected before they are saved to disk.
+#
+#  groupref/groupdef are used to define groups and then reference them in
+#  feed labels.  These are capable of recursion.  Diablo now allows some
+#  directives normally specified in a label to also be specified in a 
+#  group recursion. The list of directives has not yet been determined
+#  so it is a matter of trial and error.
+#
+#  WARNING!  control messages add a pseudo-newsgroup called 'control.MSGTYPE'
+#	     to the newsgroup list for filtering purposes.  Thus, if you
+#	     do an 'addgroup *' and then delgroup the groups you don't want,
+#	     you will still receive ALL control messages.  See the nntp2a/c
+#	     example below for how to include control messages IN the filter.
+#
+#  COMMAND   Inbound Outbnd
+#		|	|
+#		v	v
+#
+# ---------------------------------------------------------------------
+# These options are used for incoming and outgoing feed handling by
+# the diablo process.
+#
+#  alias	Y	Y
+#
+#	Alias outbound feeds for the destination feed based on the Path: 
+#	header.   If the specified wildcard appears in the Path: header, 
+#	the article will NOT be propogated to this outbound feed.  This is 
+#	normally used to prevent an article received from this particular 
+#	feed to be requeued back out to the same feed.
+#
+#  filter	Y	-
+#
+#	Filter an inbound Newsgroups: element.  Wildcards are ok.  If an
+#	article on the inbound feed conatins the specified group(s), the
+#	article will be discarded no matter what other groups may appear.
+#	Used to prevent external sources from crossposting to internal groups.
+#
+#  nofilter	Y	-
+#
+#	unFilter something that might have previously been filtered.  For 
+#	example, you may have a groupref which filters best.* and a specific
+#	feed which you want to allow best.test postings to pass through.
+#
+#  offerfilter	Y	-
+#
+#	Filter an inbound CHECK/IHAVE element.  Wildcards are ok.
+#	(See lib/vendor.h)
+#
+#  noofferfilter	Y	-
+#
+#	unFilter something that might have previously been filtered.
+#	(See lib/vendor.h)
+#
+#  nomismatch	Y	-
+#
+#	Surpress MISMATCH errors when checking the incoming Path: against
+#	aliases.  This option is not normally used.
+#
+#  maxconnect	Y	-
+#
+#	Specify the maximum number of parallel connections per client IP
+#	for the incoming feed(s) associated with this label.  If smaller then
+#	the global maxconnect (see diablo.config, diablo man page), this value
+#	overrides the maxconnect for all IP's connecting to this label.  Each
+#	distinct IP connecting to this label is independantly limited by this
+#	parameter.
+#
+#  maxcross	-	Y
+#  maxpath	-	Y
+#  maxsize	-	Y
+#  minsize	-	Y
+#  mincross	-	Y
+#  minpath	-	Y
+#
+#	Applies to outbound feeds.  Articles are not queued to the outbound
+#	feed if they exceed the specified numeric parameter for the maximum
+#	number of cross postings, maximum number of Path: elements, or
+#	maximum article size non-inclusive of its headers.
+#
+#	You can also specify a minimum article size, path length, and minimum
+#	number of cross postings.  This is usually used to extract out large
+#	or heavily cross posted articles.
+#
+#	NOTE!!!!!!!!! When specifying size, the size is in bytes unless you
+#	postfix the number with 'k' (kilo), or 'm' (mega).  If you forget,
+#	your size will be bytes and probably not be what you expect.
+#
+#  rtflush	-	Y
+#
+#	Diablo normally buffers writes to its queue files.  If a queue file
+#	operated on in realtime (see 'realtime' option below), it is
+#	sometimes better to have diablo write the queue file unbuffered.
+#	rtflush accomplished this. Default is off.
+#
+#  nortflush	-	Y
+#
+#	If you specified rtflush previously (for example, in a groupref), you
+#	can undo it here.
+#
+#  nospam	-	Y
+#
+#	Only feed non-spam articles.  The default is to feed all articles
+#	whether spam or not.  This option is unusable in a GLOBAL entry.
+#
+#  onlyspam	-	Y
+#
+#	Only feed spam articles.  The default is to feed all articles
+#	whether spam or not.  This option is unusable in a GLOBAL entry.
+#
+#  arttypes	-	Y
+#
+#	Specify the type of articles wanted for this feed. Diablo has
+#	a fairly comprehensive (but not necessarily extremely accurate)
+#	article categorisation. The following categories can be
+#	specified:
+#		none	: no articles
+#		default : anything that doesn't match
+#		control : a Control: message
+#		cancel	: a cancel message
+#		mime	: an article specify a MIME type
+#		binary	: binary articles (any of the next 5)
+#		uuencode: uuencoded binaries 
+#		base64  : base64 encoded binaries
+#		binhex	: BINHEX encoded binaries
+#		yenc    : yenc encoded binaries
+#		bommanews : bommanews encoded binaries
+#		multipart: multipart MIME messages
+#		html	: HTML MIME
+#		ps	: Postscript MIME
+#		partial	: MIME partial
+#		pgp	: A message containing some sort of PGP
+#		all	: Any type of article (DEFAULT)
+#	Specifying a '!' before a type negates that type
+#
+#  incomingpriority	Y	-
+#
+#	Set a priority for incoming feeds (sets the nice value of the process)
+#	Higher values are lower priorities and the valid range is 0..20.
+#	The default is 0.
+#
+#  precomreject	Y	-
+#
+#	Reject incoming articles that get a precommit hit (i.e: are
+#	currently being offered by another server) rather than the
+#	default of asking the remote server to defer (431 response).
+#	This options enabled how pre-2.0 Diablo handled precommit hits
+#	and should be enabled for feeding sites that don't know what
+#	to do with a 431 response. You usually detect this by seeing
+#	a large number of posdup rejections for the incoming host
+#
+#  readonly	Y	-
+#
+#	Disallow the use of IHAVE, CHECK and TAKETHIS commands.
+#
+#  feedertxbuf	<size>
+#  feederrxbuf	<size>
+#
+#	Set the TCP buffer sizes for this connection, overriding what
+#	was set globally on the command line.  This would seem to be a
+#	useful optimization especially on spool servers, where the 
+#	inbound feed ought to have a large rx buffer/small tx buffer,
+#	but the spool connections should be just the opposite.
+#
+#  whereis	Y	-
+#
+#	Allow the use of the WHEREIS command that returns the location
+#	of an article on the spool (file, offset, size). Useful for
+#	a reader accessing an NFS mounted spool directly).
+#
+#  COMMAND   Inbound Outbnd
+#
+#  groupref	-	Y
+#
+#	Reference a label defined by 'groupdef'.  This is recursive.
+#
+#  addgroup	-	Y
+#
+#	If any group in the article's Newsgroups: line matches the wildcarded
+#	groupname, the article will be included	in the outbound feed.  Later
+#	addgroup/delgroup commands override earlier ones.
+#
+#	NOTE: if you addgroup *, then delgroup the groups you do not want,
+#	all control messages will still be propogated even for the groups
+#	you don't want.  The solution is to follow the 'addgroup *' with
+#	a 'delgroup control.*', so only control messages that pass the
+#	remainder of your filter are propogated.
+#
+#  delgroup	-	Y
+#
+#	If any group in the article's Newsgroups: line matches the wildcarded
+#	groupname, the article will be excluded in the outbound feed.  Later 
+#	addgroup/delgroup commands override earlier ones.
+#
+#  requiregroup -	Y
+#
+#	Require that the group appear in the Nesgroups: line.  Generally used
+#	when splitting control messages off.  e.g. 'requiregroup control.*'.
+#	the requiregroup commands usually occur at the END of the list.  If
+#	you have multiple requiregroup directives, the article passes if
+#	at least one is in the Newsgroups: line.
+#
+#  delgroupany	-	Y
+#
+#	If any group in the article's Newsgroups: line matches the wildcarded
+#	groupname, the article will be excluded in the outbound feed, even
+#	if other groups in the article's Newsgroups: line match other addgroup
+#	commands.  i.e. you can exclude an article if it is crossposted to 
+#	a set of groups even if you accept the other groups the article is
+#	posted to. 
+#
+#  addspam	Y	-
+#
+#	Any article with an NNTP-Posting-Host: matching this wildcard is
+#	automatically considered spam and rejected.  The message-id will
+#	be added to the history file to prevent further occurances of this
+#	message-id.  The data field should begin and end with '*', see
+#	the example below.
+#	
+#  delspam	Y	-
+#
+#	Any article with an NNTP-Posting-Host: matching this wildcard is
+#	automatically considered to NOT be spam and accepted even if the
+#	article exceeds the rate limit.  The data field should begin and end
+#	with '*', see the example below.
+#
+#  spamalias	-	-	(GLOBAL only)
+#       Related to the "alias" command, any originating server (not
+#	transit servers) or username entry in the Path: header that
+#	match a "spamalias" wildcard declaration will prevent that
+#	message being propagated to any neighbors.  Diablo
+#	behaves as though some "alias" command matched that Path:
+#	header on all outbound feeds.
+#
+#	Intended for use on transit-only servers (since in this
+#	implementation, "spamalias" checks are too late to prevent
+#	the message from being viewable from a local reader),  the
+#	"spamalias" parameter acts globally and must appear in the
+#	GLOBAL section.
+#
+#	For example,
+#
+#	groupdef        GLOBAL
+#		spamalias	badpornsite
+#		spamalias	annoyizer
+#	end
+#
+#	These entries would block messages with these Path: headers:
+#
+#	Path: someplace!elsewhere!okaysite!badpornsite!not-for-mail
+#	Path: someplace!elsewhere!okaysite!notspammershonest!annoyizer
+#
+#	See the section in README.SERVER for a more comprehensive
+#	description of this option.
+#
+#  adddist	-	Y
+#  deldist	-	Y
+#
+#	Allow or disallow distributions for a feed (Distribution: header).
+#	These command do NOT accept wildcards.  You must specify explicit
+#	distributions.
+#
+#	If no adddist or deldist distributions are specified, the article
+#	is passed.
+#
+#	If a distribution matches anything on the deldist list, the article
+#	is dropped, even if valid matches occur against the adddist list.
+#
+#	If a non-zero number of adddist's are specified, the distribution 
+#	must match at least one of them for the article to pass.
+#
+# hashfeed	-	Y
+#
+#	Split the feed based on a hash of the Message-ID.  This is a
+#	deterministic way to control article flow.
+#
+#	*************************************************************
+#	** NOTE: AS OF 2005/11/01, A DIFFERENT METHOD IS USED FOR  **
+#	** COMPUTING HASHES.  LEGACY IMPLEMENTATIONS NEED TO READ  **
+#	** THIS DOCUMENTATION OR RISK VARIOUS PROBLEMS.            **
+#	*************************************************************
+#	
+#	The fundamental idea behind hashfeed is to deterministically
+#	control the flow of articles.  The legacy hashfeed system was
+#	only moderately good at this; it had some design deficiencies
+#	that resulted from being designed only to split a feed in two.
+#
+#	The Message-ID is run through an MD5 (or the legacy quickhash
+#	function) to return an integer.  This integer is then compared
+#	to the range and mod values supplied to this directive.
+#
+#		hashfeed 1/20
+#
+#	would result in 5% of all articles matching this directive.
+#
+#		hashfeed 2/20
+#
+#	would also result in 5% of all articles matching, but a 
+#	*different* 5%.  Ranges may be specified as well.
+#
+#		hashfeed 1-20/100
+#
+#	would result in 20% of all articles matching this directive.
+#
+#	A simple application would be to allow multiple streams to an
+#	NNTP neighbor for binary traffic.  In such a case, the
+#	deterministic properties of this mechanism are not important.
+#
+#		label	peer-a
+#			hashfeed 1/2
+#			hostname peer.site.invalid
+#		end
+#		label	peer-b
+#			hashfeed 2/2
+#			hostname peer.site.invalid
+#		end
+#
+#	This results in an even traffic split between peer-a and peer-b
+#	feed objects.
+#
+#	Since the algorithm is deterministic, multiple transit servers
+#	can feed a cluster of spool servers.  In a simple two-server
+#	design, the peer-a and peer-b example above would be sufficient,
+#	merely by changing one of the hostnames to the second server.
+#
+#	In a more complex scenario where you have a 5TB, 10TB, and 16TB
+#	server, where you want to evenly spread the load, you could do
+#	the following:  calculate the mod value 5 + 10 + 16 == 31, then
+#
+#		label	spool-a
+#			hashfeed 1-5/31
+#			hostname spool-a.site.invalid
+#		end
+#		label	spool-b
+#			hashfeed 6-15/31
+#			hostname spool-b.site.invalid
+#		end
+#		label	spool-c
+#			hashfeed 16-31/31
+#			hostname spool-c.site.invalid
+#		end
+#
+#	For legacy support of the old Quickhash, you may specify a leading
+#	@ sign.  DO NOT USE THIS FOR NEW DEPLOYMENTS.
+#
+#		hashfeed	@1/10
+#		hashfeed	@1-2/10
+#
+#	For power users, some other notes.  A comma-delimited set of hash
+#	values is allowed, and will match if any one of the list elements
+#	match.
+#
+#		hashfeed	@1/10,1/10
+#
+#	might be used as part of a transition strategy from old to new
+#	hash algorithm.
+#
+#	Finally, in certain circumstances, you may wish to use multiple
+#	levels of hashes.  For example, a large deployment may consist
+#	of two clusters of spool servers, each server having 24 disks.
+#	The old hash implementation allowed articles to be placed and
+#	retrieved from a clustered spool server in a deterministic
+#	fashion, which is good.  However, for replication, it would be
+#	nice to have the content on Cluster A Server 6 Disk 2 be the
+#	same as the content on Cluster B Server 6 Disk 2.  The old hash
+#	did not provide a method to allow a second level of deterministic
+#	assignment, so we merely got all the articles onto the same
+#	server.
+#
+#	MD5 generates a 16-byte return value.  The 32-bit integer
+#	computations used by hashfeed only take a portion of that data
+#	for the hash value, so a modifier is available to start at an
+#	alternate byte within the return value.  This effectively allows
+#	us to have four entirely independent values to use for hash
+#	computations (:0, :4, :8, :12) or thirteen overlapping values
+#	(:0-:12).  The syntax is to append the :N to the mod value.
+#	The default value is :0.
+#
+#		label	spool-a1
+#			hashfeed 1/8
+#			hostname spool-a1.site.invalid
+#		end
+#		label	spool-b1
+#			hashfeed 1/8
+#			hostname spool-b1.site.invalid
+#		end
+#			[...repeated...]
+#		label	spool-a8
+#			hashfeed 8/8
+#			hostname spool-a8.site.invalid
+#		end
+#		label	spool-b8
+#			hashfeed 8/8
+#			hostname spool-b8.site.invalid
+#		end
+#
+#	This configuration provides a balanced, split configuration
+#	where the content on spool-a1 will be the same as spool-b1.
+#	However, in dspool.ctl on each server, we have
+#
+#		metaspool 01
+#			hashfeed	1/24:4
+#		end
+#		[...repeated...]
+#		metaspool 24
+#			hashfeed	24/24:4
+#		end
+#
+#	which forces the use of a different hash value to evenly
+#	distribute the articles in a deterministic fashion over all the
+#	disks.  The interesting thing is that, now, if Cluster B Server 6
+#	Disk 2 dies, it can be replaced, and all the missing articles are
+#	known to be on Cluster A Server 6 Disk 2, so they merely need to
+#	be copied over, and then have diloadfromspool run to integrate them
+#	into the history, and recovery is complete.
+#
+#	A third tier of hashfeed might be used for sending multiple
+#	newsfeed streams to a spool server.  I've yet to think of a fourth
+#	tier, but the code fully supports it.
+#
+#  inhost	Y	-
+#
+#	Specify the hostnames that are allowed to make incoming
+#	connections on this label. These hosts are added in addition
+#	to diablo.hosts entries (if any exist). Use of this option
+#	means that diablo.hosts does not have to exist.
+#
+#	The hostname/IP can use simple wildcards ('*' and '?') and CIDR IP
+#	addresses are also valid. The use of wildcards is not recommended.
+#
+#  host		Y	Y
+#	This option is an alias to set 'hostname', 'alias' and 'inhost'
+#	to the same value. Other values for 'alias' and 'inhost' can
+#	still be used along with this option. This option can be used
+#	to decrease the size of the dnewsfeeds file if a label has
+#	a simple configuration.
+#
+# ---------------------------------------------------------------------
+#  The following options are only used by dspoolout and most are passed
+#  as parameters to dnewslink when it is called.
+#
+#  hostname		host.example.com
+#	The hostname/IP address to push articles to (connect).
+#	Setting this option enables an outgoing feed for this label.
+#	Removing this option prevents dspoolout starting a feed for this
+#	label.
+#
+#  bindaddress		10.0.0.1
+#	Specify the local interface IP address to bind to when creating
+#	the outgoing NNTP session for this label. DEFAULT: kernel
+#	specified IP address.
+#
+#  port			119
+#	Specify the specified destination port when making the connection
+#	i.e: Port on remote host. DEFAULT: 119
+#
+#  startdelay		10
+#	Delay the starting of dnewslink by this many seconds (DEFAULT: 0).
+#
+#  transmitbuf		16384
+#	Set the transmit buffer size for socket. Min suggested size: 4096
+#	Nominal suggested size: 16384 to 65536 depending on kernel config
+#
+#  receivebuf		8192
+#	Set the receive buffer size for socket. Min suggested size: 4096
+#	suggeseted size: 8192
+#
+#  maxparallel		2
+#	Specify the maximum number of concurrent connections to open
+#	to the host. The maximum is 32, but we suggest you never specify
+#	more than 3 to any external feed.
+#
+#  stream		on|off
+#	Enable or disable NNTP streaming for this label (DEFAULT: on)
+#
+#  realtime		on|off|flush|notify
+#	Enable or disable realtime feeds for this label (DEFAULT: off)
+#	The 'flush' switch enables both realtime and rtflush (see above).
+#	The 'notify' switch enables realtime, rtflush and notify.
+#	With a realtime feed, dspoolout starts and maintains a dnewslink
+#	on the dqueue file that sends articles as soon as the queue
+#	entry is written by diablo. This eliminates most delays in
+#	propagating articles.
+#
+#  nobatch		on|off
+#	Tell dspoolout NOT to run any batch dnewslink's for this feed. 
+#	Nominally used for realtime-only feeds where the loss of an
+#	article here and there does not hurt anything.  One also normally 
+#	reduces the number of queue files to 1 when using this option. 
+#	(do not use this option on critical feeds!, always make sure 
+#	there is at least one guarenteed way out for an article).
+#
+#  maxqueue		200
+#	Set the maximum number of queue files to maintain for this label
+#	DEFAULT: unlimited
+#	Each time dspoolout runs, it moves the current active diablo queue
+#	file to a backlog file. This option limits the number of backlog
+#	files that are maintained and removes older files when this
+#	limit is reached.
+#
+#  headfeed		on|off
+#	Specify that this label requires or doesn't require a header-only
+#	feed. DEFAULT: off
+#	Header-only feeds are mainly used for sending articles to dreaderd
+#
+#  genlines		on|off
+#	Specify that this label requires or doesn't require the Lines:
+#	header to be generated. DEFAULT: off
+#	This currently only works on header-only feeds and is not
+#	necessary for dreaderd.
+#
+#  check		on|off|nortcheck
+#	Enabled or disabled the use of the NNTP "check" command when
+#	a streaming feed is negotiated. Specifying 'nortcheck' will
+#	disable the CHECK command for the realtime process only.
+#	DEFAULT: on
+#
+#  logarts
+#	Log all outgoing articles into a file in the log directory
+#	into a fill called feedlog.LABEL.
+#	The type of articles that are logged can be specified as a
+#	comma separated list of options. The possible options are:
+#		accept		Articles accepted
+#		reject		Articles rejected with the reason
+#		defer		Artciles deferred for later delivery
+#		refuse		Articles refused
+#		error		Articles that generated an error
+#		all		All articles
+#	Note that specifing "refuse" can generated huge log files.
+#	DEFAULT: accept,reject,defer,error
+#
+#  hours
+#	Specify the hours during which a conection to this label can
+#	be made. DEFAULT: all
+#	Note that it is the time a connection is made, so a realtime
+#	connection could exist during hours not specified. The connection
+#	may still exist beyond the cutoff time if there are articles
+#	in the active backlog file that need to be delivered.
+#	Hours are specifed as a comma separated list of hour values
+#	with a range being specified with a '-'.
+#	e,g: 20,3-7	limit feed to 20:00-21:00 and 03:00-08:00
+#
+#  preservebytes
+#	Don't regenrate the Bytes: header. This is useful when the
+#	server acts as a relay for header-only feeds. i.e: When the
+#	server receives and sends a header-only feed.
+#
+#  priority
+#	Set a nice value for the dnewslink process started for this feed.
+#	Higher values will give a lower priority to the feed. Max of 20
+#	with a default of 0.
+#
+# compress		lvl
+#	Attempt to negotiate a compressed newsfeed and set the compression
+#	level for articles sent on this newsfeed if compression support
+#	is enabled at compile-time. The entire forward stream is compressed
+#	(including commands), although the responses from remote sites are
+#	sent back uncompressed. You can expect compression ranging from
+#	about 27-32% on full feeds.  Feeds excluding binaries should see
+#	40-50% compression.  Compression statistics are reported in the
+#	log files along with other stats.  Compression does eat CPU.
+#	The default is '0' which turns off compression negotiation.
+#
+# queueskip		N
+#	Specify the number of the most recent queue files to skip
+#	and not run a dnewslink on. This effectively introduces a
+#	queueing delay of N x 5 or N x 10 minutes depending on how
+#	often you run dspoolout from cron. Note that dnewslink will
+#	still process some/all skipped files when it has finished
+#	processing old files, so this delay is not guaranteed.
+#	Default is 0.
+#
+# articlestat		on/off
+#	Before offering an article to a peer, check that the spool
+#	file containing the article exists before doing the offer.
+#	This can be a performance hit and should probably not be
+#	used for fast feeds. It could be useful for feeds during
+#	limited hours that could have many expired articles.
+#	Default is off.
+#
+# notify		on/off
+#	If this option and 'realtime' are enabled, dnewslink will contact
+#	the master diablo process and request it to notify dnewslink when
+#	a new article is ready for a feed. This helps reduce article relay
+#	latency at the expense of using more file descriptors in the
+#	master diablo process. An extra fd is used per notified feed.
+#	The rtflush option must also be used to make this option any use.
+#	Default is off.
+#
+# delayfeed		N
+#	Specify the number of seconds to delay articles. The receive time
+#	of an article is written into the dqueue file for a feed with
+#	this option set and dnewslink doesn't offer the article until
+#	that time + delayfeed seconds. This option can be used with
+#	realtime feeds, for a realtime delay. Note that the delay is
+#	not very accurate and could be a longer period of time, depending
+#	on how well dnewslink is maintaining the stream to the remote
+#	host, the backlog accumulating and the startup delay for the
+#	dnewslink process(es). On low volume streaming feeds, there may
+#	also be an extra delay as enough articles are accumulated for a
+#	number of CHECK commands.
+#
+# delayinfeed		N
+#	Specify the number of seconds to delay after diablo has started
+#	before allowing this incoming feed to connect to us. The feed
+#	is rejected with a 400 error. This gives a short window in which
+#	more important (or local) incoming feeds can clear their backlogs
+#	before more expensive feeds.
+#
+# settos		N
+#	Set a quality of service option via the IP_TOS setsockopt()
+#	function call if available in the OS. This is only supported
+#	on some networks.
+#
+# ---------------------------------------------------------------------
+#  label/end
+#
+#	Label a feed.   See the examples below.
+#
+#  groupdef/end
+#
+#	Label a command group which can be referenced with 'groupref' from
+#	within other groupdefs or labels.  There is no ordering requirement..
+#	you can reference groups prior to defining them.  You should be 
+#	careful of creating recursion loops, however.
+#
+
+# GLOBAL ENTRY - you should always have a GLOBAL entry and it should contain
+# 		 a minimum of the commands shown below to prevent the 
+#		 spam filter (which defaults to 'on') from incorrectly
+#		 categorizing certain posting sources as spam.
+#
+#		 Typically these are sources which have reasonable spam
+#		 policy but break the NNTP-Posting-Host: header by using
+#		 the same header for all users.
+
+label	GLOBAL
+    #
+    # pathalias out 'bad neighbors' - news sites that don't seem to care
+    # about the rest of the usenet
+    #
+    # alias	*.badsite.example.com
+end
+
+# ISPAM/ESPAM/FILTER: Generic filter labels
+#
+# ISPAM: Internal diablo filter. See the -S option in the diablo(8)
+#	 man page or the 'internalfilter' option in diablo.config.
+#	 Useful for duplicate article detection.
+#
+# ESPAM: Uses an external filter (something like cleanfeed). See the
+#	 -F option to diablo(8) and the 'feederfilter' option in
+#	 diablo.config. Use for generic spam filtering, although
+#	 using it for binaries has performance implications.
+#	 See also the 'nospam' and 'onlyspam' dnewsfeed options.
+# 
+# IFILTER: Filter incoming articles. Use for filtering binaries in
+#	 non-binary groups. This filter acts slightly differently to
+#	 the others in that any article that matches the "feed" are
+#	 rejected.
+#
+# These labels limit which articles are sent to each of the filters
+# and most dnewsfeeds options can be used (as you would with a newsfeed).
+# 
+# NOTE: Only one of each label is used at this time.
+#
+# The below examples are a good combined choice and their performance
+# impact is very small for a very large benefit.
+
+# Send all binaries to the internal filter for duplicate detection
+label ISPAM
+    addgroup	*
+    arttypes	binary
+end
+
+# Send all non-binaries to the external filter (cleanfeed is a good one)
+label ESPAM
+    addgroup	*
+    arttypes	!binary
+end
+
+# Filter binaries in non-binary newsgroups and reject them at reception
+label IFILTER
+    addgroup	*
+    delgroup	*.bina*
+    arttypes	binary
+end
+
+# Contact: xxx@example.com
+#
+# Setup a feed to host.example.com, allowing a maximum of 5 incoming
+# connections from this host and limiting the groups sent to the host
+#
+# note: delgroupany means that if any group in the Newsgroups: line
+# matches, the article is not fed even if other groups are acceptable.
+#
+# By deleting control.*, we only propogate control messages that are
+# passed in those groups that are not filtered out.  Otherwise all
+# control messages would be propogated.
+
+label	example
+    hostname	host.example.com
+    alias	host.example.com
+    alias	news.example.com
+    filter	internal.*
+    addgroup	*
+    delgroup	control.*
+    delgroup	bofh.*
+    delgroup	alt.*
+    delgroupany	*.bina*
+    delgroupany	alt.warez*
+    maxconnect	5
+    maxqueue	10
+    rtflush
+    realtime	on
+end
+
+# local redistribution - standard feed
+#
+# note: groupref references a grouplist 'subroutine', which can be
+# defined before or after the reference (see the end of this file)
+
+label	nntp1
+    hostname	nntp1.example.com
+    port	120
+    alias	nntp1.example.com
+    addgroup	*
+    delgroup	control.*
+    groupref	NOWAREZ
+    groupref	NOPORN
+    arttypes	all,!binary
+end
+
+# local redistribution with control messages split off into a separate feed.
+#	The idea is allow control messages to bypass any normal article
+#	backlog, giving us a better chance of getting cancels to the 
+#	destination before the articles being canceled.
+#
+# NNTP2A:	Pass our standard feed MINUS any control messages.  We use
+#		delgroupany to accomplish this.  (delgroup control.* would
+#		still pass control messages posted to groups we do pass)
+#
+# NNTP2C:	Pass ONLY control messagse by running our standard group
+#		filters, then tagging on a requiregroup command which then
+#               picks only those messages that are ALSO in the control
+#               group.
+#
+#		For the hell of it, we flush the queue file on a per-line 
+#		basis (rtflush) to make the realtime option in dnntpspool.ctl
+#		even faster.  rtflush is especially useful for partial feeds
+#		that would otherwise not get flushed all that often due to
+#		the buffering.
+
+label	nntp2a
+    hostname	nntp2.example.com
+    alias	nntp2.example.com
+    addgroup	*
+    groupref	NOWAREZ
+    groupref	NOPORN
+    delgroupany	control.*
+    maxparallel	3
+end
+
+label	nntp2c
+    hostname	nntp2.example.com
+    alias	nntp2.example.com
+    addgroup	*
+    groupref	NOWAREZ
+    groupref	NOPORN
+    requiregroup control.*
+    rtflush
+    realtime	on
+end
+
+
+#  Contact: xxx@example.com
+#
+#  NOTE!  don't forget the 'k' when specifying maxsize!
+
+label	external
+    hostname	external.example.com
+    alias	external.example.com
+    filter	internal.*
+    maxsize	200k
+    maxcross	8
+    delgroup	*
+    addgroup	ba.*
+    addgroup	biz.*
+    addgroup	comp.*
+end
+
+# Sometimes people need incoming-only feeds.  It is possible to optimize
+# incoming-only feeds by specify the same label in diablo.hosts for all
+# incoming-only hosts.  You then only need to configure a single label
+# in dnewsfeeds as shown below.
+#
+
+label	incoming
+    alias	*
+    delgroup	*
+end
+
+# groupdef's can occur before or after they are used
+#
+#
+groupdef NOWAREZ
+    delgroupany	alt.crack*
+    delgroupany	alt.warez*
+    delgroupany	alt.binaries.ware*
+end
+
+groupdef NOPORN
+    delgroupany	alt.binaries.pictures.er*
+end
+
+
+# Example of a local diablo feeder sending to a local 
+# diablo dreaderd.  In this case we have to set the 
+# alias to 'dummy' in order to pass articles to the
+# reader even they appear to have come *FROM* the same reader.
+# This is because articles posted via the reader are 
+# posted directly to an upstream site and must propogate
+# back down to the reader in order to be indexed by the reader.
+#
+# We do this to allow alternative article numbering schemes
+# to be used - where the article numbering may not be assigned
+# by the reader.
+#
+# The second label should be used for readers that connect back
+# to the feeder.  Note that we need *TWO* labels here... one for
+# outgoing that does not filter loops out of the Path:, and
+# one for incoming that properly names the source to prevent
+# diablo from inserting a MISMATCH element into the Path: header.
+# Your diablo.hosts should tie the POSTing connection from the
+# reader to 'fromreader'.  The spool connection can tie into either.
+#
+# The incoming label allows read-only mode; this permits dreaderd
+# to retrieve articles while the dhistory file is being reloaded.
+
+label toreader
+    hostname	reader.example.com
+    addgroup    *
+    alias       dummy
+    maxconnect	200
+    headfeed
+    rtflush
+    realtime	on
+end
+
+label fromreader
+    delgroup	*
+    alias	actual_reader_fqdn
+    maxconnect 200
+    readonly
+end
+
+#
+# Reject all IHAVE/CHECK offers where the Message-ID contains
+# *.spammer.site>, but accept cancel messages
+# (Requires the USE_OFFER_FILTER option to be enabled in lib/vendor.h)
+#
+label aninhost
+    inhost		inhost.example.com
+    offerfilter		*.spammer.site>
+    noofferfilter	<cancel.*
+end
+
+# and so on...
+#

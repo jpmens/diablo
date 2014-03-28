@@ -1,0 +1,252 @@
+.\" $Revision: 1.11 $
+.TH DIDUMP 8
+.TH DILOAD 8
+.SH NAME
+didump \- Diablo program to dump the dhistory database
+.PP
+diload \- Diablo program to append to the dhistory database
+.SH SYNOPSIS
+.B didump
+[
+.B \-e
+]
+[
+.B \-f
+]
+[
+.B \-H
+]
+[
+.B \-h
+]
+[
+.B \-l
+]
+[
+.B \-n
+]
+[
+.B \-o
+]
+[
+.B \-p
+]
+[
+.B \-rN
+]
+[
+.B \-TN
+]
+[
+.B \-t
+]
+[
+.B \-v
+]
+[
+.B \-x
+]
+[
+.B \-C diablo.config
+]
+[
+.B \-d[n]
+]
+[
+.B \-V
+]
+[
+.B \@offset
+]
+.B dhistory-file
+.PP
+.B diload
+[
+.B \-f
+]
+[
+.B \-h hashtablesize
+]
+[
+.B \-u
+]
+[
+.B \-v
+]
+[
+.B \-C diablo.config
+]
+[
+.B \-d[n]
+]
+[
+.B \-V
+]
+[
+.B dhistory-file
+]
+
+.SH DESCRIPTION
+.IR Didump
+dumps the specified dhistory file into a human readable format.  It is 
+used to debug the dhistory database, to recover a corrupted dhistory 
+file.  In combination with diload, didump may be used to remove expired
+entries over rememberdays days old from the dhistory file.
+.PP
+.B -e
+is used to cause didump to generate ENTRIES lines - useful for diload
+progress.
+.PP
+.B -f
+with a normal dump (no -t), seeks to the end of the history file and
+prints out entries as other programs (diablo) add them.  DiDump will
+not exit in this case.  This option is useful to get an idea of the
+aggregate incoming article rate.  NOTE, however, that diablo does not
+add history file entries with a simple append, so you may see blank records
+in the output that, in fact, are filled-in later.
+.PP
+.B -H
+Dump a hash trace for specified Message-ID or hash.
+.PP
+.B -h
+For each entry dumped, lookup the hash in the history file to verify
+that it is available via normal lookup.
+.PP
+.B -l
+is used to force didump to flush each line to the output rather then buffer
+the output, useful when running "didump -f dhistory | dreadart -v -f -"
+or something of that ilk.
+.PP
+.B -n
+Also print the value of the 'next' pointer.
+.PP
+.B -o
+didump V1.08 can read older (V1.07 or smaller) Diablo dhistory files if this
+option is specified.  This is used when upgrading to 1.08 to reload the
+dhistory file with the dhistory file format.
+.PP
+.B -p
+Displays progress on stdout. Note that the total records may not
+be accurate if the -x or -T options are used because didump doesn't
+know how many records will be displayed.
+.PP
+.B -rN
+Set the rememberdays value to N. The rememberdays value specifies
+the number of days worth of expired articles to keep. The default
+is obtained from ``diablo.config'' and a value of '-1' will cause
+didump to not dump any expired articles. If the value has 's', 'm'
+or 'h' appended, the numeric value is taken as seconds, minutes or
+hours, respectively. This option has no effect without the ``-x'' option.
+.PP
+.B -TN
+Don't dump records older than N seconds. The time value can be
+suffixed with 'd', 'h' or 'm' to specify days, hours or minutes.
+The default is '-1' which means dump all records.
+.PP
+.B -t
+is used for debugging and causes didump to attempt to trace the dhistory
+file's hash table links.  It is very inefficient.
+.PP
+.B -v
+is used to generate additional information, such as the spool file 
+containing the article.
+.PP
+.B -x
+causes didump to not dump expired entries that are over rememberdays days old.
+.PP
+.B -C
+allows the specification of the path of the diablo.config file to use.
+.PP
+.B -d[n]
+will set debug mode, at optional level n.
+.PP
+.B -V
+will print the version and exit.
+.PP
+Generally speaking, when recovering a dhistory file or trimming off 
+obsolete entries,
+.B didump
+or 
+.B didump -x
+is run with the existing history file as an argument, and the output is
+piped to
+.IR diload 
+\-f tempfile.
+Once the recovery is complete, the temporary history file is then renamed
+to become the actual history file.  The diablo server must be paused
+during such operations to prevent it from acting on the 'old' version
+of the history file while the new one is being constructed.
+
+.PP
+.IR Diload
+takes history data on the standard input and appends it to the
+specified history file.  If no history file is specified, the
+active 
+.B dhistory
+database is used.  If any given record already exists in the dhistory file, 
+the new record is thrown away and the original record left intact.  You can
+safely run
+.IR diload
+to append new entries without shutting the main Diablo server down, but
+Diablo must be properly paused and restarted if you intend to rewrite the history file.
+.PP
+.B -f
+Turn on special-fast mode.  This locks the history file through the
+entire procedure and makes the assumption that entries being added
+did not previously exist.  This also causes the base hash table to
+be cached and written then written out when the load operation has
+completed.  DiLoad will create the history file you supply as an argument 
+and will refuse to run if it is already pre-existing.  This
+is used in the weekly trimming script to quickly rebuild the history
+file from a dump.
+.PP
+.B -h hashtablesize
+The default hash table size is configured in the diablo.config
+configuration file, and is the best way to set the size.  Alternatively,
+you can use this option to set it to any power of two.  For a transit
+server, the suggested size is 4m or 8m.  For a spool server, the optimal
+size is a power of two slightly less than the number of articles you plan
+to store (i.e. if you have 90 million articles, 64m or perhaps 32m).  Do 
+NOT forget the 'm' for million, or you will be a very unhappy camper.
+Please note that if you create a larger history hash in this manner, the 
+next run of diload (perhaps from biweekly.atrim) will still only create
+a table the size of whatever the configured default is, so be sure to
+modify your diablo.config or biweekly.atrim to reflect any appropriate
+changes.
+.PP
+.B -u
+May be used with special-fast mode to re-enable checking for duplicates.
+You have the advantage of locking the history file throughout the
+entire operation, but can still use a pre-existing history file to 'update'.
+.PP
+.B -v
+will turn on verbose mode.  diload prints out its progress.
+.PP
+.B -C
+allows the specification of the path of the diablo.config file to use.
+.PP
+.B -d[n]
+will set debug mode, at optional level n.
+.PP
+.B -V
+will print the version and exit.
+
+.SH "SEE ALSO"
+diablo(8), 
+dicmd(8),
+didump(8),
+diload(8),
+dnewslink(8),
+doutq(8),
+dexpire(8),
+dexpireover(8),
+diconvhist(8),
+dilookup(8),
+dspoolout(8),
+dnewsfeeds(5),
+dkp(8),
+dpath(8),
+diablo-kp(5),
+diablo-files(5)
+.PP
+

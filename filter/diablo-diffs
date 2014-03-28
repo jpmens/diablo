@@ -1,0 +1,190 @@
+*** dfw/diablo/lib/protos.h	Sun Nov 23 15:23:31 1997
+--- diablo/lib/protos.h	Mon Mar 16 14:08:36 1998
+***************
+*** 40,46 ****
+  Prototype int GetExpire(const char *msgid, const char *nglist, int size);
+  Prototype void LoadExpireCtl(int force);
+  Prototype int FeedAdd(const char *msgid, time_t t, History *h, const char *nglist, const char *npath);
+! Prototype int FeedWrite(int (*callback)(const char *hlabel, const char *msgid, const char *path, const char *offsize, int plfo), const char *msgid, const char *path, const char *offsize, const char *nglist, const char *npath);
+  Prototype void FeedFlush(void);
+  Prototype void LoadNewsFeed(time_t t, int force, const char *hlabel);
+  Prototype void TouchNewsFeed(void);
+--- 40,46 ----
+  Prototype int GetExpire(const char *msgid, const char *nglist, int size);
+  Prototype void LoadExpireCtl(int force);
+  Prototype int FeedAdd(const char *msgid, time_t t, History *h, const char *nglist, const char *npath);
+! Prototype int FeedWrite(int (*callback)(const char *hlabel, const char *msgid, const char *path, const char *offsize, int plfo), const char *msgid, const char *path, const char *offsize, const char *nglist, const char *npath, const int spamart);
+  Prototype void FeedFlush(void);
+  Prototype void LoadNewsFeed(time_t t, int force, const char *hlabel);
+  Prototype void TouchNewsFeed(void);
+*** dfw/diablo/lib/newsfeed.c	Fri Nov 21 21:19:16 1997
+--- diablo/lib/newsfeed.c	Mon Mar 16 14:08:24 1998
+***************
+*** 11,17 ****
+  #include "defs.h"
+  
+  Prototype int FeedAdd(const char *msgid, time_t t, History *h, const char *nglist, const char *npath);
+! Prototype int FeedWrite(int (*callback)(const char *hlabel, const char *msgid, const char *path, const char *offsize, int plfo), const char *msgid, const char *path, const char *offsize, const char *nglist, const char *npath);
+  Prototype void FeedFlush(void);
+  Prototype void LoadNewsFeed(time_t t, int force, const char *hlabel);
+  Prototype void TouchNewsFeed(void);
+--- 11,17 ----
+  #include "defs.h"
+  
+  Prototype int FeedAdd(const char *msgid, time_t t, History *h, const char *nglist, const char *npath);
+! Prototype int FeedWrite(int (*callback)(const char *hlabel, const char *msgid, const char *path, const char *offsize, int plfo), const char *msgid, const char *path, const char *offsize, const char *nglist, const char *npath, const int spamart);
+  Prototype void FeedFlush(void);
+  Prototype void LoadNewsFeed(time_t t, int force, const char *hlabel);
+  Prototype void TouchNewsFeed(void);
+***************
+*** 46,51 ****
+--- 46,52 ----
+      int			nf_MaxConnect;		/* max connections	*/
+      char		nf_PerLineFlushOpt;
+      char		nf_NoMisMatch;
++     char		nf_SpamFeedOpt;
+      char		nf_Reserved2;
+      char		nf_Reserved3;
+  } NewsFeed;
+***************
+*** 112,117 ****
+--- 113,138 ----
+      return(r);
+  }
+  
++ int feedSpamFeedOK(int feed, int article)
++ {
++ 	if (! feed) {
++ 		return(0);
++ 	}
++ 	if (feed == 1) {
++ 		if (article == 1) {
++ 			return(1);
++ 		}
++ 		return(0);
++ 	}
++ 	if (feed == 2) {
++ 		if (article == 0) {
++ 			return(1);
++ 		}
++ 		return(0);
++ 	}
++ 	return(0);
++ }
++ 
+  int
+  FeedWrite(
+      int (*callback)(const char *hlabel, const char *msgid, const char *path, const char *offsize, int plfo), 
+***************
+*** 119,125 ****
+      const char *path, 
+      const char *offsize,
+      const char *nglist,
+!     const char *npath
+  ) {
+      NewsFeed *nf;
+      int r = 0;
+--- 140,147 ----
+      const char *path, 
+      const char *offsize,
+      const char *nglist,
+!     const char *npath,
+!     const int spamart
+  ) {
+      NewsFeed *nf;
+      int r = 0;
+***************
+*** 133,139 ****
+  
+      for (nf = NFBase; nf; nf = nf->nf_Next) {
+  	if (feedQueryPaths(nf, npath, bytes) == 0 && 
+! 	    feedQueryGroups(nf, nglist) == 0
+  	) {
+  	    r += callback(nf->nf_Label, msgid, path, offsize, nf->nf_PerLineFlushOpt);
+  	}
+--- 155,162 ----
+  
+      for (nf = NFBase; nf; nf = nf->nf_Next) {
+  	if (feedQueryPaths(nf, npath, bytes) == 0 && 
+! 	    feedQueryGroups(nf, nglist) == 0 &&
+! 	    feedSpamFeedOK(nf->nf_SpamFeedOpt, spamart) == 0
+  	) {
+  	    r += callback(nf->nf_Label, msgid, path, offsize, nf->nf_PerLineFlushOpt);
+  	}
+***************
+*** 827,832 ****
+--- 850,865 ----
+  			if (nf) {
+  			    err = 0;
+  			    nf->nf_PerLineFlushOpt = 1;
++ 			}
++ 		    } else if (strcmp(s1, "nospam") == 0) {
++ 			if (nf) {
++ 			    err = 0;
++ 			    nf->nf_SpamFeedOpt = 1;
++ 			}
++ 		    } else if (strcmp(s1, "onlyspam") == 0) {
++ 			if (nf) {
++ 			    err = 0;
++ 			    nf->nf_SpamFeedOpt = 2;
+  			}
+  		    } else if (strcmp(s1, "nomismatch") == 0) {
+  			if (nf) {
+*** dfw/diablo/util/diablo.c	Sun Nov 23 14:32:29 1997
+--- diablo/util/diablo.c	Thu Mar 19 16:41:24 1998
+***************
+*** 871,876 ****
+--- 871,879 ----
+      char *ptr;
+      int maxCount = 100;
+      int bytes;
++     char loc[128];
++     int spamart;
++     time_t startTime, endTime;
+  
+      if (PipeAry[fd] == NULL)
+  	PipeAry[fd] = bopen(fd);
+***************
+*** 896,902 ****
+  	    char *npath = strtok(NULL, "\t\n");
+  
+  	    if (path && offsize && msgid && nglist && npath) {
+! 		FeedWrite(fwCallBack, msgid, path, offsize, nglist, npath);
+  		{
+  		    char *p;
+  		    if ((p = strchr(offsize, ',')) != NULL)
+--- 899,912 ----
+  	    char *npath = strtok(NULL, "\t\n");
+  
+  	    if (path && offsize && msgid && nglist && npath) {
+! 		sprintf(loc, "%s:%s", path, offsize);
+! 		startTime = time(NULL);
+! 		spamart = diabfilter(loc);
+! 		endTime = time(NULL);
+! 		if (endTime - startTime > 1) {
+! 		    syslog(LOG_NOTICE, "filter took too long (%d)", endTime - startTime);
+! 		}
+! 		FeedWrite(fwCallBack, msgid, path, offsize, nglist, npath, spamart);
+  		{
+  		    char *p;
+  		    if ((p = strchr(offsize, ',')) != NULL)
+*** dfw/diablo/lib/XMakefile	Sat Nov 22 13:02:07 1997
+--- diablo/lib/XMakefile	Sat Mar 21 14:21:34 1998
+***************
+*** 4,10 ****
+  .set SRCS	global.c node.c xopen.c buffer.c wildcmp.c history.c \
+  		expire.c newsfeed.c parsedate.c sigs.c lock.c alloc.c \
+  		subs.c xmap.c precommit.c spamfilter.c strerror.c memcpy.c \
+! 		zalloc.c seq.c config.c kpdb.c active.c
+  
+  .set OBJS	$(SRCS:"*.c":"obj/lib_*.o")
+  
+--- 4,11 ----
+  .set SRCS	global.c node.c xopen.c buffer.c wildcmp.c history.c \
+  		expire.c newsfeed.c parsedate.c sigs.c lock.c alloc.c \
+  		subs.c xmap.c precommit.c spamfilter.c strerror.c memcpy.c \
+! 		zalloc.c seq.c config.c kpdb.c active.c diab-filter.c \
+! 		diab-read.c socket.c
+  
+  .set OBJS	$(SRCS:"*.c":"obj/lib_*.o")
+  

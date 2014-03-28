@@ -1,0 +1,502 @@
+
+			   DIABLO READER SUPPORT
+
+    Diablo now has a reader module, dreaderd, which operates independantly 
+    from the feeder.  It implements the full NNTP command set and is
+    designed to maintain overview and an article cache based on a single 
+    full or header-only feed supplied by a remote entity.  If a full feed
+    is supplied, the reader module throws the body away since the feed is only
+    used to generate overview records.  The reader module does NOT maintain
+    a history file, so you should only give it a single feed.  If a header-only
+    feed is used, it is required to includes a Bytes: header in every article
+    and is required to include the entire article body for control messages. 
+    The Diablo feeder is capable of outputing header-only feeds.    It is also
+    possible to run the Diablo feeder on the same box, allowing the box to
+    take multiple feeds and having the feeder deal with history issues and
+    then push a single feed to the reader.
+
+    You can supply a single, normal feed to the reader rather then a
+    header-only feed.  Thus, the reader can also be fed from other news 
+    systems.  
+
+    THE READER CAN NOW DETECT DUPLICATE ARTICLES IN XREF SLAVE MODE!  That
+    is, when you run dreaderd with the '-x xrefhost' option dreaderd will be
+    able to detect duplicate articles insofar as storing them to its overview
+    database goes.  Duplicate control messages will still be executed
+    multiple times, however.  In a multi-level news system this allows
+    the leaf to take more then one feed.  We do not recommend taking more
+    then three feeds.  This should be used solely for purposes of 
+    redundancy when several machines are feeding you the *same* set of 
+    XRef'd articles.
+
+    The reader uses the headers from the feed to generate and maintain its
+    own overview database in the /news/spool/group/ directory, which should
+    generally be a >20G partition for a full feed.  Article bodies are
+    fetched from one or more remote spools and can optionally be cached
+    locally in /news/spool/cache/ so re-retrievals do not continue to load
+    the spool.  An alternate methodology is to turn OFF the reader's cache
+    and run the Diablo feeder on the same platform, using it to filter
+    duplicates and to act as a first level cache.  In this case the reader
+    points it's first level remote spool to the reader running on the local
+    box.  Another alternative is to simply not have the reader cache articles
+    at all, instead always retrieving them from a remote host.
+
+    Please refer to the samples/ directory for a typical feeder+reader
+    setup.
+
+    The reader does not use a history file, but it does use an active file,
+    dactive.kp (which is a KP database).  Only articles matching groups listed 
+    in the active file are stored to the overview directory hierarchy.
+
+    The overview is stored in a two-tiered directory hierarchy, with the first
+    tier labeled "00/" through "ff/" in hex.  dreaderd will create these
+    subdirectories as required.  Each subdirectory contains an "over.*" file
+    for each group and zero or more "data.*" files for each group.  The files
+    are named by the history hash function on the group name.  The "over.*"
+    files are fixed binary-format files containing article reference pointers
+    to the "data.*" files for that group.  dexpireover's job is to maintain
+    the binary format files and to delete out-of-date "data.*" files.  Each
+    "data.*" file contains the headers for a number of articles relating to a
+    particular group. This number of articles is dynamcially adjusted by
+    dexpireover, depending on how many articles are in the group. The more
+    articles a group has, the higher this fixed index will be. If a group
+    reaches its 'maxarts' number (the size of the index), older articles
+    will be overwritten until dexpireover adjusts the 'maxarts' value. The
+    starting, minimum and maximum values for 'maxarts' can be adjusted
+    with options in dexpire.ctl (see the sample for details). dexpireover
+    is only able to delete whole data.* files.
+
+				FEED/READER TOPOLOGIES
+
+    (A) SPOOL+READER BOX (spool maintained by Diablo feeder)
+
+	* Feeder (dbin/diablo) and Reader (dbin/dreaderd) run on same box.
+
+	* article caching turned off on reader side
+
+	* large spool configured (with 'reader' mode expiration) for the feeder
+
+    (B) FEED+READER BOX (tiny spool, optional article caching)
+
+	* Feeder (dbin/diablo) and Reader (dbin/dreaderd) run on same box.
+
+	* Feeder is used to allow the box to take multiple feeds, but only a
+	  small (8Gish or less) spool is maintained.  The feeder feeds the
+	  reader on the same box with a single internal feed.
+
+	* article caching may or may not be turned on in the reader.  Note
+	  that the reader *can* use the local feeder's spool as a first or
+	  second level cache if it wishes, but due to the small size of the
+	  spool this may not be particularly effective.
+
+	* Large spool configured on some remote box.
+
+    (C) READER-ONLY BOX (no spool, optional article caching)
+
+	* Only the reader is run on the box
+
+	* Box may take only a single feed if not in XRef-slave mode.  The 
+	  feed may not contain duplicate articles.
+
+	* Box may take limited duplicate feeds if in XRef-slave mode 
+	  (-x xrefhost) option to dreaderd.  The feed may contain duplicate
+	  articles but beware that duplicate control messages are executed
+	  multiple times.  It is not suggested that readers in this 
+	  configuration take more then 3 feeds.
+
+	* Article caching may or may not be turned on in the reader.
+
+	* Large spool configured on some remote box.
+
+    (D) READER-ONLY BOX USED AS AN L2 CACHE (as part of a larger topology)
+
+	* Only the reader is run on the box
+
+	* The box takes NO FEEDS and is configured with a large 
+	  /news/spool/cache
+
+	* The box accepts 'feed' connections into the reader side of the box
+	  in order to take 'article <message-id>' requests and then passes
+	  those requests onto the remote spool, caching the result.
+
+	* A box in this configuration is neither a feeder nor a reader.  It
+	  is simply operating as an article cache.  It cannot take user 
+	  connections and it cannot generate outgoing feeds.  It can only
+	  take connections from other readers that intend to fetch articles
+	  by message-id from it.
+
+	* You may specify the new 'readerxover trackonly' option in
+	  diablo.config to avoid writing out overview data files and only
+	  write out overview control files so expireover can run.
+
+    (E) FEEDER-ONLY BOX TAKES AND REDISTRIBUTES A HEADER-ONLY FEED
+	(as part of a larger topology)
+
+	* Some remote feeder/full-spool box sends a header-only feed to
+	  this feeder-only box.
+
+	* This feeder-only box then masters article numbers and redistributes
+	  the header-only feed to reader boxes.
+
+	* This feeder-only box, due to not receiving full body feeds, can make
+	  due with much less disk space, memory, and so forth yet still contain
+	  the most critical information related to your news system:  the 
+	  mastering of article numbers for all your reader boxes.
+
+	* This feeder-only box cannot act as a backing spool and cannot push
+	  out normal outgoing feeds.  It can only push out header-only feeds
+	  to Diablo reader boxes and (also usually) master article numbers.
+
+	* A reader is typically not run on the same box.  The box synchronizes
+	  it's active file (sans the article numberings which it masters) from
+	  one or more other reader boxes to obtain newgroup/rmgroup updates.
+	  dsyncgroups is used to accomplish this.
+
+				 ACTIVE FILE TOPOLOGIES
+
+    This is important:  It is possible for both the feeder and the reader sides
+    of Diablo to use an active file (dactive.kp), but only the reader side
+    of diablo processes control messages.  The feeder side of Diablo only
+    uses the active file when it is configured to do article number assignments
+    and master Xref: headers.  The reader side is capable of operating in
+    slave or master mode in regards to Xref: headers, and the reader side will
+    also process control messages and keep other parts of the active file
+    uptodate.
+
+    (A) FEEDER + READER ON SAME BOX, FEEDER MASTERS ARTICLE NUMBERS
+
+	* Diablo feeder is setup to master article numbers ('active' option
+	  turned on in diablo.config).
+
+	* Diablo feeder feeds a reader running on the same box.  The reader
+	  is configured to slave off the Xref: headers supplied by the feed.
+
+	* In this case, both the reader and feeder are operating on the same
+	  dactive.kp file (i.e. the same active file), with the reader handling
+	  complex control messages and the feeder simply using it to assign
+	  article numbers.
+
+	* This configuration allows your feeder to master article numbering for
+	  other reader boxes as well as the local reader.
+
+    (B) FEEDER on one box, READER on another
+
+	* The feeder may master article numbers, but dsyncgroups must be used
+	  to synchronize the dactive.kp file from a remote source since the
+	  feeder cannot process control messages (i.e. newgroup, rmgroup,
+	  etc...).
+
+	* If the feeder masters article numbers, it can keep multiple readers
+	  in synch with each other fairly easily.
+
+	* The reader may master article numbers, or it can be configured to
+	  slave from the feeder.
+
+	* If not un XRef slave mode, the reader must take a single feed from 
+	  the feeder or you must run a mini-feeder on the same machine as 
+	  the reader to handle duplicates.  It is suggested that the feeder 
+	  give each reader a single feed in order to ensure monotonically 
+	  increasing article numbers so 'temporary holes' aren't created 
+	  when articles arrive out of order.
+
+	* If in XRef slave mode (-x xrefhost option to dreaderd) you can 
+	  take duplicate feeds from the feeder, but the XRef host (the one
+	  assigning the article numbers) must be the same for all feeds and 
+	  the duplicate articles must be consistent.  No more then three
+	  feeds are recommended in this case, and note that duplicate control
+	  messages will be executed multiple times.
+
+	* The readers may still use the feeder's spool to fetch articles,
+	  and the readers may or may not enable their own article caching
+	  capability.
+
+    In all cases, the biggest confusion always occurs in regards to who 
+    masters the group/article-number assignments.  The reader can assign its
+    own article numbers or it can slave the article number assignments from
+    the remote feed by utilizing the Xref: header supplied by the remote
+    feed.
+
+
+			    STEP 1 - FILE SETUP
+
+    Before beginning, you must create additional directories under /news.  All
+    directories should be owned by the news user.  The /news/spool/group
+    directory is optional if you do not have the reader's native article
+    caching turned on.  You typically want /news, /news/spool/cache, 
+    /news/spool/group, and /news/spool/news to each have their own partition.
+    /news/log and /news/postq can reside on /news.
+
+	/news/spool/cache	reader's article cache, not required if
+				'readercache off' is specified in 
+				diablo.config.  You usually use the cache
+				when you are not running a feeder on the same
+				box or you do not wish to allocate disk space
+				to a cache.  If you do run a cache, you are
+				responsible for setting up cron jobs to
+				keep it's disk usage within your bounds.
+
+				The cache operates in a two-level directory
+				scheme indexed by message-id hash.  There are
+				512 top level directories.
+
+				The size of the cache partition is up to you.
+				many topologies don't really need a reader
+				cache but in those that do, I suggest an 8G
+				cache or something similar.  Just be
+				sure your cron job keeps some free space
+				available.
+
+	/news/spool/group	reader stores overview files in this directory.
+				a 9G partition is recommended if you take 
+				full groups and/or a full feed.
+
+	/news/spool/news	feeder stores article files in this directory.
+				If you are operating a full spool, it's the
+				diablo feeder that typically maintains it.
+
+				The minimum recommended size is 8G.  You can
+				use less only if you are using the spool to
+				run a feeder on the same box as the reader
+				in the 'just to filter out duplicate articles'
+				style of topology.
+
+	/news/spool/postq	reader queues posts for future delivery here
+				(work still in progress)
+
+	/news/log		reader stores & maintains dreaderd.status file
+				here. human readable file.  NEVER EDIT THE
+				FILE!
+
+    The following additional files must be configured in order for dreaderd
+    to operate.   Samples are available in the samples directory.  All files
+    should be owned by the 'news' user.
+
+	/news/diablo.config
+
+	    This file is required.  
+
+	    dreaderd does not automatically detect changes made to this file
+	    and must be restarted for changes to take effect.
+
+	    The number of forks, threads, and cache configuration is stored 
+	    in diablo.config for the reader.  See samples/diablo.config.
+	    When running a feeder on the same box, the 'active' and 
+	    'activedrop' configuration items are also important if you
+	    want the feed to master the group/article-number assignments.
+
+	/news/dactive.kp
+
+	    This is the 'active' file.  It's actually a database.  The 
+	    'dsyncgroups' utility may be used to initialize this file from
+	    some remote INN server.  This file is NOT compatible with INN's
+	    active file.
+
+	    You can use the dsyncroups program to create an initial 
+	    dactive.kp file.  The initial dsyncgroups run will take longer
+	    then normal to run because resizing .kp files past a page boundry
+	    is expensive.  This is not a problem under normal operation.
+
+	    dreaderd automatically detects changes made to this file, but
+	    you may only make adjustments with KP database tools such
+	    as dkp.  You may edit the file manually only if dreaderd (and
+	    diablo if diablo is mastering the article number assignments) is
+	    completely shut down.  Idle isn't good enough.  DO NOT EDIT
+	    THIS FILE MANUALLY IF YOU CAN HELP IT!  Use the 'dkp' program.
+
+	/news/dcontrol.ctl
+
+	    This is the control-message configuration file and operates in
+	    the same manner as INN's control.ctl file, except that you can
+	    specify multiple actions by comma-delimiting them.
+
+	    NOTE!!!! You need to install 'pgp' for pgp verification to work,
+	    and you need to setup the pgp key rings properly.
+
+	    dreaderd automatically detects changes made to this file.
+
+	/news/dexpire.ctl
+
+	    This file is used by dexpireover to expire overview information.
+	    Overview info is usually expired independantly from the remote
+	    spools so you may have to tune it a bit.
+
+	/news/dreader.access
+
+	    This file controls access for incoming feeds and readers, it is
+	    NOT compatible with INN's nnrp.access file.
+
+	    dreaderd automatically detects changes made to this file.
+
+	/news/dserver.hosts
+
+	    This file configures reader<->spool connections for both retrieving
+	    articles and for post'ing articles.  You should have at least one
+	    's' type and one 'o' type server specified.
+
+	    dreaderd will not be able to fetch article bodies if you do not
+	    properly setup this file.
+
+	    Each dreaderd process fork opens up all connections specified in
+	    dserver.hosts, so if you have two machines in dserver.hosts and
+	    set the number of dreaderd forks to 4, 8 connections will be
+	    openned.
+
+	    dreaderd automatically detects changes made to this file.
+
+	    The hostname is case sensitive, if you are receiving '430
+	    article not found errors' - you can specify the backend server
+	    more than once by just changing the case of the hostname.
+
+	    WARNING - make sure your diablo spool server can handle the
+	    the number of connections you will be making.  See dnewsfeeds
+
+	/news/moderators
+
+	    This is the moderators file returned by the 'list moderators' 
+	    NNTP command.  It is identical to the INN one.
+
+	    dreaderd automatically detects changes made to this file.
+
+			    STEP 2 - HEADER FEED SETUP
+
+    Every reader system except those used only as L2 spool caches require a
+    header-only feed to operate.  If you cannot supply a header-only feed,
+    a normal feed will do but the reader box only stores article headers 
+    from incoming feeds.  For header-only feeds, Control messages must still
+    be sent in their entirety (i.e. checkgroups, and for pgp verification
+    purposes), and the header-only feed must synthesize a Bytes: header so
+    the reader knows how big the article would normally be (rough estimate).
+    The new Diablo server 'headfeed' option for outgoing feeds will do this.
+
+    NOTE!!! The reader does not maintain its own history.  You cannot supply
+    multiple feeds to the reader, but you can run multiple feeds into a diablo
+    feeder on the same box and then feed the reader from the feeder. 
+
+    NOTE!!! This does not mean you can't run a permanent spool on the reader
+    machine!  It simply means that to do so you must run both the diablo server
+    side and the reader side on the same machine.  If you do this, you should
+    turn dreaderd's article caching off (see diablo.config).  If you are using
+    an off-machine spool I suggest leaving dreader's article caching on.
+
+    Care must also be taken in handling articles posted via the reader.  The
+    Diablo reader posts articles directly to some upstream host and expects
+    the posted article to trickle back down to the reader to be properly 
+    indexed.  However, the article contains the reader's FQDN in its Path:.
+    Therefore, the dnewsfeeds entry controling the feed going to the reader
+    *cannot* alias the reader's FQDN and instead uses 'alias dummy'.  The 
+    samples/dnewsfeeds file contains an example of such a feed.
+
+			    HEADER FEED INTO FEEDER BOX
+
+    Diablo has introduced a 'mode headfeed' command that allows the *feeder*
+    side to take a header-only feed and pass it on to a reader.  Safeguards
+    are emplaced to prevent dnewslink from attempting to pass header-only
+    feeds to destinations that can't handle them.
+
+    This particular setup is often used when you wish to maintain a global
+    article spool in one place and use a completely separate path to maintain
+    a large number of synchronized readers without wasting a lot of network
+    bandwidth.  You can pass a header-only feed from the global spool (or
+    other sources) to the header-only feeder box which them masters the
+    article numbering and passes header-only feeds to all the readers.  The
+    readers then access the master spool via a different path.  
+
+    The advantage of this mechanism is that the feeder box doing the 
+    article mastering is only storing headers in its spool and thus does
+    not need a very large spool or even a very fast spool.  Passing
+    header-only feeds out of a feeder machine which is taking a fully-bodied
+    incoming feeds is less efficient because the article bodies are stored
+    in the spool and must be 'skipped over' so to speak.
+
+				STEP 3 - MAINTENANCE
+
+    You should setup a cron job to periodically delete cached article files
+    in /news/spool/cache, usually with a find -mtime +7 or something similar.
+    It depends on the amount of disk space you set aside for the cache.  If
+    you are running the diablo feeder on the same box, I suggest turning
+    off dreaderd's caching entirely and having it retrieve articles from the
+    locally running diablo as a first level cache.
+
+    You should setup a cron job to rotate log files in /news/log generated
+    from the dcontrol.ctl configuration.
+
+    You need to 'expire' stale overview information.  The 'dexpireover' 
+    program will accomplish this.  This program can both delete stale
+    data and update the dactive.kp database if you wish.   Read the manual
+    page to dexpireover carefully.  It should normally be run once or twice
+    a day (remember, it just expires overview information, it has nothing
+    to do with the actual article spool).  The most common problem you
+    will run into here is the situation where articles in the spool(s) have
+    expired but still exist in the overview database... I am working on 
+    dexpireover mechanisms to make this less of a problem.
+
+    The 'dsyncgroups' program can be used to pull in active and newsgroups
+    file related information from other servers and is especially useful
+    in keeping your dactive.kp database up to date if you do not wish to
+    mess around with dcontrol.ctl -- or more specifically, you really only need
+    one machine doing active file maintenance and can slave group creation and
+    deletion for other machines off that master.  dsyncgroups is capable of
+    maintain the article *range* in your dactive.kp file from remote active 
+    files even if the active files are not synchronized with each other.
+
+				    MONITORING
+
+    The file /news/log/dreaderd.status holds realtime connection information
+    on clients and can be used to monitor the reader system.
+
+    'ps' will also contain an indication of current status.
+
+    When first starting dreaderd, look at the news syslog output for a minute
+    or so to ensure that you are not overburdening the spools.  In particular,
+    remote diablo spools will scream bloody murder at you if you make too
+    many simultanious connections so watch for connect-immediate-disconnects
+    with that sort of error.  You may have to adjust the remote spools and/or
+    decrease the number of reader forks you allow.
+
+				    PGP KEYS
+
+    In order of dreaderd to properly process PGP keys, the following must be
+    properly setup:
+
+	* The pgp program must be installed in /usr/local/bin, modes 755.
+
+	* The PGPKEYS file must be installed in the ~news user's pgp ring
+	  using the pgp program.
+
+	* rc.news must 'setenv HOME ~news' prior to running dreaderd.
+
+	* Diablo's 'pgpverify' program is not the pgp program, it's a wrapper
+	  for the pgp program that dreaderd uses.
+
+    To setup PGP:
+	
+	ftp ftp.isc.org
+	    (anonymous login)
+	    cd pub/pgpcontrol
+	    binary
+	    dir
+	    get PGPKEYS
+	    get README
+	    quit
+
+	(read the README file)
+
+	(get, compile, and install pgp as /usr/local/bin/pgp)
+	    pgp is available as a port for FreeBSD.  Otherwise you
+	    can obtain it from utopia.hacktic.nl in /pub/replay/pub/pgp/unix/. 
+	    Get version 263is.tar.gz.
+
+	Install the PGPKEYS in ~news's key ring.
+
+	    su - news
+	    pgp -kg
+	    pgp -ka PGPKEYS	(this one is a bit involved)
+
+	Make sure everything is working right.  While you are still the ~news
+	user, do:
+
+	    /news/dbin/pgpverify < samples/pgp-sample
+
+	It should print out: 'news.announce.newgroups'.  Remember that you
+	must 'setenv HOME ~news' in rc.news prior to running dreaderd.
+

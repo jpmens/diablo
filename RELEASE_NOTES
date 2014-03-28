@@ -1,0 +1,4048 @@
+
+			    RELEASE NOTES
+
+		  DIABLO NEWS TRANSIT AND READER SYSTEM
+
+		      diablo-users@openusenet.org
+		    http://www.openusenet.org/diablo/
+			   news.software.nntp
+
+Known Issues:
+	- OLD: dreaderd: problem with corrupt header files caused
+	  by what seems to be a lock race condition with 'dexpireover -R'.
+	  This problem has existed for years.
+
+Experimental (features/utilities that are new and/or not properly tested
+  	      and hence should be used with care on production systems):
+	- Compressed spools
+	- Compressed feeds
+	- IPv6 support
+	- dnewsfeeds %include option
+	- dexpirecache
+	- dcancel
+
+Summary of changes likely to impact an upgrade from 5.x
+	- new dreader header index format. Cannot go back to
+	  older versions as they will not be able to read
+	  the new version.
+
+Summary of changes likely to impact an upgrade from 4.x
+	- history version 2 (offsets converted to indexes)
+	- new history expire (dhisexpire)
+	- fixed bug in dexpire.ctl inheritance handling
+
+Summary of changes likely to impact an upgrade from 3.x
+	- New spool storage format. Each article is stored with a binary
+	  header. This new format is not usable with older versions of
+	  diablo, although 4.x can read prior storage formats.
+
+Diablo 5-current
+
+2009-05-25
+	* dreaderd: Don't know why no one ever noticed that tcp
+	  socket options per user weren't getting set right.
+
+2009-04-20
+        * dcancel: Add the ability to cancel articles by article
+          number in the reader header index. (from Michael Dorrington)
+
+2009-04-18
+	* Oops, never committed the stunnel patch for useproxied.
+
+2009-02-01
+	* parsedate wouldn't deal well with certain days of the
+	  week that weren't capitalized
+
+2009-01-28
+	* Cleanup of various code problems, including new expire
+	  cleanup, spaces-in-Newsgroups cleanup, etc.
+
+2009-01-15
+	* Implement alternate article numbering views for clients
+	  (this version still needs some cleanup).  Clients may
+	  indicate their capabilities via the XNUMBERING extension.
+
+	  RFC977 imposes no real limits on article numbering.  This
+	  may cause some issues with non-64-bit-clean clients.
+
+	  RFC3977 imposes a 2^31-1 limit AND places restrictions
+	  on the resetting of the low-water mark, which is excessively
+	  retarded because it effectively means that once a group hits
+	  the limit, it's just dead, but it's the behaviour that is
+	  defined in the RFC.
+
+	  WINDOW guarantees compatibility with non-64-bit-clean
+	  clients by restricting the article numbers to a window
+	  between 1 and 2^31-1; further, the number of articles in
+	  a group is limited to guarantee that most clients should
+	  detect it as a "group reset" along the various lines of
+	  ill-defined logic often used by clients.  It is not a
+	  frequent event, but when it happens, this has the best
+	  possibility of being successful without being too
+	  disruptive.
+
+	  Another patch shortly will clean this code up, and will
+	  allow for selection of which view to present by default
+	  to clients who do not explicitly request a particular
+	  view.
+
+2008-12-24
+	* Absolutely huge changes that have been underway for more
+	  than half a year.  
+
+	  There are a set of interrelated but different problems
+	  going on in the system.
+
+	  The first is that the legacy overview code was not 64-bit
+	  safe; this effectively limited overviews for a group to
+	  around 60 million articles and then wackiness happened.  
+	  The code has been walked through and updated so that on 
+	  64-bit platforms, larger overviews are possible (we've 
+	  exercised it to 500 mil). 32-bit platforms currently lose
+	  due to the inability of the operating system to map large 
+	  files, but support for this is also possible and a cleanly 
+	  coded solution may be committed in the future.
+
+	  Further, article numbering is a disaster waiting to happen.
+	  The legacy code is organized to handle 31-bit message 
+	  numbers.  Certain alt.binaries high volume groups are 
+	  poised to pass message number 2^31-1.  Now, on one hand,
+	  the problem could be solved by simply 64-bit-ifying the
+	  code to handle 63-bit article numbers.  On the other hand,
+	  some nimrods decided to specify 2^31-1 as a maximum article
+	  number in RFC3977, which, fortunately, we don't really 
+	  claim compliance with.  This code revision simply extends
+	  the article numbering to 2^63.  In doing so, it will update
+	  your overview files from VERSION 3 to VERSION 4.  This is
+	  a harmless change except for groups where article numbering
+	  exceeds 2^31-1.  Some effort was put into keeping the files
+	  otherwise-compatible with older code.
+
+	  Note that if you are using Diablo as an article numbering
+	  master, you will need to update Diablo AND dreaderd.
+
+	  People running this codebase will be able to have larger
+	  overviews and won't run into a problem at artno 2^31-1.
+
+2008-12-22
+	* Various compiler warning cleanups
+
+2008-12-19
+	* Runaway spool thread status flag repurposing, based on a 
+	  strategy POC'd by tim@euroaccess (thanks for the headaches, 
+	  grin)
+
+2008-12-18
+	* Various compiler warning cleanups
+
+2008-12-18
+	* It's 2008.  Everyone has zlib.  If I don't hear objections, I
+	  will probably be slowly removing conditional support for it.
+
+2008-12-18
+	* Add error checking for group resizing; many platforms limit
+	  calloc memory availability and application of an "unlimit" or
+	  equivalent in the daily.reader script might be required.  This
+	  just adds a reasonable error message
+
+2008-12-18
+	* Add compressed header transmission to clients (XZVER support)
+	  Newshosting and a few other places have been running this for
+	  almost a year without any complaints, but it is still in
+	  testing.
+
+2008-12-16
+	* drgpctl masscancel: support cancellation of large numbers of
+	  articles from very large groups (one-pass through the overview
+	  file)
+
+2008-12-15
+	* Dump threads status from sigUsr1 (can't find who submitted this
+	  patch, apologies, whoever)
+
+2008-12-15
+	* Report virtual server name in log lines
+
+2008-12-15
+	* Bump max TCP buffer size to 2048K
+
+2008-12-06
+	* fwrite patch to allow for proper bytes accounting in Diablo
+
+2008-08-01
+	* Patch from Avi, reworked, to provide coredumps on Linux
+
+2008-04-02
+	* I didn't realize this hadn't actually made it into dreaderd.  A
+	  patch to use new CMSG macros for file descriptor passing, needed
+	  to make most 64-bit architectures happy.
+
+2008-03-30
+	* I've thrown support for UseProxied into dreaderd, but it is not
+	  complete or correct at this time.  Using it will probably result
+	  in a file descriptor leak.  Anyone interested in adding support
+	  for SSL via stunnel, and who's interested in hacking on the code
+	  a bit, can contact me for further information on how this works. 
+	  <jgreco@ns.sol.net>
+
+2008-02-28
+	* Fix Solaris compatibility issue; looks like they now use u_32_t
+	  instead of u_int32_t
+
+2007-11-30
+	* Tagged 5.1-REL
+
+Diablo 5.1-REL
+
+2007-11-16
+	* dreaderd: Fix a posting corruption bug that apparently has
+	  always been there (sigh).
+
+2007-11-05
+	* dreaderd: Add support for Maximum Age Policy
+	* diablo: Add support for Maximum Age Policy
+	  This feature controls the maximum article age that can be
+	  retrieved from a spool.
+
+2007-09-11
+	* dreaderd: Add some debugging information to dns.c to log
+	  label failures more clearly
+
+2007-07-11
+	* dreaderd: Cleanup old references to POST_HIDENNTPPOSTHOST
+	  Cleanup Linux CFLAGS
+
+	  Thanks to: Michael Dorrington <mike@zen.co.uk>
+
+2007-01-03
+	* dreaderd: Minor programming style fix; "improper" use of zfree.
+
+2006-09-21
+	* diablo: Separate out IFILTER hash based Message-ID refusals;
+	  these were getting lumped in with history refusals.
+
+2006-08-21
+	* drequeue: Fix five-year-old command line parsing bug
+
+2006-06-29
+	* diablo: Log something in the incoming log when an IFILTER hash
+	  rule is tripped.
+
+2006-05-18
+	* diablo: Clean up a spool bug
+
+	  From: Koos de Haan <koos@kabelfoon.nl>
+	  After some investigation i found that the cause lays in the fact we
+	  are using an unwanted metaspool without any spools in it. This to
+	  dump articles in groups we don't want to carry (guess this it rarely
+	  used since i am the first to hit this bug)
+
+2005-12-28
+	* dreaderd: Introduce BIG_MBUF define for dreaderd.
+
+	  Large sites with memory to burn may benefit from defining BIG_MBUF
+	  in vendor.h.  This will allow more buffering of data and reduced
+	  syscall load.
+
+2005-12-26
+	* dreaderd: Add an ART_AGE option for dreaderd as well.
+
+	  STATS_ART_AGE affects the Diablo spooler, and reports the approx.
+	  time since the article was received by the spooler, in seconds.
+	  This is only accurate to within ten minutes due to the data 
+	  available from the history.
+
+	  STATS_ART_AGE_DR affects the dreaderd system, and reports the
+	  seconds between the current time and the time in the Date:
+	  header of retrieved articles coming from spool servers.
+
+
+2005-11-01
+	* IMPORTANT: The hashfeed system has changed.  The first few
+	  iterations may be painful on non-FreeBSD platforms as I have
+	  few alternative platforms to test on.
+
+	  Hashfeed has been greatly enhanced to use MD5 based hashing,
+	  which allows a much greater mod value, but also allows multiple
+	  tiers of hash support.  More details in hashfeed.c for the
+	  interested.  See samples/ for changes.
+
+	  If you use hashfeed for deterministic article routing and
+	  location, YOU WILL NEED TO CHANGE YOUR CONFIG FILES.  The
+	  old hash values are still supported, with a different syntax.
+
+2005-10-23
+	* dspoolout: For reasons unknown, the nobatch option never made
+	  it from the old dnntpspool.ctl format to the new unified
+	  dnewsfeeds file format.
+
+2005-10-16
+	* diablo: Add feedertxbuf/feederrxbuf to dnewsfeeds.
+	  Set the TCP buffer sizes for this connection, overriding what
+	  was set globally on the command line.  This would seem to be a
+	  useful optimization especially on spool servers, where the
+	  inbound feed ought to have a large rx buffer/small tx buffer,
+	  but the spool connections should be just the opposite.
+
+2005-10-16
+	* Correct more examples of not checking return values from
+	  system calls.  In this case, diablo silently ignores failure
+	  of setsockopt calls to set buffer sizes, something which can
+	  easily fail.
+
+2005-10-10
+	* Pass remote IP data via NetRemote.  JG20050804
+
+2005-02-20
+2005-07-30
+	  Patch to line 1092 of diablo.c - turn off spurious reports of
+	  closing the external filter - if in a child process - the child
+	  process does not interact with the filter in that way.
+
+	  Patch from mohan
+
+2005-02-20 through 2005-06-04
+	* lots of patches were done and not documented, blame Mike.
+
+2005-02-20
+	* diablo: Ben O'Hara found a place we didn't use the %include
+	  code, reasons unknown. 
+
+2005-02-17
+	* diablo: #ifndef-wrap MAXFORKS/MAXFEEDS.  We've had this little
+	  change for a long time and I'm not sure how it never got
+	  committed.  This allows you to override these at the top of
+	  vendor.h, along with FD_SETSIZE, if you want to make this sort
+	  of compile-time change.  (It worked to do this without this
+	  patch, but it generated compiler warnings...)
+
+2005-01-16
+	* dgrpctl: Add an option to specify an absolute new
+	  value for NB, NE or NX. Improvements to usage
+	  description and man page.
+	  Submitted by: Frank Durda IV <uhclem.diablo at nemesis.lonestar.org>
+
+2005-01-12
+	* diablo: Fix a possible buffer overflow in the handling
+	  of dspoool.ctl time handling when the time type is not
+	  specified.
+	  Reported by:  Dave Reader <dave @ undone.org.uk>
+
+2005-01-12
+	* dreaderd: Add a diablo.config option 'readeridenttimeout'
+	  to specify the default timeout to be used for ident requests
+	  if enabled. Can also use an authdef override. Also fix a
+	  buffer handling problem in the returned user.
+	  Reported by: Kristofer Pettijohn <kristofer+devnull @ cybernetik.net>
+	  
+2004-12-28
+	* dreaderd: Don't let rate limits fall below 100cps.  If you want
+	  someone to read news on a teletype, buy them a teletype.  :-)
+
+2004-12-27
+	* dreaderd: Allow per-readerdef setting of rxbufsize/txbufsize.
+	  Recent changes seem to have broken the command line options, and
+	  cmdline would not seem to be the best way to do that anyways, so
+	  at some point we should probably retire -R/-T.
+
+2004-12-26
+	* dreaderd: Add "ratelimitrange", a way to randomly vary the rate 
+	  limit of a session.  Set a range, like "80-120", and the otherwise 
+	  applicable rate limit will be varied from 80% to 120% of that
+	  number.  Minimum is 1%, maximum is 200%.
+
+2004-12-25
+	* dreaderd: Silent capping of TCP buffer sizes is bad policy.
+	  Make it log a warning.  Also apply capping policy to spool
+	  server connections. 
+
+2004-12-24
+	* dreaderd: Allow generating Xref: lines for articles with
+	  whitespace in Newsgroups: header.
+	  Submitted by: Cor Bosman <cor @ xs4all.nl>
+
+2004-12-22
+	* dreaderd: Fix a problem with dreaderd crashing when it
+	  encounters a very large (usually corrupt) header. Also
+	  decrease the maximum header size (and control article
+	  size) that dreaderd accept to 512K by default.
+
+2004-12-22
+	* dreaderd: Allow the initial numarts for a group index
+	  file to be any size the admin wants. We used to limit it
+	  to 65536 arts
+
+2004-12-22
+	* diablo: When choosing the first spool object, pick one
+	  randomly so that we don't overallocate the first one
+
+2004-12-14
+	* Add feedgraph to the contrib/ directrory. This program
+	  creates a set of web pages of RRD graphs for feeds.
+	  Submitted by: Kristofer Pettijohn <kristofer @ cybernetik.net>
+
+2004-12-12
+	* dexpireover: Fix a bug introduced on 2004-10-15 that
+	  was causing dexpireover to use an incorrect file
+	  size when rewriting data.
+	  Submitted by: Cor Bosman <cor @ xs4all.nl>
+
+2004-12-11
+	* dreaderd: Add a dexpire.ctl option (l) to set the
+	  oldest articles that dreaderd will fetch from a
+	  spool server.
+	  Submitted by: Miquel van Smoorenburg <miquels @ cistron.net>
+
+2004-10-31
+	* dreaderd: Improvements to MADVISE code
+	  Submitted by: Francois Petillon <fantec @ proxad.net>
+
+2004-10-19
+	* dreaderd: Add a lib/vendor.h option 'USE_OVER_MADVISE'
+	  to enable the MADVISE of XOVER output as it has caused
+	  problems for some people.
+
+2004-10-15
+	* feeder-stats.pl: Fixes and ehancements to feeder-stats
+	  including reader stats and text output option.
+	  Submitted by: FUNET Newsmaster <newsmaster @ news.funet.fi>
+	  and Mike Horwath <drechsau @ gmail.com>
+
+2004-10-15
+	* dreaderd: Add 2 new options to dserver.hosts:
+		retention=<time_in_second>
+		groupdef=<list_of_groupdef>
+	  Submitted by: Francois Petillon <fantec @ proxad.net>
+
+2004-10-15
+	* dreaderd: Revisit using MADVISE for XOVER output and
+	  do some sanity checking of dataentries.
+	  Submitted by: Francois Petillon <fantec @ proxad.net>
+
+2004-10-15
+	* dexpireover: Fix a few bugs when using -R option
+	  Submitted by: Francois Petillon <fantec @ proxad.net>
+	
+2004-09-26
+	* dreaderd: Add support for banning a user through the existing
+	  custom error propagation facility.  Now you can return an auth
+	  message like "110 600 <#mins> 502 Buzz off." 
+
+	  The custom message will only be displayed to the current session.
+	  Aside from the minutes, the normal readerban setup rules apply,
+	  and you must have a readerban set for per-host bans.  It might
+	  be nice to separate this functionality at some point, by creating
+	  an AuthBan structure.
+
+2004-09-25
+	* dreaderd: Add new dserver.hosts flags to allow sleepy, sluggish,
+	  and/or nonresponsive spool servers to be logged or have
+	  connections reset.
+
+2004-09-19
+	* dexpire: Add an extension to the '-s' (sync filesystem) option
+	  to specify how many files to delete before syncing.
+
+2004-08-20
+	* dreaderd/dexpireover: Fix a long running bug that caused dexpire.ctl
+	  entry inheritance to not work.  WARNING: This may affect exiting
+	  dexpire.ctl setups - check that your logic is what is expected.
+	  Pointed out by: Miquel van Smoorenburg <miquels @ cistron.net>
+
+2004-08-20
+	* all: Allow setting of zero for rxbuf and txbuf to use
+	  dynamically sized buffers for any OS that allows it.
+	  Set defaults for dreaderd to zero.
+	  Submitted by: Miquel van Smoorenburg <miquels @ cistron.net>
+
+2004-08-07
+	* diablo: Structures should be zeroed upon allocation.  Failure
+	  to do so results in all sorts of unexpected behaviours when
+	  someone adds a nifty new feature but isn't thorough about it,
+	  thus causing all feeds generated from a legacy dnntpspool.ctl
+	  based system to be started with a nice priority of 20.
+
+2004-07-30
+	* dreaderd: Undo the XOVER performance patch - it causes dreaderd
+	  to go into a spin loop under certain circumstances.
+	
+2004-07-28
+	* diablo: Clean up some of the various time_t-to-int printf issues
+	  and other similar cleanups. 
+
+2004-07-27
+	* dreaderd: Add new option 'settos' to set the IP_TOS
+	  setsockopt option, if available, to set TOS/QoS data
+	  in the IP packet header.
+
+2004-07-20
+	* dreaderd: Improve performance of XOVER
+	  Submitted by: Francois Petillon <fantec @ proxad.net>
+
+2004-07-20
+	* dreaderd: Use internal md5 function so that hashed
+	  NNTP-Posting-Host headers are enabled with the cryptpw
+	  option in dreader.access.
+
+2004-07-20
+	* diablo: Add support for hsize up to 512m entries. Many
+	  operating systems won't be able to handle more than 256m
+	  due to mmap() limitations.
+
+2004-07-11
+	* dexpireover: Don't delete corrupt data entries by default.
+	  Use '-RR' to remove corrupt entries.
+	  Submitted by: Francois Petillon <fantec @ proxad.net>
+
+2004-07-11
+	* dexpireover: Do some sanity checking on the value of
+	  dataentries in case it has become corrupt. This fixes
+	  some of the corrupt overview problems.
+
+2004-07-10
+	* diablo: Allow activedrop to be on without active on.
+	  Submitted by: Alex Kiernan <alex.kiernan @ gmail.com>
+	
+2004-07-10
+	* doverctl: Fix relative path calculation to prevent valid files
+	  being deleted with the 'clean' option.
+
+2004-04-28
+	* diablo: Add option in diablo.config to reject articles with
+	  a CR with no corresponding LF.
+
+2004-04-28
+	* dnewslink: Allow sending to both IPv4 and IPv6 destinations
+	  if both are in the DNS.
+	  Submitted by: FUNET Newsmaster <newsmaster @ news.funet.fi>
+
+2004-04-20
+	* dcancel: Add the ability to cancel articles by article
+	  number in the reader header index.
+
+2004-04-20
+	* dexpireover: Don't resize dataentries unless we are
+	  rebuilding the data.
+
+2004-04-05
+	* Disable AIO by default for now. It has caused too many
+	  reported problems. It is used when dreaderd tries to access
+	  articles from a locally mounted spool.
+
+2004-04-04
+	* diablo: Unmap some a memory mapped area of history before
+	  closing the history file. This fixes a problems where long
+	  running diablo process were holding old history files open 
+	  after they were deleted.
+
+2004-03-03
+	* diablo: Added a new option 'feedermaxheadersize' to diablo.config
+	  with a default of 64k to limit the size of article headers that we
+	  accept. Also reject articles with no blank line after the header.
+	  Based on a patch from: Frank Durda IV <uhclem.diablo at nemesis.lonestar.org>
+
+2004-02-22
+	* dreaderd: Add a new dexpire.ctl option 'e' to specify the
+	  number of headers stored in each header data file. See
+	  dexpire.ctl for details.
+
+2004-02-14
+	* Tagged 5.0-REL
+
+Diablo 5.0-REL
+
+2004-01-30
+	* dreaderd: Handle custom reject messages from external auth
+	  by returning a readerdef in the format "nnn message" (i.e.
+	  the entire returned string would be "110 502 Buzz off").
+
+2004-01-22
+	* dreaderd: Fix improper number of parameters bug
+	  Special thanks to: Horwath!
+
+2004-01-18
+	* dreaderd: Add dreaderd cache scoring to weight caching in favour
+	  of popular groups.
+	  Submitted by: Francois Petillon <fantec at proxad.net>
+
+2003-12-07
+	* Some minor changes to sample cron scripts, including switching
+	  to use dhisexpire by default.
+
+2003-12-03
+	* dreaderd: Fix AIO access for local spool under Linux
+	  Submitted by: "Homme R. Bitter" <homme at cambrium.nl>
+
+2003-11-25
+	* dreaderd: Log article retrieval failures better (i.e. 423's).
+
+2003-11-25
+	* dreaderd: New option, addrealm, to tack on a realm to the user-
+	  supplied authinfo.  Useful with virtual servers and complex 
+	  environments.
+
+2003-10-28
+	* dreaderd: Fix XPAT problems relating to high CPU use by dreaderd.
+	  Submitted by: Branko Lankester <branko at euro.net>
+
+2003-10-08
+	* dfeedtest: Add an option '-X' to show which spool an article would
+	  be installed into. Also add '-M' to specify the Message-ID.
+
+2003-09-07
+	* diablo: Read the manner in which the article was stored from the
+	  article header.  The previous code made it impossible for a spool
+	  to be compressed and then set to uncompressed, despite the fact
+	  that we ultimately read the data that told us the article had been
+	  stored uncompressed...
+
+2003-08-27
+	* diablo: check the return value on the kill system call.  Failures
+	  may be harmless, but then again they could signal a problem.
+
+2003-08-01
+	* dreaderd: bump the default THREAD_QSIZE up to 16.  Please report
+	  any problems you encounter as a result of this change.
+
+2003-07-31
+	* dreaderd: post.c: silent dropping of obviously bogus and forged
+	  headers is a *really* bad idea.  I don't know why I ever did it.
+	  Furthermore, I missed X-Complaints-To, which resulted in a bunch
+	  of bad stuff getting out on the 'net with multiple XCT's by a
+	  spammer intent on confusing the issue.
+
+	  Fixed by: JG
+
+2003-06-01
+	* dhisexpire: Fix bug in pointer use that could cause all entries
+	  to be removed.
+
+2003-05-30
+	* dnewslink: Fix unmapping of articles bug introduced in the
+	  recent performance enhancing patch.
+
+2003-05-28
+	* dsyncgroups: Add options to specify a username/password of the
+	  remote system.
+	  Submitted by: "Robert J. Adams (jason)" <radams @ siscom.net>
+
+2003-05-25
+	* dexpirecache: Fix a missing closedir() and significantly
+	  reduce memory usage by doing a chdir() to the basepath, thus
+	  not storing the basepath in each node.
+	  Submitted by: Michael Haardt <michael @ freenet-ag.de>
+
+2003-03-29
+	* dspoolout: Don't rename a queue file if its size is zero
+
+2003-03-15
+	* dreaderd: Add some extra logging to 'info server' log line
+	  Submitted by: Robert Kiessling <Robert.Kiessling @ de.easynet.net>
+
+2003-03-14
+	* dreaderd: Don't accept bad Message-ID's in TAKETHIS only mode
+
+2003-03-02
+	* diablo: Switch to history version 2 enabled by default.
+	  The new version allows history files > 4GB (up to approx
+	  60GB). The conversion to the new history file is done
+	  during the next history rebuild.
+
+2003-03-02
+	* dreaderd: Allow use of more characters in newsgroup
+	  descriptions.
+	  Submitted by: Xander Jansen <x+diablo @ surfnet.nl>
+
+2003-03-02
+	* dnewslink: Let the kernel handle copying of large files
+	  to the network from disk by using a writev(), rather
+	  than copying  the data into buffers first.
+	  Submitted by: FUNET Newsmaster <newsmaster @ news.funet.fi>
+
+2003-03-02
+	* dnewslink: Add new option 'settos' to set the IP_TOS
+	  option (if supported by the OS). This adds quality of
+	  service option for outgoing feeds on networks that
+	  support it.
+	  Submitted by: FUNET Newsmaster <netmgr @ funet.fi>
+
+2003-03-02
+	* diablo: Add a new dnewsfeeds options 'offerfilter' and
+	  'noofferfilter' to filter out Message-ID's during the
+	  IHAVE/CHECK processing.
+	  Submitted by: tt @ efnet.com
+
+2003-03-02
+	* diablo: Add feeddelany for remote feed admin
+	  Submitted by: tt @ efnet.com
+
+2003-03-02
+	* diablo: Fix minor bug for remote feed admin
+	  Submitted by: tt @ efnet.com
+
+2003-03-02
+	* feeder-stats: Various updates for Diablo 5.x. See the changelog
+	  in feeder-stats.pl for details.
+	  Submitted by: Xander Jansen <Xander.Jansen @ surfnet.nl>
+
+2003-02-15
+	* all: Limit the maximum Message-ID size to 250 (was 512) to
+	  be in line with INN and Usefor NNTP article draft.
+
+2003-02-15
+	* dreadover: Change the format of the output and provide more info
+	  about the article (Message-ID hash, size, and time received).
+
+2003-02-15
+	* dreaderd: Ignore newsgroups with names that are too long
+	  and don't accept local posts to such newsgroups.
+
+2003-02-09
+	* dreaderd: Fix bug in user based banlists where the username was
+	  being banned instead of the IP address.
+
+2003-02-04
+	* dicmd: report status on ps/proctitle
+
+2003-02-02
+	* dcancel: Add a new utility to allow rewriting of spool files
+	  along with history entry updates to remove articles from a
+	  spool. Compressed spools are not yet supported.
+
+2003-01-25
+	* diablo: Use the correct variable for the article size when
+	  using the feed and spam filters.
+	  Submitted: by Branko Lankester <branko @ euro.net>
+
+2003-01-23
+	* diablo/dnewslink: Add 2 new options feederpreloadart and
+	  spoolpreloadart n diablo.config to disable the preloading
+	  of articles by dnewslink and spool servers respectively
+	  (the use of MADV_WILLNEED to the madvise() system call).
+	  
+2003-01-22
+	* diablo/dreaderd: Set the default maximum article size accepted
+	  by feeder and reader to be 10MB. This can be disabled by
+	  setting {feeder|reader}maxartsize to 0 in diablo.config.
+
+2003-01-22
+	* dreaderd: Fix a bug which could cause all headers for a group
+	  to be deleted if the header index file could not be opened.
+
+2003-01-22
+	* diablo: Allow multiple label options per metaspool object in
+	  dspool.ctl
+
+2003-01-21
+	* dreaderd: Option to include an X-Comments header on a per-
+	  vserver basis.
+
+2003-01-21
+	* diloadfromspool: Add two new options (-tb and -te) to specify
+	  the start and end times to limit spool scanning.
+
+2003-01-18
+	* diablo: Fix a race condition during the expire process that
+	  was causing articles to be expired if they arrived after
+	  a spool scan, before the end of the history update
+	  and within a specific time frame
+
+2003-01-17
+	* diablo: Fix a file descriptor leak in dnewsfeeds parsing
+
+2003-01-16
+	* dexpire: Improve the performance of the history update
+
+2003-01-15
+	* didump: Add an option to only dump msgid hashes
+
+2003-01-11
+	* dhisctl: Fix bug in expire/unexpire option that could corrupt
+	  history
+
+2003-01-08
+	* dnewsfeeds: Now has an experimental option for doing %include-
+	  files.
+
+2002-12-27
+	* diloadfromspool/drequeue: Add support for dealing with
+	  compressed spools.
+
+2002-12-27
+	* dexpirecache: Add tree balancing code.
+	  Submitted by: Francois Petillon <fantec @ proxad.net>
+
+2002-12-23
+	* dexpirecache: Fix logic in directory open
+	  Submitted by: Francois Petillon <fantec @ proxad.net>
+
+2002-12-16
+	* dreaderd: Fix bug that was causing caching to be enabled even
+	  if disabled in diablo.config.
+
+2002-11-04
+	* dreaderd: Add a new and more flexible form of LDAP authentication
+	  that must be enabled with NEW_LDAP in lib/vendor.h. This may
+	  become the default in the future.
+	  Submitted by: michael @ freenet-ag.de (based on code originally
+	  		written by Russell Vincent)
+
+2002-11-03
+	* dreaderd: Improvements to the reader caching algorithms,
+	  including a new dexpirecache program.
+	  Submitted by: Francois Petillon <fantec @p roxad.net>
+
+2002-11-02
+	* all: Limit the use of MADV_WILLNEED as this causes some
+	  performance issues with very large files.
+
+2002-10-24
+	* dreaderd: Using an uninitialized auto struct and not checking
+	  return values makes for bad things when doing a getsockname.
+	  Fix both problems.
+
+2002-10-19
+	* dreaderd: Don't bind to port 119 if we specify a different port.
+	  Also fixes specifing port 119 as command-line option.
+
+2002-10-14 (merged 4-stable: : 2002-10-14)
+	* dreaderd: Don't duplicate the body when client retrieves 
+	  control messages.
+
+2002-10-07
+	* diablo: UCAR.EDU is burdening USENET with Yet More Binaries
+	  Volume.  Unfortunately, Diablo wasn't picking it up as such.
+	  This looked to be quite a problem for split text/binaries
+	  sites.
+	  http://www.unidata.ucar.edu
+
+2002-10-06
+	* dreaderd: Fix a bug causing closed spool connections to be
+	  left undetected if an article was being retrieved at the time.
+
+2002-09-26
+	* diablo: Add a dnewsfeed option 'delayinfeed' to delay an
+	  incoming feed until a number of seconds after diablo has started.
+	  Submitted by: Jake Roersma <jaker @ tsunami.triton.net>
+	
+2002-09-25
+	* dreaderd: Fix bug in the ratelimit per command option that
+	  was causing article fetches to be reset to the 'other' value.
+
+2002-09-19
+	* dnewslink: Fix an obvious logic error with madvise code
+	  Submitted by: FUNET Newsmaster <newsmaster @ news.funet.fi>
+
+2002-09-08
+	* all: Enable MADVISE in Linux >= 2.4 for improved mmap
+	  performance (reported 33% gain in IO requests).
+
+2002-09-06
+	* dnewslink: Add an option to disable the CHECK command for
+	  the realtime process only. See the 'nortcheck' option for
+	  the "check" directive in dnewsfeeds.
+	  Submitted by: Francois Petillon <fantec @ proxad.net>
+
+2002-09-03
+	* diablo: Detect "bommanews" binary article type.
+
+2002-08-20
+	* diablo: Create a new spool file when we go over a size limit
+	  to prevent spool files getting larger than the allowed boffset
+	  reference (spool file offset) in dhistory.
+	  Submitted by: Francois Petillon <fantec @ proxad.net>
+
+2002-08-17
+	* dreaderd: Allow different client ratelimits for various
+	  article retrieval types (XOVER, ARTICLE, HEAD, etc).
+
+2002-08-17
+	* diablo: Fix bug in external spamfilter handling which meant that
+	  the article file could not be opened when a non-default full
+	  path is specified in a spool entry.
+
+2002-08-14
+	* Fix recently introduced bug causing master diablo process to
+	  die when a spool disk fills up.
+	  Reported by: Jake Roersma <jaker @ tsunami.triton.net>
+
+2002-08-12
+	* all: Add Linux support for large files (-D_FILE_OFFSET_BITS=64)
+	  This currently only applies to the dhistory file.
+
+2002-08-12
+	* dnewslink: Fix bug in handling of attempts at remote connections
+	  for hosts with IPv6 and IPv4 addresses.
+
+2002-08-12
+	* dnewslink: Fix binding of outgoing interface in INET4 case.
+
+2002-08-10
+	* diablo: Add metaspool allocation strategy 'single' that
+	  allocates the same spool object to all incoming feeds
+	  over the reallocint time period.
+
+2002-08-10
+	* diablo: Add diablo.config option 'feederarttypes' which
+	  allows the article type code to be disabled completely.
+
+2002-08-10
+	* dlockhistory: Add an option to lock the entire history file
+	  into memory.
+
+2002-08-08
+	* diablo: Fix bug in history lookup offset calculation when
+	  using history version 2.
+
+2002-08-07
+	* dreaderd: Improvements to PGP verification:
+	   - fix a bug in the handling of lines beginning with
+	     '-' sent to PGP.
+	   - add diablo.config option "pgpverifyargs" which allows one
+	     to specify the arguments used to run pgpverify.
+	   - GNUPG support via command-line option to pgpverify
+
+2002-08-06
+	* diablo: Add the first stage of a modification to allow
+	  a much larger number of entries in the history file.
+	  When enabled, the history hash table will consist of
+	  an index into the history file, rather than the offset.
+	  This should allow history files with 2^32-2 entries
+	  or (28 * 4)GB in size (for those operating systems that
+	  allow files > 4GB. Note that the new history version is
+	  not enabled yet as the code needs to be tested in its
+	  current form first.
+
+2002-08-05
+	* dhisctl: Add option -h to dump the contents of the history
+	  file header.
+
+2002-08-04
+	* diablo/didump: The coded default for remember was 7 days.
+	  Set this to 14 days to reflect what the documentation says.
+
+2002-08-04
+	* diablo: Add a new diablo.config option 'feedermaxacceptage'
+	  to specify the maximum age of accepted articles. This allows
+	  the age to be specified differently to the remember value
+	  and is useful for reducing the size of the history file for
+	  feeders/spools that won't be offered older articles.
+	  Idea from: uhclemo @ nemesis.lonestar.org (Frank Durda IV)
+
+2002-08-04
+	* all: Fix the address specification of IPv6 addressed for
+	  binding to ports. The address should now be enclosed within
+	  '[]'. e.g: -B[::1]:119
+
+2002-08-04
+	* dreaderd: Fix a bug in the IP address -> hostname lookup
+	  that prevented hostname based authentication.
+
+2002-08-04
+	* didump: Allow the -r option to be specified as seconds, minutes
+	  or hours.
+
+2002-07-31
+	* dreaderd: Add the ability to authenticate on spool server
+	  connections through the use of login=/password= in dserver.hosts
+
+2002-07-29
+	* dnewslink: Improve performance by using non-blocking sockets
+	  and reducing the number of poll() calls in the general case.
+
+2002-07-27
+	* dhisbench: Improve options to allow concurrent adds and lookups
+	  and better stats reporting.
+
+2002-07-27
+	* diablo: Reorder shutdown events so that dicmd reports exit
+	  more nearly at the time we actually exit.
+
+2002-07-23
+	* dreaderd: Add a perl user authenticator, with a sample perl
+	  script authenticating against an Oracle DB. Must be enabled
+	  at compile-time. See lib/vendor.h.
+	  Submitted by: Frank Kloeker <eumel @ arcor-online.net>
+
+2002-07-23
+	* dhisctl: Add an option (-S) to print out the size of the
+	  internal history structures.
+
+2002-07-23
+	* diablo: Minor performance enhancement in checking of article
+	  headers.
+	  Submitted by: uhclemo @ nemesis.lonestar.org (Frank Durda IV)
+
+2002-07-15
+	* diablo: Abort if we cannot create a spool directory.
+
+2002-07-15
+	* diablo: Keep track of the remember value as seconds so that
+	  we don't have to calculate it for every article.
+	  Modifed patch from: uhclemo @ nemesis.lonestar.org (Frank Durda IV)
+
+2002-07-15
+	* diablo: Modify parsedate to also convert hours and minutes
+	  to give a more accurate date for an article and thus allowing
+	  a finer calculation of article age vs remember. Note that
+	  this still doesn't take into account timezones.
+	  Submitted by: uhclemo @ nemesis.lonestar.org (Frank Durda IV)
+
+2002-07-15
+	* dexpire: Convert some counters to be able to handle larger numbers.
+	  Submitted by: michael @ freenet-ag.de
+
+2002-07-11 (merged 4-stable: 2002-07-11)
+	* dreaderd: Fix some error messages that only included a trailing
+	  '\n' instead of '\r\n'.
+	  Reported by: Shawn Ramsey" <shawn @ cpl.net>
+
+2002-07-08
+	* Fix error in CIDR matching of IPv4 addresses against IPv6
+	  addresses.
+
+2002-07-04
+	* dnewslink: Add a new option 'delayfeed' to specify the number
+	  of seconds to delay articles in a feed. This is accomplished
+	  by storing the receive time of articles into the dqueue file
+	  and not offering the articles for that time + delayfeed secs.
+
+2002-06-30
+	* Add dhisctl for performing various actions on the history
+	  file, like expiring specific articles.
+
+2002-06-23
+	* dnewslink: Fix bug where dnewslink would go into a loop on
+	  connect failure, using CPU.
+
+2002-06-17
+	* all: Improve IPv6 compatability (Linux)
+	  Modified patch from: FUNET Newsmaster <newsmaster @ news.funet.fi>
+
+2002-06-16
+	* feeder-stats: Upgrade to 4.005
+	  Submitted by: Xander Jansen <Xander.Jansen @ surfnet.nl>
+	  and Francois Petillon <fantec @ proxad.net>
+
+2002-06-07
+	* dnewslink: Try all IP addresses for a hostname until one of
+	  them works.
+
+2002-06-07
+	* dreaderd: Add a time connected field to dreader.status
+
+2002-06-05
+	* all: Add experimental IPv6 support enabled with a compile-time
+	  option in lib/vendor.h.
+
+2002-05-17
+	* diablo: Close a race condition when using dhisexpire and
+	  reopening the history file after a change.
+
+2002-05-17 (merged 4-stable: 2002-05-17)
+	* all: Use correct install utility for AIX
+	  Submitted by: Daniel Tiefnig <diablo @ qmail.infonova.at>
+
+2002-05-16
+	* diablo: Have Diablo report the (approximate) age of retrieved
+	  articles.  For those sites running with distributed spools, 
+	  this can help you judge just how big secondary spools need to
+	  be in order to be most cost-effective.  Most articles retrieved 
+	  tend to be recent, and by plugging these age values into a 
+	  graphing program, it should become readily apparent what the 
+	  best amount of time would be for storage on a secondary spool.
+
+2002-05-16 (merged 4-stable: 2002-06-17)
+	* dnewslink: Fix a problem with offering articles twice, introduced
+	  in the fix for closing spool articles on a regular basis.
+
+2002-04-18
+	* feeder-stats: Solaris 8 support and other updates.
+
+2002-04-14
+	* diablo: Add an option path_artlog to diablo.config to enable
+	  logging of article size and group to a separate file.
+
+2002-04-11
+	* dreaderd: In session accounting, clients pipelining commands
+	  at the server cause the server to incorrectly account on a
+	  per-command basis.  The correct fix is in the works, but in
+	  the meantime, account for "other" session bytes so that at
+	  least things aren't slipping through the cracks.
+
+2002-04-10
+	* feeder-stats: Update to version 4
+	  Submitted by: Xander Jansen <Xander.Jansen @ surfnet.nl>
+
+2002-04-10
+	* diablo: Allow the nice value of incoming feed processes to be
+	  set per dnewsfeeds entry.
+
+2002-04-07
+	* dhisexpire: Add options to build new history file and move old
+	  history file on a different filesystem.
+
+2002-04-07 (merged 4-stable: 2002-04-07)
+	* dnewslink: Fix priority setting for realtime dnewslink
+
+2002-04-01 (merged 4-stable: 2002-07-11)
+	* dreaderd: Fix some other XPAT implementation issues.
+
+2002-03-26 (merged 4-stable: 2002-03-26)
+	* dnewslink: Fix flushing of spool file handles and perform the
+	  flush more regularly.
+
+2002-03-21 (merged 4-stable: 2002-07-11)
+	* dreaderd: Use INN-style wildmat for full XPAT support.
+
+2002-03-17 (merged 4-stable: 2002-03-23)
+	* feeder-stats: Improvemnts to feeder-stats.pl
+	    - localize LegendLabels to prevent re-use of wrong entries when
+	      less than 7 labels
+	    - concatenation of ImgDir and logo.gif more flexible
+	    - suppression of errors like 'pathheader contains TAB' etc
+	    - show variants of connection refused errors
+	    - df -h instead of df -k on FreeBSD 4.x
+	    - GetVolume now also for TeraBytes
+	    - Top1000 now pointing to the Alternative Freenix
+	    - added rejected volume and total outgoing volume to main index
+	    - other minor bug fixes and credit/copyright additions
+	  Submitted by: Xander Jansen <Xander.Jansen @ surfnet.nl>
+
+2002-03-17 (merged 4-stable: 2002-03-23)
+	* dnewslink: Detect deleted queue files for realtime feeds
+
+2002-03-17 (merged 4-stable: 2002-03-17)
+	* diablo: Allow filtering of incoming articles by msgid hash.
+	  Submitted by: Francois Petillon <fantec @ proxad.net>
+
+2002-03-12 (merged 4-stable: 2002-03-12)
+	* diablo: Fix a bug in the handling of articles without a trailing
+	  '\r\n.\r\n' when sending to the external filter.
+
+2002-03-03 (merged 4-stable: 2002-03-23)
+	* diablo: Log incoming stats when we have to abort (e.g: can't
+	  create article file) an incoming connection.
+
+2002-02-17 (merged 4-stable: 2002-03-03)
+	* diablo: Detect the badly implemted binary type 'yenc'.
+
+2002-01-31 (merged 4-stable: 2002-02-01)
+	* dreaderd: Add a timeout for connections to spool
+	  Submitted by: michael @ optusnet.com.au
+
+2002-01-20
+	* dhisexpire: Now modified to allow the history file to be
+	  rewritten with zero downtime (only a very short delay) for
+	  incoming connections (spool and feed). Also add a man page.
+	  WARNING: This is not fully tested - feedback appreciated.
+
+2002-01-12
+	* dhisexpire: New utility to handle history rewrites that minimises
+	  the diablo downtime. This is accomplished by only pausing the
+	  diablo server when the expire is near the end of the history file.
+	  WARNING: This is not fully tested - feedback appreciated.
+
+Diablo 4.1-REL
+
+2002-01-28 (merged 4-stable: 2002-01-31)
+	* dreaderd: Fix an information leak in NEWNEWS that allowed
+	  a client to bypass the group restrictions for a readerdef.
+	  Reported by: michael @ freenet-ag.de
+
+2002-01-04
+	* all: Add support for Tru64/OSF1
+
+2001-12-30
+	* diablo: Improve the internal spamfilter. The filter now has
+	  separate MD5 hash tables for the duplicate body and posting host
+	  rate detectors and the options are all configurable. Both
+	  detection types also keep track of the number of lines in the
+	  body to help prevent false positives.
+	  WARNING: The -S and 'internalfilter' options have changed
+	  to accomodate this improvement.
+	  See man/diablo.8 and samples/diablo.config for details.
+	  
+2001-12-30
+	* dreaderd: Add an option 'readermaxartsize' to diablo.config
+	  to allow the setting of a global maximum article size for
+	  articles accepted by dreaderd (POST or feed) to limit
+	  buffer usage.
+
+2001-12-27
+	* dreaderd: Make crc group hash method work on 64-bit platforms
+
+2001-12-23
+	* dreaderd/netremote: Offer per-category extensible logging of
+	  bytes transmitted, categories for HEAD, ARTICLE, BODY, XOVER,
+	  etc.
+
+2001-12-13
+	* all: Standardise all the logging routines, allowing logs to
+	  be disabled or sent to syslog, a pipe or a file. See the path_*log
+	  options in diablo.config for details.
+	  Submitted by: GOMBAS Gabor <gombasg @ inf.elte.hu>
+
+2001-12-11
+	* Fix compiling with USE_ZLIB
+
+Diablo 4.0-REL
+
+2001-11-27
+	* dreaderd/netremote: Implemented additional accounting support
+	  for more detailed remote accounting requirements.
+
+2001-11-23
+	* dreaderd: Implement latest draft NNTP commands, including HDR,
+	  OVER and LIST EXTENSIONS.
+
+2001-11-23
+	* diablo: Catch the TERM signal and do a clean exit.
+
+2001-11-23
+	* didump: Add options to set rememberdays (-r) and the maximum
+	  age of articles dumped (-T).
+
+2001-11-21
+	* Add dhisbench, a simple history performance tester.
+
+2001-11-20
+	* dreaderd: Fix problem with memory alignment when copying
+	  from one type of variable to another for banlists
+
+2001-11-18
+	* diablo: Allow activedrop to work when feederxrefsync is set
+
+2001-11-18
+	* didump/diload: Add optional progress meters and expand usage
+	  messages for interactive use.
+
+2001-11-17
+	* diablo: Fix a history corruption bug by simplifying the way
+	  we add entries to the history file. This also has the
+	  side-effect of speeding up history adds by 10 times on my test
+	  machine.
+
+2001-11-17
+	* dilookup: Improve usage and make it more flexible.
+
+2001-11-17
+	* history.c: Add an option to open the history file read-only.
+	  Utilities that do not need write access to the history now
+	  open it read-only, which means that mere mortals may run
+	  programs such as dilookup and didump.
+
+2001-11-14
+	* dreaderd: Add a dreader.access "access" option to specify a
+	  Berkeley DB file to verify the client IP.
+
+2001-11-09
+	* dreaderd: Allow the reader welcome banner (with format options)
+	  to be configured per vserver.
+
+2001-11-07
+	* diablo: Change to a news article storage format. Each article
+	  is now stored with a binary header. This change also includes
+	  wireformat storage (enabled with diablo.config option) and
+	  is backward compatable with old spools.
+	  NOTE: You cannot use old versions of diablo with spools
+	  created in the new format.
+
+2001-11-03
+	* diablo: Add diablo.config option 'feedermaxartsize' to limit
+	  the size of articles accepted on incoming feeds. This can
+	  be used to prevent extremely large articles creating huge
+	  memory buffers.
+
+2001-10-31
+	* diablo/dreaderd: Expanded the ranged 'feedhash' option to
+	  reader spool fetches and feeder metaspools.
+
+2001-10-31
+	* diablo: Add an option 'feederbuffersize' to set the starting
+	  incoming article buffer size.
+
+2001-10-30
+	* diablo: Modified 'feedhash' option to allow for weighting of
+	  outbound feeds by specifying ranges.
+
+2001-10-25
+	* all: Add the ability to view/change most diablo.config values
+	  at runtime via "dicmd/drcmd config".
+
+2001-10-25
+	* dicmd/drcmd: If multiple command-line parameters are used,
+	  then make them all part of the same command, rather than
+	  split them into multiple commands. Multiple commands can
+	  be fed in by stdin.
+
+2001-10-25
+	* dreaderd: Add a dserver.hosts option to split article fetches
+	  across spools based on the hash as used in the 'hashfeed' option
+	  in dnewsfeeds.
+
+2001-10-24
+	* diablo: Add 'feedhash' option to dnewsfeeds so that a
+	  feed can be split across multiple labels with no duplicates,
+	  based on a simple hash of the Message-ID.
+
+2001-10-22
+	* dreaderd: An a compile-time option to enable auto-ban lists
+	  for abusive clients trying to connect beyond their configured
+	  access limits.
+
+2001-10-16
+	* dreaderd: Increase the max number of cached header files
+	  to equal the number of threads per process.
+
+2001-10-16
+	* diablo/dnewslink: Add 'host' option and 'flush' option to
+	  'realtime' in dnewsfeeds to simplify configuration files.
+	
+2001-10-13
+	* diablo/dnewslink: Add a new dnewsfeeds option 'notify' to
+	  cause dnewslink to "register" with the master diablo process
+	  feed notification system. The feed notification system allows
+	  the master process to notify a dnewslink when there is an
+	  article that needs to be fed. When used with the realtime and
+	  rtflush options, this causes a significant reduction in article
+	  relay latency at the expense of higher file descriptor usage.
+
+2001-10-13
+	* all: Add a new '~/run' directory where unix domain sockets
+	  are created.
+
+2001-10-11
+	* dreaderd:post.c: If a user realm authenticated as the address
+	  they are trying to post as, allow it, regardless of ckaddress. 
+	  This allows correct behaviour in all cases for realm auth users
+	  attempting to do this who might otherwise be blocked by ckaddress.
+
+2001-09-30
+	* diablo: Add new dicmd "dumpfeed [LABEL]" to dump the details
+	  of the in-memory version of dnewsfeeds.
+
+2001-09-27
+	* dreaderd: Add a 'db' auth method for Berkeley DB databases.
+	  The database can also (optionally) return a readerdef.
+
+2001-09-25
+	* dreaderd: Allow NNTP-Posting-Date: header to be GMT or
+	  localtime (compile-time option).
+	  Submitted by: Francois Petillon <fantec @ proxad.net>
+
+2001-09-24
+	* dprimehostcache: Now requires an option to be specified otherwise
+	  prints a usage message.
+
+2001-09-17
+	* dreaderd: Add an option 'localspool' to specify the location
+	  of a local diablo spool where articles will be retrieved
+	  after lookup via the WHEREIS NNTP extension.
+	  Submitted by: Francois Petillon <fantec @ proxad.net>
+
+2001-09-17
+	* diablo: Add a command 'whereis' to allow a connecting server to
+	  find the location of an article on the spool (useful for NFS
+	  mounted spools). This needs to be enabled per incoming feed.
+	  Submitted by: Francois Petillon <fantec @ proxad.net>
+
+2001-09-17
+	* diablo: Fix closing of compressed spool files.
+
+2001-09-17
+	* dexpire: Add a per spool object option (minfreefiles) to
+	  specify the minimum free files (inodes) on a file system.
+	  dexpire will delete old article files until this minimum
+	  is reached.
+
+2001-09-14
+	* doverctl: Add an option to copy files across filesystems
+
+2001-09-14
+	* dexpireover: Handle header db directories structures with
+	  symlinks correctly.
+
+2001-09-11
+	* diablo: Add "spamalias" option to dnewsfeeds for preventing
+	  propogation of articles based on the last 2 entries of the
+	  Path: header.
+	  Submitted by: uhclem @ nemesis.lonestar.org (Frank Durda IV)
+
+2001-09-11
+	* diablo: Add (optional) support for using the
+	  X-Original-NNTP-Posting-Host: header for the spamfilter.
+	  Submitted by: uhclem @ nemesis.lonestar.org (Frank Durda IV)
+
+2001-09-05
+	* dreaderd: Add an option to dserver.hosts to specify which server
+	  will handle articles for specific groups/hierarchies when
+	  articles are fetched by article number (not by Message-ID).
+	  Also fix the round-robin server requests.
+
+2001-08-30
+	* dreaderd/netremote: The code to correctly accept a readerdef
+	  from the remote server was apparently never fully commited.
+	  Fixed.
+
+2001-08-30
+	* dreaderd: Add an option 'readergrouphash' to diablo.config to
+	  allow different header file and directory structures. This adds
+	  the functionality to have multiple levels of directories and
+	  to use different hash methods for the header DB.
+
+2001-08-29
+	* diablo: Allow the different internal spamfilter types to be
+	  set differently in diablo.config.
+
+2001-08-02
+	* dexpireover: Make the actual expire process conditional
+	  on an option (-y) and running with no options prints
+	  a usage message.
+
+2001-07-06
+	* dreaderd: Add a compile-time option to enable client CPU
+	  use timing. Submitted by: michael @ freenet-ag.de
+
+2001-06-08
+	* dreaderd: Add support for passing session statistics back to
+	  an authentication method via the DNS resolver task.
+
+	  Caveat: this isn't supported for most auth methods, and only
+	  makes sense in the context of something like an external SQL
+	  or other database of some type which is used to control user
+	  access - for example, allowed-bytes-per-day.
+
+	  Caveat^2: Even the NetRemote support is sketchy as of right
+	  now.  Some additional work is required to pretty this up.
+	  dreaderd needs to record the authenticator for a given
+	  user so that it can be called back with the correct
+	  authenticator and options.
+
+	* NetRemote: Add support for processing the above.
+
+	  Contributed by: newshosting.com
+
+2001-06-06
+	* dnewslink: Report sliding average pending articles per site
+	  Submitted by: michael @ freenet-ag.de
+
+2001-05-25
+	* dfeedtest: Add a new utility to test which dnewsfeeds labels match
+	  an article
+
+2001-05-16
+	* dreaderd: Add PAM authentication method
+	  Submitted by: Francois Petillon <fantec @ proxad.net>
+
+2001-05-08
+	* diablo: Add support for compressed newsfeeds based on the old
+	  patch by Christopher M Sedore. See dnewsfeeds for a description
+	  of the 'compress' option.
+
+2001-05-04
+	* dreaderd/netremote: Incompatible protocol change.  netremote will now
+	  support specific readerdef responses, and allow for some future stuff
+	  we have not written just yet.  If anyone else is using netremote, let
+	  me know so I may continue hacking on it without totally breaking you
+	  <jgreco@ns.sol.net>
+
+Diablo 3-STABLE
+
+2001-11-26  merge: 2001-11-26
+	* dexpire: Fix bug is directory handling when directory doesn't
+	  exist.  Submitted by: michael @ freenet-ag.de
+
+2001-11-21  merge: 2001-11-21
+	* diloadfromspool: Fixed error reporting.
+	  Submitted by: Bolo <bolo @ cs.wisc.edu>
+
+2001-10-26  merge: 2001-10-26
+	* dreaderd: Add back a 'quiet' option to disable connect and
+	  disconnect logging for some users (e.g: stats/monitoring)
+
+2001-10-16  merge: 2001-10-16
+	* install: Add 'xmake bininstall' to not install the
+	  working copies of the config files. Useful for people
+	  who install the config files into a different location.
+	  Submitted by: Francois Petillon <fantec@proxad.net>
+
+Diablo 3.3-REL
+
+2001-09-13
+	* dreaderd: Don't accept invalid Message-ID's for IHAVE
+	  Submitted by: Bolo <bolo @ cs.wisc.edu>
+
+2001-09-07  merge: 2001-09-11
+	* dreaderd: Use 423 in response to article not found when requested
+	  by article number.
+
+2001-08-29
+	* dreaderd: Improved handling of header rewrites. This fixes
+	  some possible buffer overflows and should improve performance.
+
+2001-08-21  merge: 2001-08-29
+	* dreaderd: Add an option (readercachedirs) to diablo.config
+	  to specify the directory structure for the cache spool.
+
+2001-08-03  merge: 2001-09-17
+	* all: Improved support for AIX, based on feedback from
+	  Adrian P. van Bloois.
+
+2001-07-30
+	* dreaderd: Don't compress whitespace in headers unless we
+	  are compressing tabs for XOVER
+
+2001-07-10
+	* dnewslink: Add 'articlestat' to dnewsfeeds that causes
+	  dnewslink to stat() every article file before offering
+	  the article.
+
+2001-07-10
+	* dspoolout: Add 'queueskip' option to dnewsfeeds to make
+	  dspoolout/dnewslink not process the N most recent queue files
+
+2001-07-06
+	* diablo: Don't break groupdef linked list when adding the
+	  GLOBAL label in dnewsfeeds.
+	  
+2001-07-07
+	* dreaderd: Add compile-time option (lib/vendor.h) to force
+	  adding an NNTP-Posting-Date header.
+
+2001-06-06
+	* dreaderd: Don't add extra \r at the end of Xref: and Path:
+	  lines when retrieving an article from the spool
+
+2001-05-29
+	* dreaderd: Log the vserver for connect and reject messages
+
+2001-05-25
+	* diablo: Fix wildcard pattern matching for a specific case
+
+2001-05-22
+	* dreaderd: strip trailing whitespace from newsgroup names before
+	  writing overview data
+
+Diablo 3.2-REL
+
+2001-05-21
+	* dreaderd: Close incoming feed when we can't write header
+
+2001-05-11
+	* diablo: Ensure that control groups are in the newsgroup list
+	  before generating Xref:
+          Submitted by: Steve Wyles <stevew @ ops.netcom.net.uk>
+
+2001-05-11
+	* feeder-stats.pl: Handle case when diablo.hosts is not used
+
+2001-05-11
+	* dnewslink: Fix bug in handling of 'on/off' options
+
+2001-05-11
+	* diablo: Fix bug in handling of multiple A records
+
+2001-05-08
+	* dgrpctl: Check for very long group names
+
+Diablo 3.1-REL
+
+	* dreaderd: Add a per-session byte maximum value
+
+	* dreaderd: Better checking of bad ranges in xover
+	  Submitted by: M.Lechner <list_email_no_spam @ cae-profi.com>
+
+	* dreaderd: Swap order of bytes and articles entries in the
+	  'info server' syslog line.
+
+	* dreaderd: Fix a bug in the dserver.hosts file to prevent
+	  re-reading the file through each read loop. Also allow
+	  adjusting of the priority when the file changes.
+
+	* diablo/dreaderd: Allow setting of no Path entry in diablo.config
+	  Submitted by: michael @ freenet-ag.de
+
+	* diablo: Add code to allow setting of compression level on
+	  compressed spools.
+
+	* dnewslink: Dynamically adjust the usleep time for realtime
+	  feeds.
+
+	* diloadfromspool: Various usage cleanups and minor bug fixes
+
+	* dreaderd: Fix rate limit tax calculation so that it works
+
+	* diablo: More efficient binary article type categorisation
+
+	* diablo: Log incoming stats at NOTICE level
+
+	* diablo: Log compressed article size (for compressed spools) to
+	  incoming log and syslog.
+
+	* diablo: Fix use of 'all' arttype when used as first option
+	  Submitted by: Cor Bosman <cor @ xs4all.net>
+
+	* dgrpctl: Add a checkgroups option
+
+	* dreaderd: Fix binding to multiple ports
+
+	* dnewslink: Reduce the frequency with which we stat() the
+	  backlog file to see if it has moved.
+	  Submitted by: FUNET Newsmaster <newsmaster @ news.funet.fi>
+
+	* dreaderd: Increased the maximum length of dreader.access label
+	  names to 128 chars.
+
+	* diablo: Don't reject newgroup messages posted to newsgroups
+	  that don't (yet) exist.
+
+	* dexpire: Add an option to disable the file removal pass
+
+	* dnewslink: Rename ignorebytes option to preservebytes
+
+	* dnewslink: Make sure we flush file handles for realtime processes.
+
+	* dreaderd: Update sample moderators file
+
+	* dilookup: Improve (and document) the -s option to read IDs on
+	  stdin.
+	  Patch from: Robert Kiessling <Robert.Kiessling @ de.easynet.net>
+
+	* dexpire: Add an option to 'unexpire' articles in dhistory.
+
+	* dexpire: Fix a bug causing valid articles to be expired when
+	  the %s option is used in a spool path.
+
+	* dreaderd: Add options to dserver.hosts to set local bind interface
+	  and tx/rx buffer sizes. Prompted by a patch from: George Cox
+	  <gjvc @ sophos.com>.
+
+	* dreaderd: Limit what commands are valid between a client using
+	  AUTHINFO USER and AUTHINFO PASS.
+
+	* dnewslink: Fix some performance problems due to excessive
+	  use of fcntl().
+
+	* dexpire: Fix off-by-one error in memory allocation, patch
+	  from Gabor Gombas.
+
+	* dreaderd: Add an option to disable detailed reader logging.
+
+	* diablo: Add "dumphist" command to dicmd.  Asks the parent diablo
+	  process to call the configured dumphist program in a blocking 
+	  manner.  New connections are not accepted and articles are not
+	  written to history for the duration of the program run.  This is
+	  intended to help those with memory filesystems for history make 
+	  periodic history file snapshots without a lot of extra pausing 
+	  and scripting.
+
+Diablo 3.0-REL
+	* pgpverify: Add a HOME env variable before executing pgp. HOME
+	  is set to 'path_home' in diablo.config.
+
+	* diablo: Use zalloc for diab-filter, and free memory when
+	  forking from the parent.
+
+	* diablo: Add 'rejectarts' and 'dontstore' options to metaspool
+	  definitions. This removes the 'unwanted' option.
+
+	* didump: Fix recently intoruced bug that caused old articles
+	  to be incorrectly removed from history
+
+	* diablo: If a newsfeed label has a '/', try to create the
+	  directories it requires, rather than fail silently.
+
+	* dreaderd: Add an option to disable Newsgroups: header verification
+	  for POST requests.
+
+	* dlockhistory: Experimental new daemon to mlock the history hash
+	  table into memory for a possible performance win on low memory
+	  machines.
+
+	* dexpireover: Fix the lock timeout mechanism.
+
+	* dreaderd: Allow '()<>' as characters in group descriptions
+
+	* diablo: Fix a bug which would log the wrong number of seconds
+	  in the first checkpoint message.
+
+	* diablo: Add the ability to execute a program upon normal server
+	  termination.  This is potentially handy for any number of cleanup
+	  tasks.  path_shutdown_cleanup in diablo.config.
+
+	* dreaderd: Add a vserver option 'noreadpath' to disable the
+	  addition of a Path: entry for this reader. Useful for a cache-only
+	  dreaderd that only has other dreaderd's as clients.
+
+	* diablo/dreaderd/dstart: Syncronised the bind and port options
+	  to '-B bindip[:port]' and '-P [bindip:]port' for all programs.
+	  Add diablo.config options for bind address.
+
+	* dspoolout: Add a priority option so that some feeds can be
+	  given higher priority (nice value) than others.
+
+	* dexpire: More fixes for the /news/spool/news special case.
+
+	* lib/spool: Fix spooldirs when using them on /news/spool/news.
+
+	* dspoolout: Properly preserve flags across passes; otherwise the
+	  realtime dnewslink processes can be forgotten.
+
+	* diloadfromspool: Better support for spool object scanning and add
+	  an option to 'unexpire' articles.
+
+	* diablo: Cleanup the expire flag in history. It is now a single
+	  bit of the h.exp entry so we maintain the old info on the article.
+	  This should also be backwardly compatable with existing history
+	  files, but new history files won't work with older code. 
+
+	* dreaderd: Add an interim patch to handle group name hash conflicts.
+	  This appears to work and I will maintain support for transparent
+	  upgrading to better code later. Once dexpireover is run, the
+	  header database can no longer be accessed by older code, although
+	  this code can handle older databases. Conflict resolution is done
+	  by storing the group name into the overview index header and
+	  an iteration number into dactive.kp for subsequent conflicts.
+
+	* doutq, contrib/feeder-stats: Add support for dnntpspool.ctl-less
+	  operation.
+
+	* dexpire: Fix a bug which would expire all articles in new-style
+	  spools on every invocation, if they were under /news/spool/news.
+
+	* dexpireover: Fix a race condition that was causing dexpireover
+	  to resize groups with the incorrect end article number. This
+	  should fix the "missing articles" problem reported by many and
+	  the "corrupted overview entry" error logged occasionally.
+
+	* diablo: Allow incoming hostnames to be specified in dnewsfeeds
+	  as 'inhost' per label.
+
+	* diablo: Add an experimental spool compression option. This can
+	  be enabled per spool object. See lib/vendor.h for details.
+
+	* diablo: Add path_pathlog option to diablo.config to enable logging
+	  of Path: lines - useful for inpaths stats. Also allows Path: to
+	  be piped to an external program.
+
+	* diablo/dnewslink: Flush the open file cache every 10 minutes to
+	  allow spool files to be deleted if necessary.
+
+	* diablo: Set default metaspool reallocinterval to 10 minutes
+
+	* diablo/dnewslink: Keep some realtime, persistant statistics for all
+	  incoming, outgoing and spool feeds that can be dumped with
+	  dfeedinfo. This can be tuned with 'feederrtstats' in diablo.config.
+	  IMPORTANT NOTE: This changes the format of diablo incoming feed
+	  syslog lines
+
+	* diablo/dreader: Add options to diablo.config to allow auto
+	  creation of newsgroups if they don't exist
+
+	* dgrpctl: Add an adjust command to adjust NB, NE and NX values
+
+	* dsyncgroups: Add -P option to specify a % limit increase in the
+	  end article number
+
+	* dreaderd: Audit responses from spool servers during POST cmd
+
+	* dreaderd: Correctly initialise the authentication structures.
+	  This fixes a bug that stopped the group restrictions for
+	  list active.
+
+	* dreaderd: Add option ignoreauthinfo to readerdef to ignore AUTHINFO
+	  from clients that match an IP range
+
+	* diablo: Hopefully fixed a bug with history corruption when
+	  rejecting articles, due to a buffer not being flushed properly
+
+	* dspoolout: Add 'r' option to force starting a realtime process
+	  if one is configured. Also increase the chance of starting
+	  a realtime process when there is a small backlog
+
+	* dreaderd: Add a path_drincominglog to log incoming feed
+	  articles into a separate file or syslog
+
+	* dreaderd: Use -X option to specify an Xref: hostname when
+	  we are generating Xref: lines
+
+	* dclient: New program to run commands on remote server and put
+	  output to stdout
+
+	* dsyncgroups: Optimise by only updating fields when there are
+	  changes to them. Allow the group flag to be specified.
+
+	* dgrpctl: Add listnewsgroups and groupinfo commands
+ 
+	* all: Add '-V' option to all binaries to print version and exit
+
+	* dsyncgroups: Add verbose and notforreal options. Improve usage
+	  message
+
+	* diablo/dnewslink: Use double type for bytes counters
+
+	* diablo: Log article size and type when rejecting an article.
+	  This changes the format of the reject log line in the incoming log
+
+	* dgrpctl: Add a 'listactive'
+
+	* diablo: Log the number of stat/article/head/body/bytes for
+	  articles retrieved from the spool, when the connection closes
+
+	* diablo: Add the ability to allocate all articles received
+	  from a specific host to a metaspool
+
+	* diablo: External spamfilter now compiled in by default and
+	  the path is specified in diablo.config
+
+	* dexpire: Add an option so that we calculate directory
+	  sizes and use these sizes to determine space free rather
+	  than doing a statfs() after each delete. Dexpire will run
+	  until all requirements are met unless the '-O' option is
+	  used. Also do all size calculations in bytes.
+
+	* dexpire: Properly close fd's when computing spool size,
+	  other bugs in spool size calculations.
+
+	* diablo/dreaderd: Add diablo.config options for most command-line
+	  opts. Use a structure to handle all global options.
+
+	* dreaderd: Allow post and list group restictions to be defined
+	  separately from group access restrictions.
+
+	* dstart: Add a new program that does the root user stuff and
+	  switches to the news user before executing diablo/dreaderd
+
+	* diablo: Add a rudimentry incoming filter that allows incoming
+	  articles to be rejected by article type before they are
+	  saved to disk (IFILTER in dnewsfeeds) - needs expansion, but
+	  this works for now
+
+	* feeder-stats: Prevent some dib by zero errors
+
+	* diablo: Add dicmd command 'rawstats' for unformatted stats
+
+	* diablo: Add '-X' option to allow the Xref: hostname to be
+	  specified separately from pathhost if Xref: generation is enabled.
+	  Submitted by: Cor Bosman < cor @ xs4all.net >
+
+	* dreaderd: Add an option to dreader.access that allows the
+	  access matching to stop at a particular access line if matched
+
+	* dreaderd: Add a hook for a local C filter for outbound posts.
+	  A really annoying spammer deserves an equally annoying revenge.
+
+	* dnewsfeeds: Properly load up values from the GLOBAL
+	  label (this code should be thrown out and re-written.)
+
+	* diablo: General spamfilter changes:
+	    - internal filter disabled by default (enable with -S)
+	    - internal posting-host filter disabled by default
+	    - internal and external filters configurable as
+	      newsfeed entries (ISPAM and ESPAM). This gives
+	      control over what gets sent to the filters.
+
+	* dnewsfeeds: Disable caching for feed data retrieval,
+	  since otherwise we end up using the same feed entry
+	  for every feed.
+
+	* doutq: Support the new dnewsfeeds file format, if no
+	  dnntpspool.ctl exists.
+
+	* diablo: Add code to categorise articles based on their
+	  type (e.g: binaries, mime, etc). This type can them be
+	  used to filter articles for feeds or spool objects.
+	  See samples/dnewsfeeds for article types.
+
+	* dreaderd: Allow the authenticators to return a string that
+	  can include a readerdef to use once authenticated. Only
+	  the file authentication method uses it so far.
+
+	* dnewsfeeds: Add a whole bunch of new options that are used
+	  by dspoolout. Replaces the options used in dnntpspool.ctl.
+
+	* dspoolout: dnntpspool.ctl is redundant. All options are specified
+	  in dnewsfeeds under the corresponding label. The old file
+	  will still be used if it exists, in which case dnewsfeeds
+	  won't be used for dspoolout options.
+
+	* dreadover: Add -a option to display MaxArts for all groups
+	  in active file.
+
+	* all: Expand the spool system quite significantly to allow
+	  the allocation of hierarchies to spool objects. dexpire.ctl
+	  is now only used by dreaderd/dexpireover and diablo/dexpire
+	  now makes use of a new file: dspool.ctl. See samples/dspool.ctl)
+	  for the format of the file and how to use it. The major
+	  differences from previous version:
+		- addition of dspool.ctl
+		- spooldirs option in diablo.config is now in dspool.ctl
+		  and per spool object (kept for compatability mostly and
+		  the ability use very large spool objects with a large
+		  number of spool directories).
+		- No longer use 'expire reader/feeder' in diablo.config
+		  and hence no more slot based expire - this can be handled
+		  with multiple metaspools (almost) making it much more
+		  flexible.
+		- diablo no longer uses dexpire.ctl, although the old format
+		  of that file is parsed correctly by dreaderd/dexpireover.
+		- the history file is not updated by dexpire unless a
+		  spool directory is removed. Updates can be forced with
+		  the '-h' option.
+
+	* dreaderd: Add some basic LDAP user/pass authentication. Needs to be
+	  enabled at compile-time - see lib/vendor.h
+
+	* diablo/dreaderd: Add option to create active file entry for all
+	  newsgroups seen.  Groups created in this manner will not have a
+	  description, and moderated groups won't be set up correctly.
+	  Intended for use in conjunction with external mechanisms to
+	  address these issues.
+
+	* dsyncgroups: Allow input from a file
+
+	* dreaderd: Implement NEWNEWS - defaults to disabled, but can
+	  be enabled with an option in dreader.access
+
+	* contrib: A little utility to assist with those who have the
+	  need to change their spooldirs directive in diablo.config.  It
+	  will provide information about what spool data needs to be moved
+	  to generate a working config.
+
+	* dreaderd: Add new authentication type, NetRemote, to allow for
+	  remote centralized authentication over the 'net.  Includes a
+	  sample auth mini-server with all the networking stuff but no
+	  actual authentication guts (you can build your own).  UTSL
+	  documentation provided.
+
+	* dreaderd: Add new drcmd 'stats' and 'rawstats' commands to
+	  display various stats and improve syslog logging of some stats.
+	  'rawstats' is used to display the stats in a format useful
+	  for stats gathering tools.
+
+	* dsyncgroups: Add -n option to specify an increment applied to
+	  the NX and NE fields when they are synced.
+
+	* drequeue: Add -s (send to stdout) option and ability to specify
+	  a newsfeed label on command-line
+
+	* dreaderd: Log time connected
+
+	* dreadart: Allow didump output line in '-f -' mode to bypass
+	  history lookup
+
+	* diablo: Improved incoming article error detection
+
+	* diablo: Don't mmap article when doing HistoryLookup for STAT
+
+	* diablo/dreaderd: Synchronise the -B option for binding to an IP
+
+	* diablo: Use the command-line -c and -p order to determine the
+	  order the entries are added to the Path:. Allow multiple of
+	  both -c and -p options.
+
+	* dreaderd: Add the beginnings of some spool server article and
+	  byte count logging.
+
+	-- merged fixes below into stable branch
+
+Diablo 2.6-REL
+
+	* dnewslink: Reduce the frequency with which we stat() the
+	  backlog file to see if it has moved.
+	  Submitted by: FUNET Newsmaster <newsmaster @ news.funet.fi>
+
+	* dnewslink: Avoid excessive calls to fcntl().
+
+	* dexpireover: Fix the use of SIGALRM to interrupt fcntl system
+	  calls to time out waiting for locks.
+
+	* dreaderd: Allow '()<>' as characters in group descriptions
+
+	* diablo: Set the correct time when adding a rejected history entry.
+	  This should really fix that history corruption problem.
+	  Detective work by: Nickolai Zeldovich < kolya @ MIT.EDU >
+
+Diablo 2.5-REL
+	* dexpireover: Add a '-l' option to specify the time to wait
+	  for locks when resizing/rewriting files.
+
+	* dreaderd: Fix a problem with spool state not being cleared
+	  when a client disappears before completing a post.
+	  Patch from: "Michael O'Reilly" < Michael.O'Reilly @ cwo.com.au >
+
+	* dreaderd: Fix a potential buffer overflow when responding to a 
+	  successful post.
+
+	* dreaderd: remove '\r' from empty lines of messages posted to a
+	  moderator. Submitted by: GOMBAS Gabor < gombasgu @ inf.elte.hu >
+
+	* dexpireover: Don't remove overview files if we get disk errors
+	  otherwise we lose the overview data we have
+
+	* didump: Option to verify that each history entry dumped can
+	  be found in history via normal HistoryLookup()
+
+	* dspoolout: Add a new option 'maxstream' to dnewsfeeds that
+	  specifies the maximum number of articles to offer per
+	  streaming transaction.
+	  Submitted by: Bolo < bolo @ cs.wisc.edu >
+
+	* diablo: Better handling of articles with tab in Newsgroups header
+	  or nul anywhere - articles rejected
+
+	* dnewslink: Performance improvement by not looking for headers
+	  in the body of the articles.
+
+	* dnewslink: Add an option to allow the Bytes: header to be
+	  ignored on an outgoing feed. Useful for a header-only relay
+
+	* dreaderd: Fix a bug that was rejecting connections that
+	  required authentication to do anything
+
+Diablo 2.4-REL
+	* dreaderd: When displaying an article from cache, use the
+	  header db for the headers so that the Xref article number
+	  matches the one requested. This can be disabled with the
+	  undocumented spoolheaders option in dreader.access.
+
+	* diablo: Add maxsize and minsize to remotely configurable
+	  feed option list
+
+	* dreaderd: Fix a bug where dreaderd would spin and chew up CPU
+	  cycles, if the client disconnected abruptly or otherwise kept
+	  the SendQ full.
+
+	* dreaderd: Updated post-addr-ck.c to actually do correct sanity
+	  checking for TLD's, etc.  The legacy version only allowed US-
+	  centric checking.
+
+	* dnewslink: Properly add up bytes for articles sent in streaming
+	  mode.
+
+	* dnewslink: Better handling of hung connections
+	  Partial patch from: Andrew Gierth < andrew @ erlenstar.demon.co.uk >
+
+	* diablo: Faster response to incoming connections (Andrew Gierth)
+
+	* dsyncgroups: Don't sync groups with negative begin or end
+	  numbers
+
+	* dexpireover: Try not to dereference NULL pointers.
+
+	* dreaderd: Set controlpost from access file
+	  Patch from: Paul Martin < pm-diab @ nowster.zetnet.co.uk >
+
+	* diablo: Add new 'feedlist' NNTP command to list current
+	  customisable feed configuration and improve TouchNewsfeed()
+	  Requested by and partial patches from: michael @ freenet-ag.de
+	  
+Diablo 2.3-REL
+	* dreaderd: Fix problem with abuseto when POST_CRYPTXTRACE is set
+
+	* dexpireover: Use correct values for initarts and maxarts
+
+	* dreaderd: Handle 4 digit years (until 2099) and handle 3 digit
+	  years supplied by non-Y2K compliant readers.
+		Patch (modifed) from: wusel @ uu.org (Kai 'wusel' Siering)
+
+	* dreaderd: Fix bug in byte count for non-headfeed
+	  Reported by: wusel @ uu.org (Kai 'wusel' Siering)
+
+	* diablo: When rejecting a bad Message-ID, include the Message-ID
+	  that was supplied
+
+	* dspoolout: Fix bug in setting of logarts
+	  Reported by: Sameh Ghane < sw @ anthologeek.net >
+
+	* dreaderd: Improved post logging
+
+	* dreaderd: Another fix for idle timeout
+
+	* pgpverify: Support PGP 6.5.i
+	  From: michael @ freenet-ag.de
+
+	* diablo: Keep track of bytes accepted and bytes received
+	  Requested (and part patch) by: michael @ freenet-ag.de
+
+	* diablo: Better error handling for spool disk full
+
+	* Catch incomplete incoming articles and report error
+
+	* diablo: Fix history corruption when activedrop == yes
+
+	* diablo: Only generate Xref: if a group is in active
+
+	* dnewslink: Fix infinite loop when an article is instantexpired
+	  Fix from: Bolo < bolo @ cs.wisc.edu >
+
+Diablo 2.2-REL
+
+	* Fix bug in article post that caused core dump
+
+Diablo 2.1-REL
+
+	* dprimehostcache: Add '-dump' option to display contents of
+	  dhosts.cache.
+
+	* diablo: Fix bug in dns fwd/rev checking that could allow hostname
+	  spoofing. Also fix problem with IP lookups for dhosts cache.
+
+	* dreaderd: Report reason for rejecting controls.
+
+	* diablo: Fix Xref: generation for control.* messages to only
+	  generate the Xref: for the control group.
+	  Steve Wyles < stevew @ ops.netcom.net.uk >
+
+	* dreaderd: Use 400 response when client is allowed to
+	  connect again later (timeout, too many users, etc).
+
+	* diablo: Another fix for multiple spool directories
+
+	* dreaderd: Fix post Path: addition to allow no path addition
+	  Reported by michael @ freenet-ag.de
+
+	* diablo: Use proper file locking for creating dhosts.cache
+
+	* dexpireover: Add an option '-x' to enable a different expiry
+	  method. This new method tries to calculate how many header
+	  slots should be available based on the expire time vs the
+	  oldest article and how many articles are there already.
+
+	* dexpireover: Add options to dexpire.ctl to allow the minimum
+	  and maximum header slot count to be specified.
+
+	* dreaderd: When retrieving headers, stop scanning at the
+	  end of the header - control messages are stored whole.
+
+	* dreaderd: Tighten up and improve the access control with new
+	  options for IP only matches.
+
+	* diablo: Add back "allow_readonly" option for backward compat
+	  (ignore + syslog a notice pointing at dserver.hosts)
+
+	* diablo: Fix handling of single-entry Path headers (from
+	  michael @ freenet-ag.de)
+
+	* diablo: Allow '+' in group names in dynamic feed configuration
+	  code (from michael @ freenet-ag.de)
+
+	* diablo/dreaderd: unified the rc.news scripts and added some 
+	  documentation, you must edit this script before using it (you
+	  had to before anyways)
+
+	* diablo: fixed DiabloSpoolDirs import; wrong code was imported
+
+	* diablo: Be more informative in some error messages
+
+	* dreaderd: Fix calculation of ratelimittax
+
+	* diablo: Fix (grr) a code merge error in the DiabloSpoolDirs
+	  code in dexpire
+
+	* diablo: Fix the generation of Xref: lines for control.* groups
+
+	* dreaderd: Fix Xref: generation by using ReportedHostName rather
+	  than a vserver name.
+
+	* dreaderd: Fix idle/session timeout - it was broken at some stage
+	  Also send a 502 response to the client before closing the
+	  connection.
+
+	* dreaderd: Add an auth option to allow CDB database lookups
+	  Submitted by: Thomas Neumann <tom @ smart.ruhr.de>
+
+	* dreaderd: Allow control messages to be filed in special 
+	  "control.*" newsgroups, if those groups exist, as opposed to 
+	  just executing and then trashing them.  This allows the admin
+	  to see recent newgroup/rmgroups, and possibly cancels if you
+	  are into that sort of thing.
+
+	* Don't use a newly created host cache file of zero length
+	  (This is a safeguard)
+
+	* Fix a bug with active file caching that caused a core dump
+
+	* Increase usleep time in dnewslink for realtime feeds. 1ms causes
+	  performance problems.
+
+Diablo 2.0-REL
+	* Updated feeder-stats.pl to latest from Brad with local mods
+	  for 2.0
+
+	* Added newsmaster and readercrash options to diablo.config
+	  which set the address for control message mail and specify
+	  a program to run if dreaderd crashes. (kolya)
+
+	* Only set the NewsAdmin if we didn't use -A to set it and
+	  documented the -A option
+	  Reported by: Dave Rynne
+
+Diablo 2.0-BETA03
+	* Make pre/post commit size and retention times runtime
+	  configurable
+
+	* Cleanups and fixes for some of the article reject code
+	  in incoming article processing  (Robert Kiessling with
+	  some additions from rv)
+
+	* Return a 201 greeting code when the client is not allowed to
+	  send articles to us. (kolya)
+
+	* Add 'grouplog' option to readerdefs in dreader.access, which
+	  allows disabling logging of group names in dreaderd.status
+	  and via syslog. (kolya)
+
+	* Do some basic header checking whilst feeding. i.e: make sure
+	  there is one (and only one) of each of the important headers
+	  (Robert Kiessling)
+
+	* Add new reject message (TooSmall) for articles below a minimum size
+	  to distinguish "really" missing headers from empty articles sent. 
+	  (Robert Kiessling)
+
+	* Move CommonPathName to be front of the MISMATCH
+	  (reported by Robert Kiessling)
+
+	* Reduce precommit expire time to 30 seconds and increase
+	  postcommit to 45 minutes
+
+	* Improve dnewslink logging: logarts now takes a parameter
+	  which specifies the log level (Robert Kiessling)
+
+	* Improve the code to handle 431 responses in diablo so that
+	  the defer queue gets cleared when it starts filling up
+	  (Robert Kiessling)
+
+	* Support for forced read-only incoming connections (dreaderd
+	  spool) and "mode readonly" (R flag in dserver.hosts) (kolya)
+
+	* Allow per vserver max connection limiting
+
+	* Add 'drcmd vstats' to display some stats about readerdef
+	  and vserver usage
+
+	* Use 436 for 'resend later' in IHAVE
+
+	* Add NEWGROUP caching (kolya)
+
+	* Add an option to allow DNS Fwd/Rev mismatch for an authdef
+
+	* Some more logging patches for dnewslink from Robert Kiessling
+
+	* Allow reuse of requeue queue in dnewslink - this allows
+	  realtime processes to flush and reuse it.
+
+	* Close and open the incoming log for child diablo processes
+
+	* Add precomreject option to enable rejecting precommit hits
+	  for an incoming feed (Diablo did this pre-2.0)
+
+	* Fix a bug which caused Diablo to bogously accept and spool
+	  PostDuplicate articles (Robert Kiessling)
+
+Diablo 2.0-BETA02
+	* Go back to using Joe's CidrMatch as it handles more odd cases
+
+	* Hopefully fixed drcmd exit
+
+	* Reduce the default feed forks to 2 - we seldom need more than 1
+
+	* Add a date to the incoming log for diablo feeding
+
+	* Fix various rejctions that would hang around in the precommit
+	  cache too long so we lose the opportunity to get the article
+	  from another host. Thanks to Robert Kiessling
+	  < Robert.Kiessling @ de.easynet.net > for the discussion, hints
+	  and some patches.
+
+	* Log history hits, tab in Path: header rejections and duplicate
+	  article after receive for incoming feeds
+
+	* Add a %STATS label that accepts a connection, prints some
+	  stats and closes the connection
+
+	* Improve the outgoing article logging in dnewslink by also
+	  logging the time, stage and reason for rejection.
+	  (Robert Kiessling < Robert.Kiessling @ de.easynet.net >)
+
+	* Allow ident user to be specified in the access line of
+	  dreader.access
+
+	* Suggest a Message-ID: in the POST response (experimental)
+
+	* Fix the use of some of the vserver options in headers
+
+Diablo 2.0-BETA01
+	* Log the group names+counter for readers
+
+	* Add 'version' command for drcmd and dicmd
+
+	* Improved functionality of dreadover
+
+	* Use 502 response codes for failed connects to reader
+
+	* FIX: Stop feed-only processes from making a connection to the
+	  backend spool - they don't need it
+
+	* Add a command "dgrpctl" to allow one to add/mod/del newsgroups
+
+	* Use 431 (resend later) when we get a precommit cache hit
+	  with incoming articles
+
+	* Add ability to log incoming articles (feeding) to a file
+	  instead of only to syslog
+
+	* Add support for drcmd ("drcmd help" to get commands)
+
+	* Add modifyxrefhost to vserver def to allow overriding
+	  of Xref: hostname
+
+	* Add an idletimeout and sessiontimeout that can be enabled
+	  per reader group.
+
+	* Add an option to nntpspool.ctl to allow restrictions on the
+	  hours a feed is allowed to start up.
+
+	* Add -x option to diablo feeder to enable updating of NX
+	  field if active is enabled. This is useful for a backup
+	  to an Xref master.
+
+	* Allow a max article size to be specified for the external spamfilter
+
+	* Allow dnewslink to handle 'resend later' responses correctly
+	  by really resending them later.
+
+	* Complete rewrite of dreader authentication with a new
+	  file (dreader.access) in a new format
+		- add a delayedclosesecs to delay closing on failure
+		- more comprehensive virtual server configuration
+		- add group restrictions
+		- all authentication now done in dns processes
+		- rate limit tax for reducing rate on extra connections
+
+	* Fix bugs in handling of the rebuild of the diablo.hosts
+	  cache.
+
+	Transit stuff:
+
+	Enhanced article logging now available via syslog.  Will provide
+	information about why an article was rejected, and/or XRef:
+	numbering and stuff like that.
+
+	Changed a whole bunch of various session messages to be more
+	informative and useful.  Add "-A" flag to command line to set news
+	admin contact address.
+
+	XRef: generated for control messages if control.* newsgroups exist.
+	Eventually these should be made available at the reader level.
+
+	Diablo SpoolDir modification: allow multiple spool directories so
+	that you don't have to build terabyte-sized spool filesystems for
+	things like binaries.  The spool directories are simply meant to
+	be equally sized "sub-spools", and do not get into gymnastics to
+	put particular groups or particular article sizes on particular
+	spools.
+
+	Fix history sizing, for those of us who really did mean it when
+	we put in "hsize 64m" in diablo.config.
+
+	From kolya: checks for malloc() return values.
+
+	From kolya: SIGALRM patch for dnewslink.c
+
+	Reader stuff:
+
+	Integrated a whole bunch of stuff to provide virtual news reader
+	capabilities.  See "vN" flag in dreader.hosts, and dreader.virtuals
+	file for configuration details.
+
+	Enhanced system logging now available via syslog.
+
+	Enhanced transaction logging now available via syslog.
+
+	Added per-session byte/article, per-group byte/article counters.
+
+	Changed some session messages to be more informative and useful.
+        Add "-A" flag to command line to set news admin contact address.
+
+	Added lots of stuff to outbound post system, see comments in
+	vendor.h:
+
+	1) From: address checker (not comprehensive, but good for US ISP's)
+	   to prevent things like "sally@fuck.net".  If somebody would care
+	   to figure out a way to generalize this...,
+	2) Regurgitation checking to prevent users from posting articles
+	   that they fetched back at the server,
+	3) Forcible Message-ID rewriting,
+	4) Restrictions on cancel and supersedes issuing (Hipcrime buster),
+	5) Encrypted NNTP-Posting-Host and X-Trace capabilities
+
+	Rewrote DnsTest, and therefore also the entire dreader.hosts
+	file format.  Now can do RADIUS, multiple user=/pass=, CIDR
+	notation on IP ranges, etc.
+
+	Added realm= optimization to dreader.hosts
+
+	From kolya: overview flushing patch.
+
+	From kolya: dsyncgroups patch.
+
+Diablo V1.28
+
+	* DReaderd can now handle duplicate articles if it is run with the
+	  '-x xrefhost' option.
+
+	* Added 'readerxover trackonly' option.  This causes dreaderd to 
+	  maintain the xover control files but not the xover data files,
+	  allowing dexpireover to be run but not allowing user reader
+	  access.  This would be used in a mid-level cache which you are
+	  also using to maintain the active file in regards to article
+	  expiration.  The idea here is that your leaf reader boxes can then
+	  partially synchronize their active files to the active file
+	  maintained on the midlevel box.
+
+	* BSDI configuration now uses anonymous mmap and usleep()
+
+	* PATCHES FROM RUSSELL VINCENT:
+
+	 - don't log successful connects as errors - change to LOG_INFO
+
+	 - add ability to match CIDR blocks in dreader.hosts (incl example)
+	   This patch is modified from a patch I obtained from a forgotten
+	   source (apologies to author). The original patch didn't work in
+	   all cases.
+	 - add the ability to limit simultaneous hosts for a matching line
+	   in dreader.hosts, rather than for a specific host. Also fix some
+	   spelling errors
+	 - Keep track of the remote port for client connections so that we
+	   close the correct connection each time and we log all connection
+	   closes. Also log the port, so that we get a separate log entry
+	   for multiple connects/closes instead of syslog logging 'last message
+	   repeated n times'.
+
+	 - add '-F' command-line option to disable the external spamfilter
+	   if it has been compiled in. Include additions to man page.
+
+	 - add 'logarts' to dnntpspool.ctl and '-A' option to dnewslink
+	   to allow logging of all article accepts/rejects for a particular
+	   host. Logging is done to "~log/feedlog.hostname".
+
+	 - Also accept a response of 201 (readonly access) from a remote
+	   server when running dsyncgroups. We only need read access.
+
+	 - Allow an group:art1-art2 range to be specified to dreadover for
+	   extracting header data for a range of articles in a group.
+
+	 - add a '-Q' option to diloadfromspool that reads the spool (ignoring
+	   history) for all articles and writes the output in a format that
+	   is suitable for drequeue (also included as drequeue.c).
+
+	 - An extra program to (usually) requeue articles for all newsfeeds
+	   based on specific input. Uses the standard options for specifying
+	   an alternative diablo.config file to, for example, only requeue
+	   articles for a specific feed. Please feel free to use the usual
+	   Diablo copyright for this.
+
+	 - add a command-line option to disable ident lookups in dreaderd
+
+	 - Rewrite the Authenticate() function of diablo so that it does
+	   a background IP lookup of all hosts in diablo.config and caches
+	   them. It rewrites the file at a (configurable) interval and
+	   when diablo.hosts changes. This fixes a problem where a news
+	   server has a given hostname, but the PTR for the IP points
+	   to a different host (which resolves to the same IP - hence
+	   still reasonably secure). i.e: 2 hosts point to same IP and
+	   you want to use the host without the reverse mapping.
+   
+Diablo V1.27
+
+    More bug fixes from Nickolai.
+
+    While running dreaderd, I've found two more things that I think might
+    be worth fixing:
+
+ -- The overview FD cache wasn't being flushed for feed-only forks,
+    and thus kept certain groups from being properly resized upon
+    expire. I've added the appropriate call to FlushOverCache for
+    feed-only forks; this is my fault, I forgot about this case in
+    my previous patch.
+
+ -- Stale clients were being accumulated (ACTV in dreaderd.status but
+    no TCP connection) because a file descriptor which corresponds to
+    a closed TCP connection is not considered writeable by select(),
+    at least on Solaris 2.6. I've changed the select() loop to poll
+    all fd's for read, and close the connection if recv() returns 0.
+    I'm not too sure about the efficiency here, but so far it seems
+    to be working OK.
+
+    Here are some additional modifications I've made to diablo-1.25-REL,
+    and found quite useful in my situation; perhaps you could integrate
+    these into the next release, if you think these would be useful to
+    others? Some description of what these diffs intend to do:
+
+ -- Parallelizing dexpireover:
+        Add an option to make dexpireover fork N times and have each
+        fork process 1/Nth of the overview information. This gives a
+        noticeable speedup when running dexpireover with -e (history
+        based expiration): on our reader Ultra60, we have two 10kRPM
+        disks striped together for dhistory + overview (not spool),
+        and 'dexpireover -e' takes ~16 hours; doing it in parallel
+        with 4 forks cuts the time down to about 6 hours.
+
+        [ As a side note, running dexpireover with -o, using the
+          dexpover.dat file generated by dexpire, takes 10 min ]
+
+ -- Generating Lines: headers in headfeed mode:
+        Added an option to dspoolout, and a corresponding switch to
+        dnewslink, to generate Lines: headers if one is not already
+        present, in headfeed mode. Allows always having a meaningful
+        line count in overview.
+
+ -- No-initial-response bug in dnewslink:
+        If dnewslink connects to a remote server, and doesn't get any
+        reply, it hangs forever try to read from the socket. Set the
+        KillFd before trying to read initial response from remote.
+
+Diablo V1.26
+
+   	*** FIXED Y2K BUG IN PARSEDATE() FOR 2-DIGIT YEARS ***.  While
+	2-digit years are not legal in USENET Date: headers, some sites
+	still produce them.  My Y2K handling for 2-digit years is broken,
+	I was incorrectly subtracting or adding 50 instead of 100 in my
+	calculations in lib/parsedate.c
+
+	4-digit years (the vast majority of USENET postings) work properly.
+
+   Also, a huge patch set by Nickolai Zeldovich <kolya@MIT.EDU> has been
+   integrated in:
+
+  XMakefile.inst        Allow installing from a symlinked build tree
+  util/dsyncgroups.c    In some cases, group ends up being NULL; check
+  util/dspoolout.c      Check return value from malloc()
+  filter/diab-filter.c  Suppress error messages which result from missing
+                        articles (invalid filename passed)
+  dreaderd/control.c    Missing '@' sign in the email address
+  util/dexpire.c        (1) Unchecked malloc() return value
+                        (2) Part of the larger change below:
+
+  man/dexpire.8         | Support for expiring overview based on a list of
+  man/dexpireover.8     | expired article hash values, written by dexpire.
+  util/dexpireover.c    | It might be possible to distribute this file to
+  lib/config.c          | remote readers for dexpireover to use, although
+  lib/global.c          | I haven't tried (hv's might be different in the
+  samples/diablo.config | unlikely case of collision).
+
+  dreaderd/group.c      | Periodic flush of overview FD cache, to allow
+  dreaderd/reader.c     | dexpireover to clean more groups
+
+  samples/adm/biweekly.atrim    Fix path to dkp; also changed to reflect
+                                the features below:
+
+  lib/newsfeed.c        | Support for dhistory-readonly mode, which allows
+  util/diablo.c         | the reader to still retrieve articles while the
+  samples/dnewsfeeds    | dhistory file is being rebuilt (no posting, of
+  samples/adm/*.reader  | course). Also added a user-configurable delay
+  samples/adm/          | in the article-read loop to throttle incoming
+       biweekly.atrim   | feeds to a certain degree. Uses nanosleep() and
+  XMakefile.inc         | thus requires -lposix4 under Solaris.
+
+Diablo V1.25	
+
+	Incorporated patch submitted by Nickolai Zeldovich <kolya@zepa.net>
+	which adds the -e option to dexpireover, causing dexpireover to 
+	expire based on the article content in the local spool rather then
+	by days.
+
+	Fixed up some compilation collisions with libc w/ strlcpy.
+
+	Fixed bug in dsyncgroups - the creation and last-modified time
+	stamp for groups already in dactive.kp was being improperly updated.
+
+Diablo V1.24	
+
+	Fixed arts= and bytes= fractional values in log, they were counting
+	3.1022M, 3.1023M, 4.000M ... oops.
+
+	Fixed bug in dreaderd xover code, unterminated article ranges 
+	( such as '45-' ) were not being parsed properly.
+
+	Fixed bug in handling of -D option to dsyncgroups.
+
+	Added more documentation on the issue of POSTing from a reader back
+	to the feeder and having it propogate down properly.
+
+Diablo V1.23-REL	***** RELEASE ****	
+
+	Fix bug in partial read from local socket that could cause the Act
+	count to not decrement properly in dreaderd, locking up dreaderd after
+	a while.
+
+	Some adjustments for AIX added by request.
+
+Diablo V1.22-REL	***** RELEASE ****	
+
+	Add -f option to dreaderd, which defaults to ON.  This is the
+	FastCopy feature.  When dreaderd retrieves an article
+	from a remote spool, it normally buffers it completely before
+	sending it to the client.  This is so it can transparently 
+	restart the request if the spool server dies.  However, this
+	rarely happens.
+
+	Now dreaderd will copy the data to the requesting client as it
+	receives it.  If the spool server dies prior to starting the body
+	of the article dreaderd can still transparently restart the
+	request.  If the spool server dies after starting to send the 
+	body, the article will be truncated from the point of view of
+	the client.
+
+	Use -f0 to turn off this feature.
+
+Diablo V1.21-test05	***** EXPERIMENTAL RELEASE ****	
+
+	Oops, broke 'xover artno' ... it would list the wrong article number.
+	Fixed.
+
+Diablo V1.21-test04	***** EXPERIMENTAL RELEASE ****	
+
+	Test for and fix user bogosity when user specifies bad article
+	ranges, to prevent infinite loops in the server.
+
+Diablo V1.21-test03	***** EXPERIMENTAL RELEASE ****	
+
+    	Found and fixed bug in dexpireover reported by linux users in
+	regards to 'NFS: No free inodes - contact Linus' error.  Turned
+	out to be a mmap() that I was forgetting to munmap!  Bug finally
+	located by Paul Martin.
+
+Diablo V1.21-test02	***** EXPERIMENTAL RELEASE ****	
+
+	dreaderd main loop polls open descriptors every 5 minutes, workaround
+	for linux bug.  Code will also be used to implement idle timeout later.
+
+	Added a little error checking to recvmsg() (should have no realized 
+	effect).
+
+	Diablo's X-Trace: generation made to conform more closely to INN-2.x's,
+	includes PathHost as first element now and moves the username
+	element.  Will probably change the username to a user-id in the next
+	release to prevent scanners from deriving email addresses from X-Trace.
+
+	Test for X-PGP-Sig header migrated from group.c to control.c in order
+	to centralize authentication tests in preparation for generalizing
+	the interface.
+
+	Control/Authentication interface revamped in preparation for 
+	librarization of authentication.
+
+	Bug fixed in lib/dkp.c related to seg-faults occuring in dexpireover
+	in certain cases.
+
+	TUNING_NOTES file played with.
+
+	Removed altfeed (feeds/ directory) optimizations that caused 
+	directives in dnewsfeeds for feeds with feeds/ files to be ignored.
+
+Diablo V1.21-test01	***** EXPERIMENTAL RELEASE ****		23 Oct 1998
+
+	( This release is designated experimental due mainly to the change
+	in the implementation of gropudef/groupref in dnewsfeeds.   Sites
+	running complex dnewsfeeds files should probably not move to this
+	release.  Other sites, including sites running dreaderd, will almost
+	certainly want to upgrade ).
+
+	Groups in dnewsfeeds (groupref, groupdef) are now fully recursive and
+	ALL DIRECTIVES ARE SUPPORTED IN THE GROUPDEFs.  This should greatly
+	reduce the complexity of some site's newsfeeds.  However, the new
+	recursion implementation has not been fully tested yet.
+
+	Added feed-only forks to dreaderd, so you can feed dreaderd without
+	loading down a reader fork, which would effect other readers using
+	that fork due to the load.  See samples/dreader.hosts, 'f' flag.
+	feed-only forks so not make connections to the spool/post servers.
+	NOTE: the article, group, and head commands may not be issued for 
+	'f'eed only connections (i.e. connections without the 'r' flag set).
+
+	Moderated postings that send mail to the moderator were improperly
+	passing certain headers to sendmail, such as Path: and To:, which
+	would either be improperly executed by sendmail or improperly 
+	forwarded by the moderator.
+
+	Seg-fault in diablo fixed: if diablo tries to retrieve an article
+	past the end of the spool file (e.g., due to the spool file being 
+	truncated in a crash), it seg faulted.  Fixed.
+
+	dilookup now also understands the output from the didump command.
+	(e.g. didump | dilookup -s)
+
+	-F option add to dreadart (force read, ignore expired flag)
+
+	dilookup prints 'not found' entries to stdout rather then stderr
+	to make piping greps and stuff through it (via -s) easier.
+
+	Fixed bug in dexpire: would improperly expire history adds that
+	occured during the dexpire run itself when reader-mode expiration
+	was configured.  dexpire now just looks for the existance of the
+	proper spool directory rather then the D.xxxxxxxx/B.xxxx file when
+	determining whether to expire a history entry.
+
+	Added 'diloadfromspool' utility.  This utility will scan the entire
+	spool, a specific set of D.xxxxxxxx directories, or a specific set
+	of D.xxxxxxxx/B.xxxx spool files and regenerate the history records for
+	the articles it finds.  Currently there is one catch:  In order to
+	properly handle 8-bit-clean articles and ensure the robustness of
+	the data, the Lines: header must be correct.  Unfortunately, the
+	Lines: header is not always correct so the command needs some more
+	work (or I need to recalculate Lines: in the feeder).
+
+Diablo V1.20-REL	***** RELEASE ****
+
+	Better Statistics Reporting in Diablo server - now includes breakdown 
+	of why articles were accepted or rejected.
+
+	Increased diablo's precommit cache from 8192 to 16384 entries (from
+	128K to 256K of shared memory), and increased collision window from
+	30 seconds to 2 minutes, and the pre-commit history pre-cache retention
+	from 10 minutes to 40 minutes.
+
+	DReaderD now reports statistics on close: number of groups entered
+	(group commands), number of articles read (head, article,
+	or body commands), and number of bytes sent to client.
+
+	Added -R option dexpireover - causes it to dynamically resize
+	the over.* files and completely rewrite the data.* files in
+	/news/spool/group.  This allows fine-grain removal of garbarge from
+	the overview files at the cost of rewriting every file.  For this
+	reason, 'dexpireover -R -a' should only be run once a week.  The
+	standard dexpireover should continue to be run daily.  The standard
+	dexpireover is much faster, but leaves wasted space inside the
+	data.* files.
+
+	Since dexpireover -R is now able to dynamically resize the overview
+	indexes, Diablo defaults to creating 512-article indexes rather then
+	1024-article indexes.  On a clean start it may take two or three weeks
+	for the article indexes for heavily loaded groups to stabilize.
+
+	Added -s option to dexpireover.  The -s option is implied by the -a
+	option.  This option will allow dexpireover to dynmically resize the
+	index (over.*) files in /news/spool/group but unlike the -R option
+	it will not attempt to rewrite the data.* files.  The combination of
+	-a (implying -s) run a daily basis and -R run on a weekly basis 
+	should keep disk usage in /news/spool/group in-check.  You can further
+	refine disk utilization by setting explicit expire times in dexpire.ctl
+	(see 'x' option in samples/dexpire.ctl)
+
+	A WEEKLY crontab entry has been added, you need to add an entry in
+	your cron to deal with it.  See samples/adm/crontab.sample
+
+	Updated the cron entries and sample crontab in samples/adm to make use
+	of the new dpath command.  Also:  dexpire is now run once an hour rather
+	then once every four hours, please double-check you crontabs.
+
+ 	Allow .\n to terminate an article as well as .\r\n, because
+	some dumb newsclients don't pass the CR like they are supposed
+	to.  Well, at least dots are supposed to be escaped so this doesn't
+	screw up escaping of 8-bit-clean data.
+
+	Add a Distribution: header internally based on distrib.pats if none 
+	is specified in the POST or if a blank Distribution: header is
+	specified in the POST.
+
+	Added configuration path elements to diablo.config.  You can also
+	specify the location of diablo.config in the DIABLO_CONFIG_PATH
+	environment variable or by using the '-C diablo.config.path' option 
+	with any command.  Baring that, the default location for the 
+	config file is /news/diablo.config.
+
+	dreaderd's debug-aid, -C, has been changed to -X so -C can be used
+	to specify a different location for the diablo.config file.
+
+Diablo V1.19-REL	***** RELEASE ****
+
+	Implemented Supercedes: processing
+
+	Fixed bug in GMT handling in newnews NNTP command.
+
+	Fixed bug in moderator addressing, wasn't converting dots to
+	dashes.
+
+	Major revamping of documentation
+
+	Implemented 'list distrib.pats', implemented 'list distributions'.
+
+Diablo V1.18-REL	***** RELEASE ****
+
+	Fixed compiler error, some compilers don't like dynamic struct
+	initialization.
+
+	Fixed '.' escaping bug with POST command.
+
+	POST command now mails the moderator if an unapproved posting is
+	sent to a moderated group.  (POST does not yet (should it???) mail
+	any To: lines).
+
+	Control messages were generating article number assignments in 
+	the Diablo feeder.  Since control messages are out of band, this
+	is incorrect and created gaps on the reader.  The feeder no longer
+	generates group:artno in the Xref: line for control messages.
+
+	'listgroup' command no longer lists article numbers that do not
+	exist in overview (but still may list articles that no longer exist
+	in the spools, since checking spool(s) is expensive).
+
+	Dist now includes Iain's feeder-stats-3.80.  NOTE: Iain changed the 
+	passed date format from a two to a four digit year.
+
+Diablo V1.17-REL	***** RELEASE ****
+
+	The XMakefile structure has been reorganized somewhat.  Hopefully this
+	will not break builds on other platforms.
+
+	The copyright has been changed.  The less restrictive BSD copyright
+	is now in effect, with a few modifications.  I call it my
+	"screw MickySoft's monopoly" copyright.
+
+	Diablo reader code now checks for guard characters in the overview
+	data file for retrieved overview data and logs any corrupt entries
+	that it finds.
+
+	Debug code added in test20 removed, diablo now ftruncate()s article
+	files properly again when articles fail the standard filters.
+
+	Fixed a bug in xover, xhdr, and other overview-related commands.  In
+	certain cases when a range of articles is specified, information 
+	pertaining to the last article number in the range will not be output.
+
+	Fixed a bug in the cancel code - it would not cancel the last article
+	in a group due to an off-by-one loop test.
+
+	Added Joe Greco's Diablo-filter functionality.  You have to turn it 
+	on in lib/vendor.h.  See filter/README.  THIS IS UNTESTED.
+
+	(late addition to release notes: also adjusted POST code to allow
+	a lone newline to separate headers from body.  It previously required
+	a CR+LF).
+
+Diablo V1.16-test23	***** BETA RELEASE *****
+
+	NOTE!!  The diablo tar file now extracts into a subdirectory
+	named diablo-$(VERS)-$(SUBVERS)/ rather then diablo/ !!!
+
+	Feeder-stats-3.71 from Iain Lee integrated.
+
+	contrib/innactive removed (dsyncgroups should be used to
+	generate initial dactive.kp files now).
+
+Diablo V1.16-test22	***** EXPERIMENTAL RELEASE *****
+
+	Oops, fixed a few syntax errors in the test21 codebase.
+
+	Fixed a boundry condition in the KPDB code that could
+	cause dsyncgroups to segfault, or dreaderd in some cases
+	if you were looking up the last entry in the database.
+
+	Fixed a race condition in the KPDB scanning code that
+	would cause 'list active' to return different sizes
+	(it was cutting off a portion of the tail of the database
+	during the scan because it was not checking for the case
+	where the database needs to be resized).
+
+	Fixed 'listgroup' off-by-one error (it wasn't including the
+	last article number).  This was causing tin and other readers
+	to get confused.
+
+Diablo V1.16-test21	***** EXPERIMENTAL RELEASE *****
+   
+	oops, broke 'article <message-id>' retrieval.  bleh.  fixed.
+
+Diablo V1.16-test20	***** EXPERIMENTAL RELEASE *****
+
+	removed ftruncate() from diablo server article spooler.  Instead,
+	fill would-be-deleted bytes with 0xFF.  This wastes some space
+	but is required to debug an article corruption problem that occurs
+	with FreeBSD.
+
+	Fixed bug in spool/post statistics, again.
+
+Diablo V1.16-test19	***** EXPERIMENTAL RELEASE *****
+
+	Added 'newgroups' command support.  Note: it currently scans dactive.kp
+	and therefore isn't very efficient yet, so beware!
+
+	Fixed bug in spool/post statistics (in ps output).
+
+	Fixed a ddprintf() in DoPipe that was broken.
+
+	'article artno' command no longer returns success if the overview
+	information is intact but the article cannot be found in the spool...
+	it now properly returns '430 No such article'.
+
+	bug in 'list active' and 'newgroups' fixed that would cause the list
+	to be improperly cut-off (XXX 21 sep 98: actually not quite fixed
+	yet -Matt XXX).
+
+	The Diablo server now detects and logs corrupt spool entries 
+	(entries with a NUL as the first or last character, or missing the 
+	out of band guard-NUL following the article).
+
+Diablo V1.16-test18	***** EXPERIMENTAL RELEASE *****
+
+	Fixed bug in dnewslink that caused it to continue to scan
+	the queue even when it's batch file got ripped out from
+	under it, which could result in more dnewslink's running
+	the specified by dnntpspool.ctl
+
+	dnewslink now checks for spaces in the message-id.
+
+	samples/adm/daily.dclean updated.  The 'removal of empty D.XXXXXXXX
+	directories' code has been removed.  This code interferes with 
+	reader-mode expiration by creating holes in the spool directory
+	sequence which causes diablo to hit a failsafe.  Symptoms will include
+	Diablo not accepting news quickly enough to keep up with a feed.
+	UPDATE YOUR DAILY.DCLEAN SCRIPT!!!!!
+
+Diablo V1.16-test17	***** EXPERIMENTAL RELEASE *****
+
+	Minor source updates to remove compilation warnings.
+
+	Spam filter handles garbaged hash table entries better.
+
+	Fixed bug in new dhistory file add code that could cause lots of 
+	appended blocks of zeros, blowing up the history file's size.
+
+	dnewslink now does more strict checking of Message-ID's
+
+
+Diablo V1.16-test16	***** EXPERIMENTAL RELEASE *****
+
+	Serious bug in POST code for reader fixed.
+
+	TCP_NODELAY option set in reader, nagle gets in the way too much
+	when lots of little transactions are made (i.e. 'group' commands
+	by news clients which have large .newsrc files).
+
+	MsgId() code now checks for garbage message-id's such as '<sdfdsf>>'.
+	While this sort of thing doesn't blow up Diablo, it can blow up other
+	news systems.  (Not quite finished with this yet, need to incorporate
+	a patch from Terry to finish it up).
+
+	Solaris config now expects solaris to have snprintf.  Should get
+	rid of bogus syslog error messages but otherwise has little
+	effect on the code.
+
+Diablo V1.16-test15	***** EXPERIMENTAL RELEASE *****
+
+	'activedrop yes' was causing bogus (non-existent) entries to be 
+	written to the queue files for articles caught by that filter.
+
+	The Diablo feeder now limits the number of D. spool directories it
+	manages.  The default is 14 days (2016 directories).  See 
+	samples/diablo.config for the override.  This is because the expire 
+	reader mode of operation doesn't appear to stabilize if the number 
+	of spool directories is allowed to grow indefinitely.
+	
+Diablo V1.16-test14	***** EXPERIMENTAL RELEASE *****
+
+	Added 10 second reverse ident timeout on read.  Some sites would
+	connect but would otherwise just hang the reverse ident, causing a 
+	DNS processing backlog.
+
+	Changed history file append mechanism.  Diablo now appends a large
+	block of zero'd records then allocates out of the block by scanning
+	the last N records.  It is reasonably efficient even though we use
+	read() to locate an empty record.
+
+	Added '-SD' option to disable the NNTP-Posting-Host: portion of the
+	spam filter.
+
+Diablo V1.16-test12	***** EXPERIMENTAL RELEASE *****
+
+	dreader.hosts scan changed AGAIN.. sorry.  Ok, now it scans the file
+	once checking for matches against the IP address or FQDN from the
+	reverse lookup.  Previously it scanned the file checking FQDN's, then
+	scanned the file again checking for IP's which could cause a "*"
+	wildcard at the end of the file match an FQDN before an IP address
+	earlier in the file matched the IP.  It is now much more intuitive.
+
+	'q' flag added for dreaderd.hosts, surpress logging.  Useful when
+	you want to get rid of an idiot who connects a lot, and don't want
+	to clutter your logs.
+
+	Added 'L' flag - global rate limiting (per connection) to 
+	dreader.hosts.  The specification is 'Lnnnn' where nnnn is
+	the number of bytes per second the connection is to be limited
+	to.  Example: 'L2048' limits the datarate to 2 KBytes/sec.
+
+	madvise() support added for diablo feeder.  XADV_WILLNEED and
+	XADV_SEQUENTIAL added to both the feeder and dnewslink.  (On
+	FreeBSD systems, XADV_SEQUENTIAL will fault in more pages
+	at a time and XADV_WILLNEED will pre-load the page table for
+	pages residing in the buffer cache).  This is turned on
+	automatically for FreeBSD (people need to submit patches
+	for other OS's).
+
+	dnewslink sets TCP_NODELAY to turn off nagle because it could
+	cause unnecessary write buffering delays.  We do a good job
+	flushing our output properly and it's already a transaction
+	oriented protocol, so...
+
+	dnewslink reconnects to the destination for each queue file.  Now
+	it tries to reconnect to the *same* destination it succesfully
+	connected to previously.  It does not call gethostbyname() again
+	unless a connect() fails.  This way if a host has multiple IN A's
+	and some don't work, dnewslink will tend to stick to the one that
+	does work.  (this problem noticed with sprintlink).
+
+	increased dnewslink's internal write gather buffer from 4K to 8K.
+
+	Added USE_POLL option for dnewslink to use poll().  It's turned on
+	automatically for FreeBSD-3.0 or later.  poll() is used to wait
+	for new data to be appended to the queue file so dnewslink can read
+	it ('realtime' and 'd-1' options in dspoolout.ctl must be specified),
+	and poll()/read() is used rather then alarm(Timeout)/read()/alarm(0)
+	when waiting for responses from the remote.
+
+	The Diablo feeder code no longer ftruncate()'s spool files for every
+	post-write reject (spam cache, article too large, in-transit history
+	collision, etc...).  Instead it simply seeks back.  The feeder will
+	ftruncate trailing 'garbarge' from a prior post-write reject on the
+	descriptor close() only.  Since ftruncate() must typically fsync()
+	a file (or at least the file metadata), the new algorithm should save
+	disk I/O.
+
+	Added 'readerdns' option to diablo.config
+
+	syslog logging fixed for dreaderd... it was logging the wrong 
+	description process identifier.
+
+	debug aid added to dreaderd, -C option - cause SIGSEGV to be caught
+	and infinite-loop the process.  Otherwise process just dies without
+	a core due to system setuid() security.
+
+	Fixed dreaderd reader crash - was holding KPDB record pointers across
+	state changes (where the KPDB might get remapped) for long scans
+	(i.e. 'list active').  Changed KPDB ScanFirst/Next to operate on offsets
+	rather then pointers.
+
+	Fixed dreaderd.status slot assignment for when a reader process dies
+	and is reforked by the parent.
+
+	Added forward DNS lookup to verify reverse.  hostname matching is 
+	not considered legal if reverse lookup does not match forward 
+	(if you are doing a public server, FQDN:* would disallow mismatched
+	reverse/forwards while IP:* would allow them.  Put IP:* after FQDN:*
+	to attempt to obtain the fqdn first, but still allow even if the fqdn
+	cannot be obtained)
+
+Diablo V1.16-test11	***** EXPERIMENTAL RELEASE *****
+
+	Added additional errno checks in lib/buffer.c.  
+
+	Fixed ps status line reporting of number of active spooler and poster
+	servers.
+
+	Made fixes to record locking when reading data from dactive.kp... there
+	were a few race conditions where one process could be parsing a group
+	record while another was simultanious making modifications to it.  This
+	will hopefully fix a 'bogus group' race that occurs sometimes... don't
+	know yet, crossing my fingers.
+
+	Added 'L' and 'l' rate-limiting options to dreaderd.hosts, added 'h'
+	option to dreaderd.hosts, set maximum number of connections from host.
+	Added 'u' option to dreaderd.hosts, set maximum number of connections
+	from user@host (only applies when identd lookups are successful).
+	(NOTE: 'l' and 'L' not yet implemented)
+
+	documented user authentication options in dreaderd.hosts
+
+	Fixed wildcard handling in dreaderd.hosts ... you specify that a
+	wildcard is to be applied specifically to an IP address or FQDN
+	by using the IP: or FQDN: prefix.  Otherwise it will apply to an FQDN
+	only if the wildcard does not start with a digit.
+
+	The sample dcontrol.ctl file was broken.  Removed bogus all: entries
+	that were droping valid checkgroups messages.
+
+	Added more explicit instructions in README.READER on how to setup pgp.
+
+	Added options for HPUX in lib/config.h, tested w/B.11.00-A.  Added
+	errno tests for EAGAIN (previously only checked for EWOULDBLOCK), again
+	to support hpux.
+
+Diablo V1.16-test10	***** EXPERIMENTAL RELEASE *****
+
+	** Upgrade your xmake to 1.05 before compiling Diablo **
+
+	** Note, new fields added to dactive.kp.  Run 
+	   'dexpireover -a -U999' to add new fields.  It is then
+	   suggested that you shut everything down and run
+	   'dkp -t dactive.kp' to remove all the garbage from
+	   the dactive.kp file. **
+
+	Gave the diablo *feeder* side the ability to process header-only
+	feeds.  The feeder can process a mix of header-only and full-article
+	feeds.  The feeder-side 'article' and 'body' commands will return an
+	article-not-found error if an attempt is made to retrieve an article 
+	that was originally stored from a header-only feed.  This allows you
+	to run a mix of feeds into a diablo feeder frontend in order to
+	deal with duplicates, and then pass a header-only feed onto the 
+	reader.
+
+	Fixed minor bug in snprintf().. it should cap the return value
+	at the size of the buffer.  The bug didn't effect anything and
+	neither will the fix.
+
+	dexpire now has a new option, '-s', which is to be used if your
+	spool is softupdates-mounted.  The option causes dexpire to 
+	sync/sleep/sync/sleep after removing each directory in order for
+	statsfs() to be more reasonable.
+
+	Fixed NumPending/NumActive counter error when a dreaderd/DNS
+	process dies or gets stuck.
+
+	Added 'activedrop' option to diablo.config .. when 'active on'
+	is set, causing the feeder to assign article numbers from the
+	dactive.kp file, the feeder normally continues to spool articles
+	with no matching groups in dactive.kp.  If activedrop is set,
+	the feeder will reject such articles.  
+
+	Note that when running the feeder and reader on the same box, they
+	can safely share the same dactive.kp file.  This is because the feeder
+	assigns article numbers via the "NX" field rather then the "NE" field.
+
+	option -X[E,X] added to dsyncgroups to allow the NX field to be
+	adjusted based on a remote NNTP host.  Works like the -N option.
+
+	The reader no longer creates overview for non-existant groups.
+
+	'b' option lines expire in dexpire.ctl was not working quite as
+	advertised.  Changed the math a bit to make it more exponential.
+
+	Add pre-cancel cache to dreader to allow it to process cancels
+	for articles that have not yet arrived.  Only pre-cancels are
+	entered into the cache, so as long as we get the article a reasonable
+	amount of time after receiving the cancel, we will be able to 
+	properly detect that it was canceled.  post-article-cancels are already
+	handled.
+
+	redid debugging.  If you send a USR1 signal to a diablo process,
+	normally a child diablo process, it will syslog a line for each
+	received article indicating whether the article was accepted or
+	not and, if not, why.  More USR1's can be sent to bump up the
+	debug level.  Send a single USR2 to reset the debug level back to 0.
+
+	dexpire's -s option enhanced somewhat.  '-s#' specifies the sleep
+	period inbetween sync()'s.  See manual page.
+
+	Added CTS and LMTS fields to dactive.kp ... keep track of when
+	a group was created and when a group last received a new article.
+	(see also: -O option to dexpireover).  CTS will also eventually
+	be used to implement active.times and related NNTP commands.
+
+	Added -O option dexpireover.  When combined with the -w ( wildcard
+	specification ) option, dexpireover will delete stale newsgroups.
+	See the manual page to dexpireover.
+
+	Added -h0 option to dexpire.  Allow you to expire the spool without
+	updating the history file.  Useful in emergencies or in order to
+	expire on a tighter scheduler without incuring the history update
+	overhead for every dexpire run.
+
+	Fixed bug in feeder where offset/size was being stored in history
+	for articles canceled by size, which could cause dreadart to
+	attempt to map the (non existant) article.
+
+Diablo V1.16-test9	***** EXPERIMENTAL RELEASE *****
+
+	Added -v option to didump so you can see generally where articles
+	are landing in the D.XXXXXXXX directory tree when using reader-mode
+	expiration.
+
+	changed dexpire again to do a sync();sleep(1);sync(); after each
+	directory has been removed, again to try to support softupdates.
+
+	Fixed listen code when max number of Dns or max number of readers
+	reached, was previously setting or clearing select bits for all
+	descriptors rather then just the descriptors used to listen for new
+	connections.
+
+	Dummy 'control.CTLNAME' group added prior to the creation of the
+	spool file in Diablo, allowing special expirations to be set for
+	control messages.  The sample dexpire.ctl defaults to a nominal 80%
+	retention for control.* but only 20% for control.cancel (applies to
+	diablo's reader expiration mode).
+
+Diablo V1.16-test8	***** EXPERIMENTAL RELEASE *****
+
+	There is an IHAVE protocol case that the feeder handles incorrectly.
+	In the case where the remote sends an IHAVE command and gets a 335
+	response, and then sends the article, it is expecting a final ack
+	of 500, 501, 502, 436, 400, 235, or 437.  It is not expecting a
+	435 response for the final ack at this point in the protocol and
+	Diablo may send a 435 if an in-transit article collision occurs.
+	Diablo has been changed to return a '437 Duplicate.' in this case
+	rather then 435.  This only effects the IHAVE protocol, not the
+	streaming protocols.  It should be noted that innxmit will handle 
+	the 435 response just fine, though not 100% efficiently, and
+	newer innfeed's seem to handle a 435 response fine as well, but
+	older innfeed's cannot handle it.  While we lose some accuracy by
+	reporting the reject code instead of the duplicate code, it's not
+	critical in regards to the non-streaming IHAVE protocol.
+
+	Added -l option to didump (line mode flush on output, useful when
+	piping didump -f to something (see didump man page).
+
+	dexpire calls sync() and sleep(1) before calling statfs(), so
+	decoupled filesystems such as FreeBSD/BSDI w/ softupdates return
+	more accurate statfs() results.  Without it, as much as 80% of 
+	a 40G spool might be removed before the FS bitmaps catch up.  Oops!
+
+	fixed segfault bugs in dnewsfeed relating to seg faulting on unexpected
+	EOF.
+
+
+Diablo V1.16-test7	***** EXPERIMENTAL RELEASE *****
+
+	Fixed serious bug on Diablo feeder side.  When operating in
+	'expire reader' mode, diablo expects /news/spool/news/D.XXXXXXXX
+	directories for each ten-minute period.  dexpire must expire the
+	directories in time order and, indeed, it does.  But if diablo
+	is killed and restarted, a gap may occur.  Diablo hits a sleep
+	failsafe whenever it can't create an article file which can cause
+	it to slow down massively.  The fix is to have diablo create any
+	missing directories on startup.  I also create missing directories
+	at run-time in Diablo locks up for a long enough period of time 
+	(which shouldn't happen, but if it does it will log it).  Note that
+	it is very important for Diablo to *not* recreate directories that
+	have been deleted by dexpire.  Doing so would result in article
+	corruption by causing previously deleted article files to be 
+	recreated.  Under no circumstances should you ever manually
+	rm -rf a spool directory in the middle of the sequence range of
+	current spool directories!!!  Use dexpire.
+
+	Added USE_MADVISE option to lib/config.h (and turned it on for
+	FreeBSD) -- use madvise() syscall to reduce page faults by pre-mapping
+	system-cached pages for articles.  On systems which support it,
+	this should reduce page faults taken by dnewslink mmaps which can be
+	considerable.  The reader code also uses this when mapping overview
+	files.
+
+	dnewslink process title changed so systems with ps status line support
+	can see the run-time status of various dnewslinks.
+
+Diablo V1.16-test6	***** EXPERIMENTAL RELEASE *****
+
+	Removed dactive.kp cleanup in samples/adm/biweekly.atrim ... this
+	will blow up the reader!  Removed manual references to the 'egrep'
+	method of pruning a KP database.
+
+	Fixed NumActive accounting.  The reader processes were doing 
+	reader accounting for server failures, not just reader disconnects.
+
+	Fixed POST bug. .. oops, I wasn't checking to see if posting was
+	allowed and was always allowing posting.  Bleh.
+
+Diablo V1.16-test5	***** EXPERIMENTAL RELEASE *****
+
+	'x' option added to dexpire.ctl, see sample file for more info
+	(as related dexpireover).
+
+	'b' option added to dexpire.ctl ... adjusts expiration based on
+	the number of lines in the article, ala the Lines: header if it
+	exists.  (I can't do it based on size because I create the data
+	file before I know how large the article will be, and I refuse to
+	do a file copy).
+
+	Solaris patches for file descriptor passing added, from
+	Kjetil Torgrim Homme and Russell Vincent.
+
+	'Distribution' control patch, from Lars added but with some routines
+	rewritten.  Any article without a distribution header is assumed
+	to be a distribution of 'world' for purposes of feeding.  See 
+	samples/dnewsfeeds for more information.  THIS HAS NOT BEEN TESTED
+	AND MAY NOT WORK YET.
+
+	Fixed server tracking bugs for dserver.hosts and dreaders.host that
+	prevented proper shutdown of reader daemons when parent dies.  Same
+	bugs also prevented server reconnects from occuring after a failure.
+
+	Fixed bug in lib/kpdb.c that caused dsyncgroups to segfault.
+
+	Fixed bug in dreaderd mbuf processing.
+
+	IP wildcards in dreader.hosts are treated in a special fashion.  If
+	a host name in dreader.hosts starts with a number, it is assumed to
+	be an IP address and the wildcard compares are only run against IP
+	addresses, not the FQDN from the reverse lookup.  Otherwise something
+	like "10.0.0.*" would match "10.0.0.hackers.domain.com".
+
+	README.READER has better instructions now.  Added new directory,
+	sample_reader, with example dreaderd + diablo config.
+
+	xmake install will try to install the sample files as softlinks but
+	will not overwrite any custom mods you make.  xmake uninstall will
+	attempt to deinstall everything, as long as it matches the source
+	tree (i.e. will not delete files which you modify).
+
+	Changed 'fgrep -h ... files'  to 'cat files | fgrep ...' in XMakefile's,
+	some machines *still* use 15 year old fgrep's.  Sheesh.
+
+	Implemented spool priority mechanism, see samples/dserver.hosts, and
+	implemented a spool-latency-history mechanism to automatically handle
+	downed servers.
+
+	Fixed bug in xover output .. Xref: header name wasn't being printed
+	and it was prefixing each entry with a space, which messes up trn's
+	threading.
+
+	Changed diablo's dnewslink -H (i.e. header-only feed) mechanism 
+	to include Bytes; header.  Changed dreaderd's input mechanism to
+	require a Bytes: header for header-only feeds.  This header is not
+	required for normal feeds because it can calculate the article 
+	size.  Why all this?  So I can produce the proper Bytes field in
+	xover data output.
+
+	Fixed line-too-long buffer overflow bug in diablo.c ( bug found
+	by KIZU takashi ).
+
+	Changed while(accept(..) >= 0) to if (accept(..) >= 0) in unix domain
+	command socket code to work around a problem with very old SunOS
+	releases that do not understand non-blocking accept()'s.
+
+	/news/log/dreaderd.status increased to 120 columns, 70 wasn't enough
+	to store readable realtime status.
+
+Diablo V1.16-test4	***** EXPERIMENTAL RELEASE *****
+
+	sin_family not set for certain conditions in dreaderd and diablo,
+	causing problems with AIX (besides which it really needs to be
+	set anyway to be proper).
+
+Diablo V1.16-test3	***** EXPERIMENTAL RELEASE *****
+
+	*** NOTICE *** ALL RELEASES AFTER AND INCLUDING 1.14, READ THE 
+	DEXPIRE.CTL DOCUMENTATION CAREFULLY AND REWRITE YOUR DEXPIRE.CTL
+	AS APPROPRIATE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	
+	Fixed pagealloc() & pagefree() code in lib/alloc.c to handle
+	0-byte allocations (it needs some more work).
+
+Diablo V1.16-test2	***** EXPERIMENTAL RELEASE *****
+
+	HAVE_SNPRINTF cleaned up.  It's just too important so the code now
+	assumes it exists and we have a fudge routine if it doesn't.  You
+	may have to fix HAVE_SNPRINTF in lib/config.h for your OS if you get
+	compilation warnings.
+
+	Fixed GetAuthUser() code in dreaderd.. SIGPIPE was not being handled
+	properly.
+	
+Diablo V1.16-test1	***** EXPERIMENTAL RELEASE *****
+			(continuing NNTP reader development)
+
+	den->d_namlen replaced with strlen(den->d_name), d_namlen does not
+	appear to exist under linux or solaris, they use d_reclen instead.
+
+	Didn't include <termios.h> in dreaderd/main.c if NEED_TERMIOS is 
+	set.  Messed up solaris compile.
+
+	bcopy in lib/psstat.c if HAVE_SNPRINTF is not set used bad variable
+	name (undefined symbol error).  Fixed.  
+
+Diablo V1.15		***** EXPERIMENTAL RELEASE *****
+			-- NOTE: basic reader support added
+
+	*** NOTICE *** ALL RELEASES AFTER AND INCLUDING 1.14, READ THE 
+	DEXPIRE.CTL DOCUMENTATION CAREFULLY AND REWRITE YOUR DEXPIRE.CTL
+	AS APPROPRIATE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+	-H option added to dnewslink for header-only feed, 'mode headfeed' 
+	must be supported by server (as a safety feature to prevent a 
+	header-only feed from leaking).
+
+	'headfeed' option added to dnntpspool.ctl, used to feed diablo reader
+	side.  Sometimes coupled with Xref: for slave synchronization, or the
+	reader can operate in a standalone fashion.  For alpha-testing, do
+	not use Xref: (you probably aren't anyway).  Diablo's headfeed
+	still sends the entire article body for control messages.
+
+   **	ALPHA-TEST DIABLO READER SUPPORT in this release via 'dreaderd',
+   **	see manual page for dreaderd.  See README.READER
+
+	New TUNING_NOTES for FreeBSD (may apply to other OS's too) in
+	regards to the v_cache_min sysctl.
+
+	The diablo and dnewslink binaries are now statically linked.
+	Say what?  Reason is simple:  DLL eats more memory then it saves
+	when you are running lots of copies of the same program.  you loose
+	pages to the dynamic linking (which prevents them from being shared),
+	to the separate data areas, and to the MMU for the mmap.  All told it
+	appears comes to around 80K per process.  With statically linked 
+	binaries the text areas are 100% shared, there is no MMU overhead
+	for the DLL mmap()s, and the data/bss is packed.
+
+    **	The default hash mode is now crc rather then crc/prime, see
+	diablo.config for a description.
+
+	Spaces no longer tolerated inside message-id's.
+
+Diablo V1.14		-- NOTE: remove /news/dexpire.factor if it exists
+			-- NOTE: /news/dexpire.ctl must be reorganized a bit
+			-- NOTE: new REQUIRED configuration file added
+
+	*NOTE* NO reader support yet, but I'm getting close. 
+
+	Added general key-token-value database support and added preliminary
+	active file support through the key-token-value database.  This is 
+	good enough to allow diablo to generate Xref: headers.  However, no
+	control message support has been added yet (that's going to be 
+	a reader-side function).  The dactive file is implemented as a 
+	shared binary key-token-pair database and is intended to (optionally) 
+	hold additional information such as the moderator email, newsgroup 
+	description, and control PGP keys.  The format is extensible.  While 
+	the dactive file is human readable, it should never be edited manually
+	while diablo-related processes are active.  Use the supplied utilities
+	instead. THIS SUPPORT IS UNDER DEVELOPMENT AND SHOULD NOT BE CONSIDERED
+	PRODUCTION YET.
+
+	New configuration file, diablo.config added.  See the sample 
+	diablo.config file.  This file is REQUIRED.  Diablo will refuse
+	to start if this file is missing.
+
+	All entries in diablo.hosts are REQUIRED to have a label, and that
+	label is REQUIRED to exist in the dnewsfeeds file.  Diablo will now
+	generate a 502 if a label is missing.  Note that you can direct
+	incoming-only feeds to the same label if you wish.
+
+	DEXPIRE.CTL works again.  In prior releases dexpire.ctl served only
+	to reject articles that were too large.  The spool storage & expiration
+	scheme has been redone in this release so time-grouped expires work
+	again, allowing you to control expiration based on group.  Note
+	that the expiration does not currently work for the control.* pseudo
+	group, but it will in a future release.   There is a cost though:
+	while the number of physical files is not expected to increase, the
+	number of open file descriptors will multiply by about 6x if you use
+	the feature.
+
+	The new reader-mode expiration code is NOT turned on by default 
+	because I do not want to trip people up.  Please review the top of
+	samples/diablo.config to see how to turn it on.
+
+	The system-wide or max-per-user file descriptor limit should be at 
+	least 4096 to accomodate an increase in the number of open 
+	descriptors if you configure expiration for reader operation.
+
+	The remember time, in days, may be set in diablo.config rather then
+	hacking lib/vendor.h if you wish.  This allows many diablo 
+	installations to compile straight out of the box without having to 
+	edit lib/vendor.h.
+
+	The new CRC64 algorithm can be used for the hash.  The sample 
+	diablo.config includes a 'hash' algorithm specification.  The older
+	hash algorithm is called 'prime'.  The new one is called 'crc'.  The
+	sample diablo.config uses 'crc/prime' which means to use crc, but
+	to fallback to prime on lookup if it fails to find a record with crc.
+	To avoid blowing your history, you should leave the method set to
+	crc/prime for about a week and then set it to just crc.
+
+	DIABLO.HOSTS check made more sophisticated.  Please read the 
+	description in the diablo-files manual page for diablo.hosts.
+	Diablo will now attempt to match up the base domain of a reverse
+	lookup against specific hosts in diablo.hosts if the normal
+	reverse+forward lookup security fails, then it will perform a 
+	forward lookup of the matching host(s) in diablo.hosts to attempt 
+	to match the IP.
+
+	While the new spool setup is backwards compatible to the previous
+	setup, more care must be taken when removing spool directories to
+	prevent corruption.  If you remove spool directories manually and
+	the diablo server is running, you must rename the directory prior
+	to rm -rf'ing it to be 100% safe.  The new dexpire does this, of
+	course.
+
+	DEXPIRE.CTL now uses a percentage expire.  That is, you specify
+	a percentage of the best case expire (1-100) that you wish
+	and diablo expires articles accordingly.  See the samples/dexpire.ctl
+	file.  Diablo will dynamically and automatically conform itself
+	to your expiration parameters but you must edit the file with the
+	new scheme in mind for it to make sense.
+
+	Added new utility, dreadart, to read articles and/or verify their
+	consistancy in the spool given the message-id.
+
+	The maximum number of parallel feeds from any given client may now
+	be specified on a label-by-label basis.  It is still a per-ip
+	limit so you can still collapse many different incoming feeds into a
+	single label and have the label-specified limit work on a per-host
+	basis.  see the 'maxconnect' definition in samples/dnewsfeeds
+
+	Added 'nomismatch' option to dnewsfeeds (see samples/dnewsfeeds)
+	to surpress MISMATCH testing of the incoming Path: header.
+
+	Added '-c commonpath' option to diablo.  This adds a common path
+	name to the Path: header if it does not already exist in the Path:
+	header.  See the manual page for diablo.
+
+	Fixed a bug in diablo that would cause the dnewsfeeds file to be
+	read over and over again, eating cpu.
+
+	Added sub-second realtime capability: the combination of rtflush in
+	dnewsfeeds, and 'realtime' + 'd-1' in dnntpspool.ctl.  If the system
+	supports usleep(), usleep(20000) is called (20 mS) rather then
+	sleep(1).  May require some configuration munging for you system.
+	Not suggested.
+
+	BODY and ARTICLE nntp commands added.  Like the HEAD command, articles
+	can be retrieved by message-id.
+
+	dexpire will remove files called 'core' or '*.core' in the spool 
+	directory as it comes across them.
+
+Diablo V1.13
+
+	Bug in spam cache file descriptor handling fixed... fcntl locks
+	require us to obtain discrete descriptors by calling open() after
+	any fork rather then before or they will not work properly if
+	a process gets killed.  Due to the stability of diablo, this should
+	not have caused any problems in 1.12, but needed to be fixed anyway.
+
+	Bug in dnewslink quit code.. it would send the quit twice at the
+	end which would result in an <interrupt/error> in the logs.  Apart
+	from the bogus log message, the bug had no other effect.  This threw
+	a few people off who were looking for errors when, in fact, there
+	were none.
+
+	Bug in dnewslink reconnect code.  When moving on to a new batchfile,
+	does not fix StreamPend when pending streaming objects are refiled
+	due to a timeout or remote close.  Would result in dnewslink exiting
+	after processing one queue file rather then going on to the next 
+	queue file.
+
+	Bug in dnewslink close/reopen (for logging) code... it would again
+	loose track of StreamPend.  It would also lose track of the number
+	of potential receive bytes (which it calculates to guarentee that the
+	server does not block writing responses back to the dnewslink client).
+
+	Iain's latest diablo-stats included
+
+Diablo V1.12
+
+	The spam cache is turned on by default, for real this time.
+
+	Added USE_PCOMMIT_SHM, USE_PCOMMIT_RW_MAP, DO_PCOMMIT_POSTCACHE,
+	USE_SPAM_SHM, and USE_SPAM_RW_MAP.  *_RW_MAP causes the diablo to 
+	use a shared r/w map rather then a read-only/lseek+write() mmap for 
+	the precommit and/or spam caches.  << this will significantly improve
+	the performance and stability of diablo >>.  If you set 
+	USE_PCOMMIT_SHM, Diablo will use SYSV shared memory rather then a file
+	mmap for the precommit cache.  If you set USE_SPAM_SHM, Diablo will
+	use SYSV shared memory rather then a file mmap for the spam cache, but
+	it will not be non-volatile storage so if you kill and restart diablo,
+	the spam cache will get reset.  If you have sysv shared memory, you 
+	want to set USE_PCOMMIT_SHM and DO_PCOMMIT_POSTCACHE at the very least.
+
+	When shared memory is used for the spam filter, the spam.cache file
+	(if it exists) will be loaded into shared memory when diablo is started
+	and written out when the master diablo server exits.
+
+	DO_PCOMMIT_POSTCACHE tells diablo to use the precommit cache to also
+	cache dhistory lookups and commits.  It is not suggested that you
+	use this feature unless you also set USE_PCOMMIT_SHM or at least
+	set USE_PCOMMIT_RW_MAP.  Many lookups will hit the precommit cache 
+	and thus avoid hitting the dhistory file, greatly reducing internal
+	kernel filesystem lock contention and disk I/O on the dhistory file
+
+	The FreeBSD 2.2.x, IRIX, and Solaris config automatically
+	turn on the new precommit features.
+
+	Casts the pointer argument to setsockopt() to void * to avoid
+	compiler warnings on solaris (which still uses arcane 'char *' in
+	its prototypes rather then 'void *').
+
+	The bytes= logging for the marks by dnewslink was incorrect, it was 
+	logging cumulative bytes rather then deltas for the marks.
+
+	Added 'rtflush' to dnewsfeeds.  This option causes the queue file to
+	be flushed on every line rather then buffered.  Useful when used with
+	'realtime' in dnntpspool.ctl.
+
+	Added Path: name checking.  If the first element of the Path: 
+	received by an article does not match any 'alias' statements
+	for the incoming connection, the IP address is prepended
+	to the path: with .MISMATCH appended.
+
+ *	>>> NOTE <<< you should grep through newly created spool 
+	directories every so often looking for .MISMATCH in the spool
+	files to locate incoming feeds with improperly configured
+	'alias's (in dnewsfeeds).  When I turned this feature on,
+	I found that four of my 80+ feeds were misconfigured.
+
+	DNewsfeeds file processing moved to the main diablo server and 
+	removed from the children, saving parsing and memory overhead
+	of around 45K per child in heavy loaded diablo systems (x 100
+	processes = 4.5 MBytes saved).
+
+	Queue-delay 'q#' option added to dnntpspool.ctl.  This allows you
+	to tell diablo to purposefully delay N queue files before transfering
+	a feed to a destination, thus introducing a feed delay on purpose.
+	This feature can be used to hold articles while allowing control 
+	messages to propogate, getting the cancels in front of the articles 
+	being canceled.
+
+	Diablo now uses it's own memory allocation code in order to better
+	manage memory.  This has simplified certain memory management 
+	operations, such as when the parent forks and needs to deallocate
+	memory pools that the child will not use.
+
+	Minor fix to dnewslink: Now exits if it gets a 400 return
+	code (ERR_GOODBYE) rather then retry the connection.
+
+	Reverse dns lookup now uses case insensitive compare against forward
+	lookup.
+
+	The post-fork openlog() for syslog was being called prior to the
+	mass file descriptor closures.  Moved so it is called after.  Doh!
+
+	Beta 64 bit support (e.g. linux on 64 bit alphas and such)
+
+Diablo V1.11	-- NOTE: new pseudo groups control.* added to the group list
+		   for control messages.  This requires some minor
+		   modifications to your dnewsfeeds file so you do not get
+		   all control messages when taking a partial feed.  See
+		   below.
+
+	Added control.* pseudo groups.  If an article is a control message,
+	the control message type is appended to the list of newsgroups
+	as 'control.MESSAGETYPE'.  For example, a cancel is appended to
+	the list of newsgroups as 'control.cancel'.  
+
+	This means that if you do an 'addgroup *' then use delgroup to remove
+	the groups you don't want, YOU WILL STILL RECEIVE CONTROL MESSAGES
+	FOR ALL GROUPS.  The solution is to put a 'delgroup control.*' after
+	the 'addgroup *' for all of your normal feeds.  If you do this,
+	only control messages for the groups that pass the filter will be 
+	propogated.
+
+	If you use the more standard 'delgroup *' followed by 'addgroup ...'
+	lines for the groups you want, the delgroup covers it and no 
+	modifications are required for that feed.
+
+	I have added another filter command called 'requiregroup'.  It is
+	similiar to addgroup, delgroup, and delgroupany.  What it does,
+	however, is require that the specified group BE in the Newsgroups
+	list.  This allows you to create a secondary feed to your newsreader
+	boxes containing ONLY the control messages that also pass your normal
+	group filters by appending 'requiregroup control.*' to the end
+	of your addgroup/delgroup filter commands.  Please see the example in
+	the samples/dnewsfeeds file for more information.    Note that control
+	bypasses generally require two dnewsfeeds labels, one for non-control
+	messages and one for control messages.
+
+	Changed a bunch of printf's for stdout to fprintf's for stderr.
+
+	samples/dnewsfeeds incorrectly described the 'alias' command in
+	the comments, fixed.
+
+ 	Added Iain's bytes= stats to diablo and his latest stats stuff 
+	to contrib.  Also added -h option to diablo (see man page).
+
+	'T' and 'R' parameters in dnntpspool.ctl now work, allowing you to
+	set the transmit and receive buffer sizes on a connection-by-connection
+	basis.  
+
+	dnewslink now calls the socketopt to set the transmit/receive buffer
+	sizes after the connect as well as before, in case the connect()
+	call overrides the first ones (which it does on FreeBSD and linux
+	boxes, since the route table dictates nominal buffering parameters)
+
+	Ability to set the dhistory hash table size in the diload command.
+	The default is 4 million entries, equivalent to the '-h 4m' option
+	to diload.  Each hash table entry is 4 bytes, so 4 million entries
+	results in a 16MByte hash table.  The hash table size must be a power
+	of 2, so the next logical step is -h 8m (32 MBytes) or
+	-h 16m (64 MBytes).  If your news box has a lot of memory, changing
+	your biweekly.atrim script (see the adm directory for a sample) to
+	generate a larger hash table will greatly reduce the load on the
+	/news partition. 
+
+	'-n' and '-f configfile' options added to dspoolout.  Minor adjustments
+	made to realtime code to handle a race condition between diablo 
+	creating the realtime spoolfile and dspoolout trying to open it.
+
+	Minor adjustments made to realtime code in dnewslink to handle a
+	race condition between diablo creating the realtime spoolfile and
+	dnewslink closing out the previous one and openning the next one.
+
+	DNewslink now sends the 'quit' command at the end of the session
+	and waits for a response.
+
+	Fixed another session reporting bug, diablo was not logging the
+	correct number of elapsed seconds (non critical).
+
+	New options added for lib/vendor.h.  You can set the USE_SHORT_REMEMBER
+	define to 1 to use a shorter history retention for didump -x & diablo,
+	or you can leave that option commented out and specify a specific
+	REMEMBERDAYS.  The default remember is 14 days, the default short 
+	remember is 7 days.  Diablo adds a bit of slop internally to deal with
+	Date: conversion errors.  Usually the bottleneck that develops
+	first is in access to the dhistory file.  A shorter remember/retention 
+	can significantly improve access times.
+
+	    /* #undef USE_SHORT_REMEMBER */
+	    /* #define USE_SHORT_REMEMBER 1 */
+
+	    /* #define REMEMBERDAYS 9 */
+
+	NOTE(!) always be sure to recompile diablo completely when making
+	#define option changes.  'xmake clean; xmake'.  The history retention
+	is especially sensitive since it must be properly compiled into both
+	the DIDUMP and DIABLO binaries.  If you update one but not the other
+	it is possible to get into article transfer loops with your peers.
+
+	Diablo now identifies itself on 502's rather then using the same
+	error essage as INN.
+
+Diablo V1.10
+
+	The ME label in dnewsfeeds must be renamed to DEFAULT, which is
+	more appropriate to how it works.  A new GLOBAL label is now optional.
+	See samples/dnewsfeeds for more information.
+
+	SPAM FILTER - based on NNTP-Posting-Host: header frequency in messages.
+	Defaults to ON.  See the sample dnewsfeeds file for examples of
+	how to program the spam filter.   The -S0 option to diablo will turn
+	it off, or you can simply 'delspam *' in the GLOBAL label to turn it
+	off.  To use this filter, you need to specify 'delspam' lines in
+	the GLOBAL filter to handle non-spam sources that exceed the rate
+	limit (which defaults to 16 postings within 16 minutes).  The
+	samples/dnewsfeeds file contains a simple filter set.  You will
+	also want to 'delspam *' for the incoming feeds from your leaf
+	node shell machines.  
+
+	However, since this sort of rate filter may become more common-place 
+	on the internet, another solution will have to be found for 
+	shell-based news readers if the posting rate exceeds 16 postings 
+	per minute.  This spam filter is NOT PERFECT.  There are plenty of 
+	cases where it can potential filter non-spam, but it works well
+	enough for us that I've installed it on BEST's newsfeeds box.
+
+	NEAR-REALTIME OUTGOING FEEDS - dspoolout/dnewslink now have the 
+	capability to 'hang' on the diablo's outgoing feed file, initiating
+	transactions with the destination host as the diablo server makes
+	data available.  Since the diablo server buffers feed data, this
+	is considered to be only near-realtime.  The lag is around 5 seconds
+	for a full feed.  You can also explicitly flush diablo's queue files
+	with 'dicmd flush' from a cron job to support slower n.r.t. feeds.
+	'dicmd flush' is considerably cheaper to execute then 'dspoolout'.
+	dspoolout would then only need to be run once every 30 minutes or so.
+	The original queue file mechanism still works and runs in parallel
+	as a failsafe, resulting in double the message-id load on the 
+	destinations designated for realtime operation.  See the dspoolout
+	manual page for more information.
+
+	dspoolout was not handling the min-flush-seconds option exactly right.
+	It should now do a better job with it, only using it if the queue 
+	files are truely backed up.
+
+	dnewslink now turns on SO_KEEPALIVE to prevent infinite hangs.
+	Diablo already did this.
+
+	Fixed minor bug in Date: parsing on incoming feeds.  It prevented
+	the article-too-old stuff from working properly.
+
+	Fixed minor bug in header scanning - Diablo was not detecting the
+	end-of-headers blank line properly and scanning headers on into
+	the body of the article.
+
+	A bottleneck for dhistory file appends has been removed.  Previously,
+	an exclusive lock was used to append to the file (O_APPEND is not
+	dependable).  Now we 'allocate' space with a record lock in a 
+	non-blocking fashion.  History adds are now much faster under extreme
+	loads.
+
+	diload throws away history file entries with zero'd gm timestamps or
+	zero'd hash codes.
+
+	The size of the send and receive tcp socket buffers can be specified
+	in dspoolout, dnewslink, and diablo now with command line options
+	(-T and -R)
+
+	Diablo now properly logs the elapsed time on disconnect.
+
+	NOTE: addition to adm/biweekly.atrim sample, the dhistory.bak
+	file is now removed before the new dhistory file is generated to
+	make more space on the disk.  This allows a 1.5G /news partition to
+	continue to be used in the face of growing history files.
+
+	'dicmd status' added, returns diablo's current status
+
+	The unix domain socket is created after diablo switches to the 'news'
+	user rather then before.
+
+	-M option added to diablo.  This limits the maximum number of 
+	simultanious connections allowed from EACH remote host.  The limit
+	cannot yet be set on a per-feed basis.  This option is designed
+	to prevent system failures from out of control remotes. 
+
+Diablo V1.09
+
+	Major bug in dnewslink found by Michael S. McMahon.  When dnewslink
+	gets interrupted and refiles pending stream transactions back to 
+	the batch file, it was not refiling the offset,size part!   A rerun 
+	would thus result in the entire article spool file (encompassing many 
+	articles) to be sent as a single article.  Ouch.
+
+	Precommit caching added.  Diablo now generates and maintains a
+	pcommit.cache file which it mmap's.  This file contains a
+	static 4096-entry hash table.  Message-id's for check and ihave
+	commands are entered into the hash table and timeout after 30 seconds.
+	hash table collisions are simply overwritten.  During the time which
+	a message-id is active, other check/ihave commands for the id will
+	return a DUPlicate response code.   The precommit caching will get
+	rid of 98% of the article collisions when you have several incoming
+	feeds that are mostly synchronized with each other.  In this situation,
+	the precommit caching will reduce your incoming network load by at 
+	least a factor of 2 as well as reduce the disk write load.
+
+	Three new statistical elements have been added: predup, posdup, and
+	pcoll.  (predup and posdup were actually added in V1.08).  predup
+	counts the number of history collisions that occur as of the
+	beginning of a 'takethis' command.  posdup counts the number of history
+	collisions that occur as of the article commit after a 'takethis'
+	command, and pcoll counts the number of pcommit cache collisions
+	which cause check/ihave to return a DUPlicated status.
+
+	The random seed used to generate file names was not being re-randomized
+	after a fork.  Oops!  It is now.
+
+	Replaced stdio routines used for socket input by diablo with custom
+	routines, removing the fileno(fi) = -1 problem and working around
+	apparent stdio bugs in SunOs, Solaris, and IRIX.
+
+	Article reception can deal with 8-bit-clean data now, as long as it
+	is properly '.' escaped.  This includes removing the CR before an LF
+	for storage and adding it back in for retransmission.
+
+	Added 'd' option to dnntpspool.ctl, allowing one to specify a startup
+	delay for the dnewslink's related to a particular site.
+
+	statvfs fixes made for sun/solaris.  I got several diffs and chose
+	the easiest one.  It may still not be entirely compatible with
+	all sunos/solaris implementations.
+
+	The control file dspoolout uses (dnntpspool.ctl) can now be overriden
+	on the command line.
+
+	You can now specify the outbound (bind) ip address for dnewslink...
+	useful if you have multiple interfaces and want to split outgoing
+	traffic amoungst them, or if you have multiple interfaces and your 
+	peers expect the news to come in from a particular IP.  This can
+	also be specified in dnntpspool.ctl.  DSpoolout will pass it on to
+	DNewslink.  See samples/dnntpspool.ctl for an example.
+
+	New version of Iain's stats package.
+
+Diablo V1.08	*** NOTE ** DHISTORY FILE RELOAD REQUIRED IF UPGRADING ***
+
+	** HISTORY AND SPOOL FILE FORMAT CHANGE.  The format change requires
+	   that you ensure that ALL of your diablo binaries are replaced.  You
+	   must regenerate your dhistory file
+
+	Major stability fixes to dhistory file operation... I have found that
+	if the /news partition runs out of space or many processes are
+	write()ing to dhistory in O_APPEND mode, that O_APPEND writes aren't
+	as atomic as I thought they were.   dhistory appends are now
+	serialized and *ACTIVELY* realigned if their alignment gets screwed
+	up.  This should make the dhistory file much, much, much more robust.
+
+	Major stability fixes to dqueue files.  Feeds no longer must be
+	flushed on fork, and files are written in multiples of one line.
+	If a write files, the file is truncated to remove the partial line
+	in order to prevent corruption if a disk fills up.
+
+	Stability fixes to article files... now does a sanity check (looks 
+	for the \0 terminator for the article in a multi-article file) to
+	catch corrupted files.
+
+	didump -x does a better job filtering out bogus dhistory entries.
+
+	Major, Major, Major changes in the spool file format, dhistory file
+	format, and queue file format.  Read the section at the end of the
+	INSTALL file for instructions on how to upgrade without blowing up
+	your news server.
+
+	    * spool files may now contain multiple articles separated by \0.
+	      spool files are now named solely based on their gmtime and
+	      iteration number.
+
+	    * queue files include offset/length pairs to allow dnewslink to
+	      access the new spool files.
+
+	    * The dhistory file now has a proper header structure, and History
+	      entries now contain two additional fields (offset, bytes) .. used
+	      to store the offset,length information for article lookups.
+
+	The dynamic pipe sizing has been removed from dnewslink.  It 
+	doesn't work very well when feeds get behind and just slows
+	things down more.
+
+        dexpire is temporarily braindead... it now expires in straight FIFO
+        fashion, so most of dexpire.ctl is no longer relevant (except for
+        expirations of 0 which cause an article to be rejected)... I have
+        a medium term plan to make expiration specifications work again, but
+        it will be a few releases at the very least.
+
+
+	diablo, dnewslink, and dexpire now use chdir() caching to reduce
+	the path lengths for remove(), open(), etc... which is a big win
+	for the kernel.
+
+	diablo now records rejection statistics properly.  It previously
+	did not count.
+
+	diablo now records and returns the errno error string on fatal 
+	errors.
+
+	addition of 'delgroupany' command to dnewsfeeds file.  Similar
+	to 'delgroup', except acts the same as INN's '@group'... i.e.
+	if the group appears in the Newsgroups line at all, the article
+	is rejected, even if there are other groups in the line that pass 
+	the filter.
+
+	addition of 'maxpath' command to dnewsfeeds file.  Allows you
+	to filter feed based on the number of elements in the Path: 
+	header.
+
+	addition of the 'groupdef' command and 'groupref' command (see the
+	sample dnewsfeeds file).  Rather then repeat the same group access
+	list over and over again in each feed, you can now collect them
+	together in one place and reference them from your feeds.
+
+	statvfs support added for SUN.
+
+Diablo V1.07	- ** NOTE ** YOU MUST READ THE 'INSTALL' FILE IF UPGRADING
+		  TO THIS RELEASE FROM 1.05 OR LOWER !!!
+
+	The diablo server now has the ability to bind to a specific host and/or
+	ip address.
+
+	diablo converts the reverse-lookup hostname to lowercase before 
+	comparing against hosts in the diablo.hosts file.
+
+	'nostream' option now available for dnntpspool.ctl for dnewslink runs.
+
+	Diablo now rejects articles when the message-id in the article
+	body does not match the message-id in the ihave or takethis header,
+	and logs the mismatch.  Diablo previously stored the ihave/takethis
+	message-id into the history file without checking it against the
+	message-body.  If a mismatch occurs, the article is rejected.
+	(should I do a 400+exit instead?)
+
+	Misc small bug fixes to diablo
+
+	Diablo now returns a 400 error code and exits if a file error occurs.
+	It previously returned a 431 error code, which was incorrect.  400 
+	isn't exactly correct either, since it requires diablo to exit.  We
+	need another return code to allow the server to indicate a problem yet
+	not exit (i.e. let the client decide to exit).
+
+Diablo V1.06	- ** NOTE ** YOU MUST READ THE 'INSTALL' FILE IF UPGRADING
+		  TO THIS RELEASE!!!!
+
+	The default hash table size for dhistory will become USE_LARGE_HASH
+	in this upcoming release.  If you wish to maintain a small hash table
+	size (e.g. you are taking a partial feed), you must set the 
+	USE_SMALL_HASH define to 1 in lib/vendor.h
+
+	dnewslink will still attempt to send news if the (nntp) server 
+	responds with code 201 rather then code 200.
+
+	** It is suggested that the dclean admin script be run twice a week
+	   rather then once a day due to it's load on the history file
+
+	dnewslink now dynamically adjusts the size of the pipe for streaming
+	feeds.  If dnewslink detects an inordinate number of 
+	check/ok/takethis/reject collisions, it reduces the size of the
+	pipeline.  The pipeline is also dynamically adjusted back up when
+	the collisions subside.
+
+	More /bin/sh script fixes in contrib/XMakefile... improper semicolons
+	removed.
+
+        Fixed bug in dexpire that caused it to loop endlessly without getting
+	much work done.
+
+	Added parallel-tasking option, -p# (as in -p4) to dexpire, causing it
+	to fork N times in order to run multiple unlink()'s in parallel
+	without the processes stepping over each other's feet.
+
+Diablo V1.05
+
+	Switched from whole-file locks on dhistotry to record locks.  Diablo
+	was having lock starvation problems due to the large number of 
+	processes accessing the history file.
+
+	By using record locks, we lock a particular hash chain rather then
+	the entire file.  This should make machines with a large number of 
+	feeds more efficient.
+
+	EFFICIENCY NOTICE:  We strongly suggest that you set the 
+	USE_LARGE_HASH define to 1 in lib/vendor.h and follow the 
+	instructions at the end of the INSTALL file to increase the
+	size of the dhistory file hash table.  Doing so will yield a
+	major increase in efficiency on machines with limited buffer caches.
+	Specifically, a 128MB machine may not have enough free space for
+	a good buffer cache and the large number of seek/reads caused
+	by the smaller hash table can result in seek starvation on /news.
+
+Diablo V1.04
+
+	Fixed a 436 return code into a 431 return code for streaming 
+	'try it again' responses.
+
+	Now uses floating point to store and log byte and article totals
+
+	Fixed bug in the article totaling (for logs) - Diablo was reporting
+	more received articles then were actually received in the DIABLO
+	log line.
+
+	Diablo incoming now logs every 1024 articles rather then every 1000
+	for a better looking K/M/G log line.
+
+	Added 'maxcross' and 'maxsize' filters for outgoing feeds.
+
+Diablo V1.03
+
+	Uses mmap() to allocate memory, either via MAP_ANON or MAP_PRIVATE,
+	allowing us to easily deallocate it from the page table on fork.
+	We use this for stdio buffers as well as for pipe line buffers.
+
+	Added doutq
+
+	More portability fixes:  directory stuff, signal stuff, etc...
+
+Diablo V1.02
+
+	Fixed two file descriptor leaks in the main server.  There are not
+	likely to be any more.
+
+	Made portability changes:  uses sigaction() rather then signal(),
+	and uses fcntl() rather then flock() (though SUN should get it's
+	act together and implement flock().. it's trivial).
+
+Diablo V1.01
+
+	Moved some .SET's from XMakefile to XMakefile.inc
+
+	The sample crontab in adm/ ran the once-every-four-hours
+	expire once a minute instead, and I didn't notice!
+
+	dnewslink now reports local/remote latency properly.  Well,
+	as well as can be done, anyway, and also reports the size
+	of the article in debug mode.
+
+Diablo V1.00
+
+	Initial Release
+

@@ -1,0 +1,497 @@
+IMPORTANT NOTE: Many of these suggestions were made when a full newsfeed
+  was a lot smaller. When reading these figures, bear in mind that
+  today's (October 2001) full feed is along the following lines:
+
+	text-only			1-2GB per day
+	full feed			280GB per day
+	full-feed header database	20GB for 30 days
+
+  If in doubt, search for recent news articles or the diablo-users
+  mailing list for more recent figures.
+
+  Some of the options for FreeBSD may now be out of date or defaults.
+  Any updates to these from someone with experience of them would be
+  appreciated by the Diablo developers. Tuning notes for other
+  operating systems would also be appreciated.
+
+--------------------------------------------------------------------------
+	    ** BASIC GUIDLINES FOR A DEDICATED NEWSFEEDER **
+
+**********************************************************************
+PLEASE NOTE: These guidelines are quite dated (from around 1998) and
+volumes have increased significantly since then. The original values
+are still shown to give an indication of the sort of thing you need
+to look at when deciding on what hardware to use.
+**********************************************************************
+
+/news should generally own its own partition, as should
+/news/spool/news and, if running the reader code, /news/spool/group.
+If you are running the reader with an article cache, /news/spool/cache
+should also generally own its own partition.  Note that when running
+an article cache, you must supply a crontab to check and delete files
+from the cache when the cache gets full.  You can arbitrarily remove
+cached files at any time from /news/spool/cache.  See README.READER
+for more information.
+
+/news can usually share the root disk as long as you have 3 or 4 GB
+free prior to install.  Don't forget that rebuilding the dhistory file
+can take a lot of space so there should always be around 1G free on
+/news for proper operation.
+
+You do not need to outfit your machine with dozens of striped disks.
+With a reasonably modern operating system (the latest FreeBSD or
+similar OS, for example), you can create a CCD/vinum disk made up of
+three or four striped disks and create you various news-related
+partitions on that single CCD/vinum disk.  For example, striping three
+18G seagates together will work just fine if building a reader machine
+with a 40G spool, 9G group, and 5G /news partition (running both the
+feeder and reader sides of Diablo on the same box).  Optimal stripe
+size is beyond the scope of this document because every disk subsystem
+is different.
+
+The minimum recommended configuration when taking a full feed is:
+
+	256MB RAM (or more), parity or ECC protected is highly
+	recommended.
+
+	For a feeder box, Four 4G seagate barracudas (or better) 
+	striped 2x2 putting /news on two disks and /news/spool/news on
+	the other two disks.  You may want to throw in a larger spool, in
+	which case it may make sense to stripe three 9G disks together
+	(or three 18G disks together) and build your partitions out of that
+	one stripe.  This is highly dependant on what you are trying
+	to accomplish.
+
+	Pentium Pro equivalent or better motherboard.  A wonderful
+	system would be a PII/300 for a good low-cost solution.
+
+	run FreeBSD or some other UNIX system.  Much of the
+	development was done on FreeBSD systems for what's its worth.
+
+	    ** BASIC GUIDLINES FOR A DEDICATED NEWSREADER **
+
+For a nice low-cost news reading system able to handle a full feed, I
+suggest a pentium-II/300 box running FreeBSD 3.4 or later (or Linux,
+Solaris, etc...) with three 18G drives on a SCSI UW (ultra-wide)
+40MByte/sec bus.  Note: an 80MBytes/sec bus would be overkill for a
+news box since the disks are going to be seek limited, not bandwidth
+limited.  Using very high speed disks (10K RPM or higher) could
+possibly help.
+
+Create one striped disk set that covers all three disks and partition
+it into a 5G /news, 9G /news/spool/group, and 40G /news/spool/news.
+/news/spool/cache is not required in this case since you are going to
+run a full spool on the same box (though if you have a remote-spool
+configuration you might then have a big /news/spool/cache and a tiny
+/news/spool/news for your feed-in).
+
+Note that the reader side of Diablo does not maintain a dhistory file,
+which means that the 'header only' feed it expects may come from only
+one place.  However, even in a configuration where you expect to
+utilize a remote article spool, it may be beneficial to run the feeder
+on the same machine as the reader in order to be able to take multiple
+redundant feeds (which the feeder CAN handle since the feeder
+maintains dhistory).  See README.READER for more information.
+
+For a newsreader box, I recommend a minimum of 256MB of ram but you
+could probably survive with 128MB if you had to.  As described above,
+with 256MB of ram, the box should be able to support at least 600 
+online readers or more.
+
+
+			TUNING_NOTES FOR DIABLO
+
+(0) Location of options
+
+    Diablo compilation options mainly appear in two files:
+    lib/config.h and lib/vendor.h.  lib/config.h is supposed to hold
+    only permanent configuration options.  The more advanced options
+    are usually disabled unless it is possible to do preprocessor
+    conditionals on the OS version.
+
+    Diablo has numerable startup-time options specified in
+    diablo.config.  See samples/diablo.config for documentation on the
+    available option settings.
+
+    Generally speaking, any option overrides that you do should be done in
+    lib/vendor.h.
+ 
+    There are also some compile-time values which can be tuned to
+    improve performance on heavily loaded servers:
+
+    lib/defs.h:
+	#define MAXFORKS        256
+    This option restricts the number of incoming connections
+	#define MAXFEEDS        128
+    This option restricts the number of outgoing feed labels
+	#define MAXDIABLOFDCACHE 8
+    If you have a large number of spool objects, increasing this
+    can save time with close()/open() calls.
+
+    util/dnewslink.c:
+	#define MAXMCACHE       32
+    If you have a large number of incoming feeds, each incoming feed
+    is written to separate spool files. Increasing this value saves
+    dnewslink from having to close()/open() descriptors when accessing
+    a large number of files. The number of files per spool object
+    can be found by checking one of the spool time slot directories.
+
+(I) Use of mmap()
+
+    Diablo requires at least shared read-only file mmaps to work
+    properly.  This is known to work on Sun, Solaris, IRIX, AIX, and
+    of course FreeBSD.
+
+    BSDI releases including 3.0 are known to have serious problems
+    with mmap() and it is not suggested that you run diablo on it.
+    The most recent BSDI releases (as of Oct 1998 when this document
+    was originally written) should have no problem with Diablo's use
+    of mmap().
+
+    SYSV SHARED MEMORY is required.  All major platforms support this,
+    but Solaris uses ridiculously tiny kernel hard limits for shared
+    memory and you will have to bump them up significantly in order to
+    run Diablo.
+
+    Once you get past shared read-only file maps, you get into shared
+    read-write file maps, shared read-write anonymous maps, and sys-v
+    shared memory maps.  These are optional.  I believe the SunOS,
+    Solaris, IRIX, and FreeBSD support shared r/w maps but SunOS does
+    not support anonymous maps (Solaris does).  Most systems support
+    sys-v shared memory.
+
+    Diablo should work fine with systems which do not have a unified
+    buffer cache for read+write mmaps, such as BSDI.
+
+(II) memory, disk, and cpu
+
+					CPU
+
+    A 100 MIPS class cpu is suggested for up to 40 feeds, a 200 MIPS class cpu
+    is suggested otherwise.  A 200+ MIPS class cpu is necessary if you are 
+    running a full feed into a reader and wish to support more then 500 online
+    readers.
+
+					MEMORY
+
+    A minimum of 128MB of ram is required (mainly to maintain the dhistory 
+    file efficiently).  If you have more then 30 feeds, 192MB of ram is
+    suggested.  If you have more then 70 feeds, 256MB of ram is suggested.
+    The more memory the merrier.
+
+    For a reader box, 256MB of memory is suggested but 128MB will work if you
+    have fewer then, say, 100 readers.
+
+					DISK
+
+    A minimum of three disks (of any capacity) is recommended.  It is 
+    recommended that you stripe all three disks together into a single
+    big disk, and then cut pieces out of the single big disk to create
+    your /news, /news/spool/news, /news/spool/group (for a reader),
+    and /news/spool/cache (for a caching reader) partitions.  You can
+    use large-capacity drives and a single SCSI controller but an
+    ultra-wide controller (such as the Adaptec 2940UW) is recommended.
+
+    You should not need more then four or five disks even in a maximal
+    configuration unless you are trying to slap together an insanely
+    huge spool.  Three 18G drives will work for a nominal reader
+    machine assuming you give a short expire to large postings.
+
+    The machine should not ever have to swap, but swap should be
+    configured to allow the machine to retire idle processes.  I
+    suggest configuring 128MB of swap on every disk to spread any swap
+    activity around.
+
+(III) sysctl tuning on FreeBSD
+
+    FreeBSD allows you to tune certain parameters via sysctl.  You
+    typically want to do the following:
+
+    /sbin/sysctl -w kern.maxvnodes=16384
+    /sbin/sysctl -w kern.maxfiles=16384
+    /sbin/sysctl -w net.inet.tcp.always_keepalive=1
+    /sbin/sysctl -w net.inet.tcp.rfc1323=1
+    /sbin/sysctl -w net.inet.tcp.rfc1644=0
+
+    You can also tune VM parameters such as vm.v_cache_min, but unless
+    you exactly what you are doing I suggest leaving the VM parameters
+    alone.  FreeBSD-3.x is especially capable of dynamicaly tuning
+    itself without intervention from administrators.
+
+    Always be careful when configuration the tcp buffer sizes
+    (typically command line options to diablo and dreaderd or in
+    diablo.config).  Due to the large number of active connections
+    Diablo maintains, too large a tcp buffer size may waste too much
+    kernel memory.
+
+(IV) file descriptors, process limits, datasize resource limits
+
+    Configure the system to support a minimum of 512 descriptors per
+    process and at least 8192 descriptors for the system as a whole.
+    The system must support at least 512 processes per user and 1024
+    total processes.  This may involve both kernel configuration and
+    resource limit settings.
+
+    The number of descriptors used by Diablo will increase 6 fold if
+    you turn on reader expiration (variable expire), verses feeder
+    expiration (straight FIFO expire).  If you are running a spool for
+    a reader you generally MUST use the reader expiration config
+    option in diablo.config.
+
+    The per-process datasize limit should be at least 128MB.
+
+    NOTE: FreeBSD has an /etc/login.conf file.  You must ensure that
+    sufficient limits are set for daemon, default, standard, root, and
+    news.  Specifically, do not set a small hard datasize limit in
+    daemon or cron will not be able to re-limit the process to a
+    higher datasize limit.  'datasize=...' is a HARD limit.
+    'datasize-curr=...'  is a soft limit.
+
+    NOTE: the rc.news file and the ~news user's .cshrc should probably
+    unlimit all resources (in tcsh or csh, simply 'unlimit').
+
+(V) Kernel Configuration for kernel builds (NBUFs, NMBCLUSTERS, etc...)
+
+    On kernels for which filesystem buffers are static, configure a
+    large number of buffers.  If you have 256MB of ram, I would
+    dedicate half of it to filesystem buffers.
+
+    On FreeBSD-2.2.x boxes you may have to increase NBUF.  However, on 
+    FreeBSD (3.x and above) boxes NBUF is dynamically sized and should
+    not have to be messed with.
+
+    Since you are going to be running a large number of tcp connections,
+    you should probably increase NMBCLUSTERS (again, a BSDish kernel
+    option).  I suggest at least 4096 and perhaps even 6144 or 8192.
+    You also specify the system-supported maximum user data segment
+    size in the kernel config.
+
+    The typical FreeBSD kernel config line is:
+
+	# FreeBSD-2.2.x only
+	#options "NBUF=6144"
+
+	# other potentially necessary options
+	options "NMBCLUSTERS=4096"
+	options "MAXDSIZ=(512UL*1024*1024)"
+	options	SYSVSHM
+	options	SYSVSEM
+	options SYSVMSG
+
+    Other experimental features you may want to try with BSD kernels
+    include SOFTUPDATES (on FreeBSD, see README.softupdates in
+    /usr/src/sys/ufs/ffs), AHC_ALLOW_MEMIO, and KTRACE.  You can also
+    tune the kernel by configuring only those cpu classes you actually
+    expect to use.  For example, my kernel config only has "I686_CPU"
+    defined (pentium-pro or pentium-II and above class cpu).
+
+    I highly recommend turning softupdates on in FreeBSD, though it
+    should be noted that you should have an up-to-date OS release as
+    releases prior to September 1998 are a bit too buggy in the
+    softupdates department.
+
+(VI) DHistory file tuning
+
+<<<DONE TO HERE>>>
+
+    Diablo should be able to handle upwards of 3000 accepted articles/min
+    and message-id history lookups (check/ihave) rates between 40,000 and
+    100,000 lookups/minute.  The actual performance depends heavily on
+    the amount of memory you have and the number of diablo processes 
+    in contention with each other.
+
+    Full feeds are getting big enough that you may want to seriously consider
+    increasing the default dhistory hash table size from 4m to 8m in 
+    diablo.config.  This will reduce disk I/O on the dhistory file at the
+    cost of another 16MB (32MB total) of memory dedicated to caching the
+    dhistory file's hash table.  Note: the hash table size must be a power
+    of 2 so you have limited options here.
+
+    Many kernels will bog down on internal filesystem locks as the number
+    of incoming feeds rises.  You need to worry once you get over 35 or so
+    simultanious diablo processes.   Adding memory, reducing the size of
+    the dhistory file, or increasing the hash table size will help here.
+
+    The dhistory file defaults to a 14 day retention and will stabilize
+    at between 350 and 400 MBytes given an article rate of 800,000 articles/day
+    (a full feed as of this writing).  You can configure a lower expiration
+    by setting the 'remember' variable in diablo.config to a lower number,
+    such as 7 or 3.  
+
+    It is recommended that you set this option to between 3 and 7 days in
+    order to keep the dhistory file a reasonable size.
+
+(VII) Tuning outgoing feeds to INN
+
+    Please examine the samples/dnewsfeeds file.  Generally speaking, you need
+    to tune any outgoing feeds to INN reader boxes.
+
+    You should consider cutting control messages in front of articles
+    and then delaying non-control messages by 5 minutes.  This will allow
+    cancel controls to leap ahead of articles and reduce INN's article write
+    overhead (which is usually the big bottleneck in INN).
+
+    Typically, you separate control messages out by creating two separate
+    feeds to your reader box.  The first one has a 'delgroupany control.*',
+    and the second one has a 'requiregroup control.*'.  Taking the example
+    from the sample dnewsfeeds file:
+
+	# dnewsfeeds
+	#
+	label   nntp2a
+	    alias       nntp2.best.com
+	    ... other add and delgroups ...
+	    delgroupany control.*
+	end
+
+	label   nntp2c
+	    alias       nntp2.best.com
+	    ... other add and delgroups ...
+	    requiregroup control.*
+	end
+
+    Then, in dnntpspool.ctl you program the normal feed for queue-delayed,
+    to delay it by 5 minutes (assuming you run dspoolout from cron every 5
+    minutse), and you program the control feed as realtime.  Also, if you
+    don't mind slightly longer delays, q2 may be a better choice then q1.
+
+	# dnntpspool.ctl
+	#
+	nntp2a          oldnntp.best.com                500     n4 q1
+	nntp2c          nntp1x.ba.best.com              500     n4 realtime
+
+(VIII) Tuning Incoming feeds
+
+    The main thing to remember when tuning incoming feeds is that the 
+    load on your news system is related to the number of message-id check
+    or ihave requests you receive.  You do not have to go overboard taking
+    full feeds... three or four incoming full feeds is quite sufficient.
+    Most other incoming feeds will be from smaller sites and having them
+    ship you just the local postings is good enough.  The message-id load
+    determines how quickly your news box can catch up after prolonged
+    downtime or loss of network connectivity and it may be a good idea to
+    test this by purposefully taking the machine offline for an hour, just
+    to see where you stand.
+
+    There is more then one way to ensure incoming feed redundancy.  Due to
+    the way the precommit cache works, if you get offered the same article
+    from N different feeds at the same time, Diablo will return a duplicate
+    reply code to all but one of those incoming feeds.  If diablo were to
+    crash at that point, you wind up relying on that one incoming feed to
+    retry the article because the others have already marked it off. 
+
+    It may be beneficial to purposefully lag one of your incoming full
+    feeds to provide added redundancy.  This is something your peer must
+    set up for you and it isn't easy unless they are running news software
+    that can do it.  Diablo 1.12 or greater can through the 'q2' or 'q3'
+    option in dnntpspool.ctl on the feeder.  While this virtually guarentees
+    that you will never accept an article from that particular site under
+    normal conditions, it gives your system added redundancy by ensuring
+    that the same message-id will be offered at two different times.  If
+    something does go wrong, the time delay may help you recover more quickly
+    without any article loss.
+
+    You may also wish to tune the TCP buffer size used by the sending machine
+    to your machine, especially for internal feeds.  A larger buffer size will
+    increase Diablo's ability to absorb disk I/O bottlenecks by increasing
+    the size of the streaming pipeline.
+
+(IX) Tuning dexpire
+
+    There are two cron jobs that deal with dexpire.  The first is called
+    quadhr.expire and nominally runs dexpire every four hours (6 times a day).
+    The second is called hourly.expire and attempts to rerun dexpire if
+    the quadhr cron fails.
+
+    DExpire in Diablo is very fast.  Since diablo stores multiple-articles
+    per spool file, DExpire is able to free up disk space very quickly and
+    you should not be scared of running it often.  DExpire's biggest hog
+    is that it must scan the dhistory file.  Unlike INN's expire, dexpire
+    does not rewrite the dhistory file.  Instead, it expires entries in-
+    place which is considerably faster.
+
+    NOTE!!! If you have a small spool (8G or smaller) you may be forced
+    to run dexpire once an hour rather then once every four hours.  If you
+    have a larger spool you can get away with once every four hours but
+    may have to increase the free space margin.  See samples/adm/hourly.expire
+    and samples/adm/quadhr.expire.
+
+    The sample expiration cron jobs adm/quadhr.expire and adm/hourly.expire
+    set a free space target of 2.5 gigabytes.  This is the suggested free space
+    target if you run expire every 4 hours and is designed to deal with
+    large influxes of data that may occur in a 4 hour period, but not really
+    designed to deal with an unfiltered full feed.
+
+    If you are running an unfiltered full feed (15GB/day) you should run
+    dexpire once an hour rather then once every four hours with a 2.5GB
+    free space margin.
+
+    You can manually retire articles from the spool if you like without running
+    dexpire.  The history file will still be completely synchronized when
+    dexpire does run.  The only legal way to retire articles from the spool is
+    to remove an entire spool directory.  You MUST RENAME the directory before
+    rm -rf'ing it or you risk creating corrupted article files due to the way
+    diablo's article create/append spooling works.  ** YOU CAN NEVER RECREATE A
+    DELETED DIRECTORY **.  This will cause history record corruption.  If
+    your spool is configured for reader-mode expiration (see diablo.config),
+    you can only legally remove spool directories in sorted order or a diablo
+    restart will improperly regenerate the 'missing' directories, creating
+    the potential for feed corruption.
+
+    dexpire is now capable of retiring articles without updating the history
+    file, a very fast operation that can be run on a shorter scheduler if
+    you feel the history update takes too much time.  Using dexpire with
+    the -h0 option is safer then expiring the spool manually.
+
+    IF YOU ARE USING A SOFTUPDATES-MOUNTED FILESYSTEM, statfs() will not 
+    necessarily return the actual amount of free space on the fs.  You should
+    use the -s option to dexpire to force it to sync/sleep/sync/sleep so
+    statfs() returns a more reasonable value.  If you do not do this, dexpire
+    may deleted 80% of your spool before it realizes that it has freed up 
+    enough space!
+
+(X) Spam Filter
+
+    The spam filter is turned on by default in Diablo.  You can disable or
+    adjust the spam filter parameters with the -S option to diablo 
+    (man diablo).  You will almost certainly want to keep the spam filter
+    turned on because it does a pretty good job detecting attacks, and the
+    USENET gets attacked quite often these days.
+
+    Unfortunately, the filter's best defense is rate-checking the
+    NNTP-Posting-Host: header and this will break some news sources that
+    propogate news with POST rather then via a transit feed.  I consider these
+    news sources broken anyway, but if you do not you may have to mess with
+    either the filter parameters or with the addspam and delspam directives
+    in dnewsfeeds to create exception cases.
+
+(XI) SOLARIS SPECIFIC NOTES
+
+    The shared memory defaults in /etc/system may have to be tuned due to
+    having too low a maximum segment size, the following is suggested:
+
+	set shmsys:shminfo_shmmni = 100
+	set shmsys:shminfo_shmseg = 16
+	set shmsys:shminfo_shmmax = 16777216
+
+    The file descriptor limits may also be too low, the following is
+    suggested:
+
+	set rlim_fd_max = 8192
+	set rlim_fd_cur = 2048
+
+(XII) LINUX SPECIFIC NOTES ( work in progress )
+
+    ( Ray Rocker <rocker@ametro.net>, in regards to dnewslink problems )
+
+    I started having the hung dnewslink problem when I brought the kernel
+    from 2.0.29 to 2.0.33. At that time, the diablo version didn't seem
+    to matter. And the hang was definitely mmap-related; I traced the
+    hangs to a kernel function in that area, though I don't remember
+    now what it was exactly.
+
+    I've been running 2.0.29 kernel and 1.14 diablo since then w/o problem.
+    Upgrading both is high on my todo list...
+
+
+

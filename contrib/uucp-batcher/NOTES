@@ -1,0 +1,16 @@
+This is old.  This worked then and it may not work now.  It's here for
+historical reference.
+
+Diablo now has the ability to use things like compressed spools and this
+absolutely will not work with that, as-is.
+
+The code is pathetically simple.  It should be easy to work with.  If
+anybody is seriously looking to use this code, you might want to talk to
+me first.
+
+A more comprehensive (and somewhat more system-intensive) way to do this
+would be to use a NNTP-to-UUCP conversion program.  It would be very easy
+to code one up, but I've not yet done it.  If anyone desperately needs
+one, drop me a line and a little money and it can be yours.  :-)
+
+... JG

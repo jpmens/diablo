@@ -1,0 +1,6 @@
+#
+# Example dserver.hosts for use on a reader-only server
+#
+# Out spool server is used for fetching and posting
+spool.example.com	s1o1
+

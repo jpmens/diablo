@@ -1,0 +1,55 @@
+#
+# Sample dnewsfeeds file for a feeder setup
+#
+label	GLOBAL
+    #
+    # pathalias out 'bad neighbors' - news sites that don't seem to care
+    # about the rest of the usenet
+    #
+    # alias	*.badsite.example.com
+end
+
+# ISPAM/ESPAM/FILTER: Generic filter labels
+#
+# ISPAM and ESPAM need to be enabled in diablo.config
+# IFILTER is enabled automaticaly with this entry present
+#
+# Send all binaries to the internal filter for duplicate detection
+label ISPAM
+    addgroup	*
+    arttypes	binary
+end
+
+# Send all non-binaries to the external filter (cleanfeed is a good one)
+label ESPAM
+    addgroup	*
+    arttypes	!binary
+end
+
+# Filter binaries in non-binary newsgroups and reject them at reception
+label IFILTER
+    addgroup	*
+    delgroup	*.bina*
+    arttypes	binary
+end
+
+# Setup a realtime feed to host.example.com and allow connections to
+# us from the same host
+label	example
+    inhost	host.example.com
+    hostname	host.example.com
+    alias	host.example.com
+    alias	news.example.com
+    filter	internal.*
+    addgroup	*
+    delgroup	control.*
+    delgroup	bofh.*
+    delgroup	alt.*
+    delgroupany	*.bina*
+    delgroupany	alt.warez*
+    maxconnect	5
+    maxqueue	10
+    rtflush
+    realtime	on
+end
+

@@ -1,0 +1,213 @@
+.\" $Revision: 1.3 $
+.\" Beaten into shape with a large axe by Frank Durda IV 12-Jan-2005
+.TH DGRPCTL 8
+.SH NAME
+dgrpctl \- add, delete and modify newsgroups in the active file.
+.PP
+.SH SYNOPSIS
+.B dgrpctl
+[\fB-s\fR]
+.B newgroup 
+.I newsgroup
+.B [y|m] \fR["[\fImoderator\fR]" ["\fIdescription\fR"]]
+.PP
+.B dgrpctl
+[\fB-s\fR]
+.B rmgroup 
+.I newsgroup
+.PP
+.B dgrpctl
+[\fB-s\fR]
+.B groupinfo
+.I newsgroup
+.PP
+.B dgrpctl
+[\fB-s\fR]
+.B adjust
+.I newsgroup
+.B NB|NE|NX 
+.B [+|-|=]\fIvalue\fR
+.PP
+.PP
+.B dgrpctl
+[\fB-s\fR]
+.B checkgroups
+.I [exec] filename\fB|-\fR
+.PP
+.PP
+.B dgrpctl
+[\fB-s\fR] \fBlistactive\fR [\fIwildmat\fR]
+.PP
+.B dgrpctl
+[\fB-s\fR]
+.B listnewsgroups \fR[\fIwildmat\fR]
+.PP
+.B dgrpctl
+[\fB-s\fR]
+.B listgrouphash \fR[\fIwildmat\fR [\fIhash\fR]]
+.PP
+.B dgrpctl
+[\fB-s\fR]
+.B listgrouphashfile \fR[\fIwildmat\fR[\fIhash\fR]]
+.PP
+.PP
+.B dgrpctl -V
+
+
+.SH DESCRIPTION
+.IR Dgrpctl
+allows several administrative and maintenance functions to be performed on
+newsgroups.  Changes are made to the active file (\fIdactive.kp(5)\fR located
+on the reader, or if \fB-s\fR is specified, on the server (as specified by the
+\fIpath_server_dactive\fR parameter in \fBdiablo.config(5)\fR.
+.P
+
+.SH COMMANDS
+.B newgroup
+adds \fInewsgroup\fR to the specified active file and sets attributes for
+that group or updates attributes if the group already exists.  \fIFlags\fR
+may be set to \fBY\fR for a normal group, or \fBM\fR for a moderated groups.
+(Other group states are not supported.) Use "" to specify no moderator e-mail
+address when the \fInewsgroups\fR field is being specified.  The content of
+the \fImoderator\fR field is not currently used and is reserved for future
+use.  if provided, the \fInewsgroups\fR text is shown when the NNTP/NNRP
+client issues a "LIST NEWSGROUPS" command.
+
+.B rmgroup
+removes the specified \fInewsgroup\fR from the specified active file.
+
+.B groupinfo
+displays all the technical attributes of the specified \fInewsgroup\fR that
+are maintained in the active database file \fIdactive.kp\fR.  The path to
+the overview database for that group is also shown.
+
+.B adjust
+changes the specified article numbering element for \fInewsgroup\fR.
+\fBNB\fR is the lowest available article number on the reader, \fBNE\fR is
+the highest available article number on the reader, and \fBNX\fR is the
+highest article number assigned by the server.
+
+By default, the specified \fIvalue\fR is added to the existing entry.  (This
+is the historical behavior of \fBdgrpctl\fR.) Prefixing \fIvalue\fR with
+"=" sets the stored entry to \fIvalue\fR.  \fIValue\fR is always treated as
+a decimal value. (In earlier versions, a leading zero on the value indicated
+that an octal value was being provided.)
+
+.B checkgroups
+accepts list of groups in "checkgroups" format from the
+\fIfilename\fR or from \fB-\fR (stdin).
+DOES THIS MAKE THE CHANGES OR PROVIDE A LIST FOR APPROVAL?
+
+.B listactive
+produces 
+lists information on news groups that are contained in the active
+news group database \fBdactive.kp\fR(5).  If no \fIwildmat\fR
+pattern is specified, then all groups in the database are
+listed.  If a \fIwildmat\fR pattern is provided, only
+groups that match the pattern are displayed.  The command
+and its output behave identical to the NNTP "LIST" or
+"LIST ACTIVE" commands.  (See below for information on
+\fIwildmat\fR patterns.)
+
+.B listnewsgroups
+produces the same results as the NNTP "LIST NEWSGROUPS"
+command.  If no pattern is displayed, the stored
+descriptions of all groups in the active news group
+database \fBdactive.kp\fR(5) are shown.  If a
+\fIwildmat\fR pattern is provided, only descriptions of
+groups that match the pattern are shown.
+
+.B listgrouphash 
+displays the hash code that diablo creates for each group name.
+If a \fIwildmat\fR pattern is provided, all groups that match
+the pattern are displayed, along with their hash value.
+If a hash value is provided, if a group name matches that
+hash value, that group name is displayed.  For example:
+.in +0.5i
+.nf
+
+/news/dbin/dgrpctl listgrouphash '*sys.t*'
+vvcgiadtevn0ed0owhr5t comp.sys.tahoe
+4iddfhey5e0jrnp1ojjhl comp.sys.tandem
+uwhvdjfqhrr01eh11shzn comp.sys.tandy
+jkexxf1irwpvulpbarfke comp.sys.ti
+ktzj1yw24mma0kgpqgeaw comp.sys.ti.explorer
+gnhwcuusrzu1bwgn51r1f comp.sys.transputer
+xyat0c03sp0wc5yi1zqkx tnn.forum.soft-sys.tippler
+.fi
+.in -0.5i
+
+.B listgrouphashfile
+will show the path to the overview database 
+for all groups in the active news group database \fBdactive.kp\fR"
+or a subset of entries that match the \fIwildmat\fR pattern, if a
+pattern is provided.
+For example:
+.in +0.5i
+.nf
+
+/news/dbin/dgrpctl listgrouphashfile '*sys.t*'
+069/04a/vvcgiadtevn0ed0owhr5t.0.o.32.0 comp.sys.tahoe
+01a/03c/4iddfhey5e0jrnp1ojjhl.0.o.32.0 comp.sys.tandem
+01f/02e/uwhvdjfqhrr01eh11shzn.0.o.32.0 comp.sys.tandy
+03e/013/jkexxf1irwpvulpbarfke.0.o.32.0 comp.sys.ti
+018/008/ktzj1yw24mma0kgpqgeaw.0.o.32.0 comp.sys.ti.explorer
+041/05d/gnhwcuusrzu1bwgn51r1f.0.o.32.0 comp.sys.transputer
+061/03f/xyat0c03sp0wc5yi1zqkx.0.o.32.0 tnn.forum.soft-sys.tippler
+.fi
+.in -0.5i
+
+.SH WILDMAT PATTERNS
+Similar to those found in the \fBfind\fR(1) command.  Patterns are
+anchored to the beginning and end of each item that is to be compared.
+Five special pattern matching characters allow for none or more characters
+to be matched with certain or any values.  The special characters are:
+.P
+.in +0.5i
+.ti -0.5i
+*	Matches zero or more characters at this position.
+.ti -0.5i
+?	Matches a single character at this position.
+.ti -0.5i
+[]	One or more sets or ranges of characters may be described that will
+match a single character in this position.  \fB[a-cXYZA-Cq0-3]\fR will
+match any of the characters a, b, c, X, Y, Z, A, B, C, q, 0, 1, 2,
+and 3 in this position.  [] must appear in pairs.
+.ti -0.5i
+^	In front of a range of characters matches all but the
+specified characters or ranges of characters.  \fB^[A-Z]\fR will match
+any character except the upper-case letters A through Z.
+.ti -0.5i
+\\	Means the following character is to be matched literally.  So
+\fB\\?\fR means the question-mark character must be found in
+the indicated position.
+.in -0.5i
+.P
+The \fIwildmat\fR pattern is accepted by a NNTP/NNRP server in the
+\fBLIST\fR, \fBLIST ACTIVE\fR, \fBLIST NEWSGROUPS\fR, in any other
+\fBLIST\fR \fIoption\fR commands a given server provides as well as the
+\fBXPAT\fR command.
+.P
+Additional information on the \fIwildmat\fR format can be found in
+\fBRFC 2980, section 3.3.\fR
+
+.SH "SEE ALSO"
+diablo(8), 
+dicmd(8),
+didump(8),
+diload(8),
+dnewslink(8),
+doutq(8),
+dexpire(8),
+dexpireover(8),
+diconvhist(8),
+dilookup(8),
+dspoolout(8),
+dkp(8),
+dpath(8),
+diablo-kp(5),
+diablo-files(5),
+RFC 977,
+RFC 2980
+.PP
+

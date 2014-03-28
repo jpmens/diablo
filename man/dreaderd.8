@@ -1,0 +1,307 @@
+.\" $Revision: 1.11 $
+.TH DREADERD 8
+.SH NAME
+dreaderd \- NNTP reader daemon for reader support
+.SH SYNOPSIS
+.B dreaderd
+[
+.BI \-d[#...]
+]
+[
+.BI \-f[0]
+]
+.BI \-p\  newspathname/0
+[
+.BI \-s\  argv-buffer-space-for-ps-status
+]
+[
+.BI \-T\  txbufsize
+]
+[
+.BI \-R\  rxbufsize
+]
+[
+.BI \-F\  maxfeedforks
+]
+[
+.BI \-D\  numdnsprocs
+]
+[
+.BI \-M\  numreaderprocs
+]
+[
+.BI \-N\  maxconnectperreaderproc
+]
+[
+.BI \-h\  reportedhostname
+]
+[
+.BI \-c\  delayedclosesecs
+]
+[
+.BI \-B\  bindhost[:port]
+]
+[
+.BI \-P\  port
+]
+[
+.BI \-x\  xrefhost
+]
+
+.SH DESCRIPTION
+.IR dreaderd
+is an internet NNTP newsreader system which normally sits on the
+NNTP port of a machine, port 119.  It is often run to sit on two
+ports via -P 119 -P 434 in order to handle inews implementations
+which connect to port 434.
+.IR dreaderd
+is extremely flexible and can operate with a number of different
+spool configurations.  It can generate local Xref:'s and maintain
+a local active file or it can slave off Xref:'s generated from
+another entity.  All leaf node dreaderd systems require either a
+header-only feed or a normal feed from which headers can be extracted.
+Since dreaderd does not maintain its own history file, the feed
+must be pre-filtered.  It is possible to take multiple feeds only
+in slave Xref: mode where the article numbers are synchronized
+between the multiple feeds.
+
+.PP
+dreaderd maintains overview information locally but expects to
+retrieve article bodies from remote spool sources via the 'article
+<message-id>' NNTP command.  It implements the entire NNTP command
+set including xover and xhdr extensions.  It is also able to maintain
+a local article cache though this feature is not always appropriate.
+You can create a multi-level cache by having the leaf dreaderd use
+another dreaderd for its spool access.  Several topologies are
+typical.
+
+.PP
+First, you run the Diablo feeder side (the diablo server) on the
+same machine as you run dreaderd.  This allows you to send multiple
+feeds to the diablo server and then have the server send a single
+header-only feed to dreaderd running on the same machine.  In this
+configuration you normally run dreaderd on ports 119 and 434 and
+run diablo on port 435 and you normally turn OFF article caching
+in dreaderd, instead using diablo's spool on the same box for your
+first level cache.  The diablo feeder side can be configured with
+a small spool or a huge spool depending on what kind of caching
+you want to do before dreaderd backs off to a remote spool.  If
+you configure a huge diablo feeder spool, it can act as the sole
+spool source to dreaderd.
+
+.PP
+Second, you run dreaderd standalone on a machine.  You must still
+supply a feed to dreaderd from which it can extract the headers
+and maintain its overview database (a 9G disk is recommended for
+/news/spool/group for overview storage).  Note that you should
+supply only a single feed to dreaderd because dreaderd itself does
+not maintain a history file.  dreaderd can take a header-only feed
+or a full-article feed depending on what you use to feed it.  You
+then configure dreaderd to obtain it's spool from one or more
+off-machine servers.
+
+.PP
+Third, you can run dreaderd as a mid-level cache for a leaf dreaderd.
+In this configuration dreaderd is used solely for 'article
+<message-id>' retrievals and not for news reading.  You do NOT have
+to supply a feed to dreaderd in this case so you do not need a 9G
+disk for overview information.  Your active file can be minimal
+since it is not really needed.  You need a disk sufficiently sized
+to handle the article cache you wish to maintain on the machine.
+In this configuration you use the intermediate dreaderd to cache
+articles from offsite spools and have your leaf dreaderd talk to
+the midlevel dreaderd (the leaf dreaderd still needs a feed in
+order to maintain overview information).
+
+.PP
+dreaderd maintains an active file,
+.IR dactive.kp ,
+which is a KP database.  That is, it is human-readable and
+machine-writable (human editable only if no processes have the file
+locked).  The
+
+.IR dsyncgroups
+program may be used to initially create dactive.kp from an INN box.
+There are several ways to maintain dactive.kp ... you can use
+dsyncgroups to maintain the article range from a remote server even
+if the remote server's article numbers are not synchronized with
+yours.  The expireover program will also adjust the beginning
+article number in an attempt to maintain sufficient free space in
+the overview partition.  The expireover program then deletes overview
+data files containing articles that are outside the article range.
+Both methods may be used together.  dreaderd maintains overview
+data files in blocks of 256 articles and can only delete whole
+blocks, so no less then a 4G disk should be used for the overview
+partition.
+
+.PP
+dreaderd requires dactive.kp, dreader.access, dserver.hosts, and
+diablo.config to be configured properly.  It also requires the
+/news/log directory to exist.  Realtime human-readable status
+information is stored in /news/log/dreaderd.status as well as on
+the process command line (i.e. via 'ps' on many systems).  See the
+sample files for more information.  The most critical configuration
+for dreaderd is dserver.hosts and the command line arguments given
+to dreaderd when it is run.  See the sample rc.news file for more
+information.
+
+.PP
+The dreaderd cache is optional but usually used, even if only a
+small partition is available, to reduce the bandwidth required to
+pull articles from the spool machine.  However, if you are running
+the diablo feeder on the same machine you usually use that as
+dreaderd's first level cache and thus do not use dreaderd's own
+internal cache.  dreaderd's cache configuration is stored in
+diablo.config.  The default is for the cache to be turned on.
+
+.PP
+.B \-d[#]
+turns on debugging.
+
+.PP
+.B \-f[0]
+Turns on or off the fast-copy feature.  The default is ON.  -f0
+will turn it off.  The fast-copy feature allows Diablo to start
+sending data received from remote spools to requesting clients as
+it is received from the remote spool.  However, this means that if
+the remote spool dies in the middle of the transfer, the client
+will receive a truncated article.  If the fast-copy option is off,
+dreaderd buffers the entire article before sending it to the client
+and is able to transparently restart the request if the remote
+spool dies in the middle of the transfer.
+
+.PP
+.BI \-p " newspathname/0"
+specify host name for Path: header, '-p 0' for none. See also the
+``readerpath'' option in diablo.config(8).
+
+.PP
+.PP
+.B \-s argv-buffer-space-for-ps-status
+specify an argv buffer area that status can be stored into to show
+up in a ps.
+
+.PP
+.B \-T txbufsize
+specify the size of the transmit buffer for NNTP connections.  The
+default is 4K.
+
+.PP
+.B \-R rxbufsize
+specify the size of the receive buffer for NNTP connections.  The
+default is 2K.
+
+.PP
+.B \-F maxfeedforks
+specify the maximum number of non-NNTP forks from feeds.  4 is a
+good number.  Any connections which resolves to 'f' in dreader.access
+where the 'r' and 'p' flags are NOT also set will be routed to one
+of the feed-only forks.  This is desireable because an incoming
+feed is a high-load item and can slow down reader threads running
+on the same process.  This option will override its diablo.config
+counterpart.
+
+.PP
+.B \-D numdnsprocs
+dreaderd forks off a number of processes to handle DNS authentication,
+allowing several incoming connections to be resolved in parallel.
+Typically you want one dns thread for every 90 or so users with a
+minimum of four.  So, for example, if you configure dreaderd to
+handle up to 750 users, you would want 8 or 9 DNS forks.  This
+option will override its diablo.config counterpart.
+
+.PP
+.B \-M numreaderprocs
+specify the number of reader processes, default is 10.  Each reader
+process can handle several connections in parallel but opens a
+connection to each spool and post server, so be sure that the
+servers can handle the number of reader processes you fork (for
+example, if the diablo server is doing spool/post duty, make sure
+the maxconnect field in diablo.config and the maxconnect directive
+in dnewsfeeds is set high enough).  This option will override its
+diablo.config counterpart.
+
+.PP
+.B \-N maxconnectperreaderproc
+specify the number of connections (threads) per reader process.
+Default is 40 (10x40 = 400 maximum reader connections by default).
+You need to be careful of hitting file descriptor limits and I
+would not set it higher then 40.  It is usually a better idea to
+set this limit lower, to around 25, and to increase the number of
+forks (-M option) in order to increase I/O parallelism. This option
+will override its diablo.config counterpart.
+
+.PP
+.B \-c delayedclosesecs
+enable and specify the number of seconds to delay the closing of
+a failed connection attempt. This can help against clients that
+continually attempt to connect multiple times per second, even when
+rejected with a 500 error code. The number of seconds is not an
+absolute value and can vary up to an extra 10 seconds, depending
+on how often new connections are made to the server. The minimum
+value is 10 seconds if the server receives no new connections during
+that time.
+
+.PP
+.B \-h reportedhostname
+specify the reported host name, otherwise the hostname() system
+call is used. This option will override its diablo.config counterpart.
+
+
+.PP
+.B \-P [bindhost:]port
+specify the host (if not INADDR_ANY) and port to bind to.  Default
+is INADDR_ANY port 119.  If you specify this option once you override
+the default.  If you specify it a second time (third, fourth,
+etc...) you add additional bindings.  Normally one uses '-P 119 -P
+434' to support traditional inews/trn. See also the ``readerbindport''
+and ``readerbindhost'' options in diablo.config.
+
+.PP
+.B \-B bindhost:[port]
+This is a synonym for -P so that the same option is used by other
+diablo utils, although the bindhost is the default option if no
+':' is used.  See also the ``readerbindport'' and ``readerbindhost''
+options in diablo.config.
+
+.PP
+.B \-x xrefhost
+specify the hostname as it appears in the Xref: line of the host
+we accept Xref: headers from.  If not specified, or the host does
+not match, the Xref: header will be ignored and article numbers
+will be assigned from the active file. See also the ``readerslavexrefhost''
+option in diablo.config.
+
+.PP
+dreaderd will assign article numbers based on the supplied Xref:
+header or, if the header does not exist, will assign article numbers
+in sequence.
+.SH "CRON JOBS"
+
+.PP
+dexpireover needs to be run at regular intervals, usually twice a
+day.  You also need to manage dreaderd's article cache if you have
+it enabled in diablo.config.. usually a cron job run once every
+few hours to keep the article cache from getting to big.  You need
+to clean the dactive.kp file once every few months and, for the
+moment, that requires shutting down dreaderd entirely and running
+'dkp -t dactive.kp' on it.
+
+.SH "SEE ALSO"
+diablo(8), 
+dicmd(8),
+didump(8),
+diload(8),
+dnewslink(8),
+doutq(8),
+dexpire(8),
+dexpireover(8),
+diconvhist(8),
+dilookup(8),
+dspoolout(8),
+dkp(8),
+dpath(8),
+diablo-kp(5),
+diablo-files(5)
+.PP
+

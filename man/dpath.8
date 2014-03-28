@@ -1,0 +1,47 @@
+.\" $Revision: 1.3 $
+.TH DPATH 8
+.SH NAME
+dpath \- Diablo program to return commonly used paths for use in shell scripts
+.PP
+.SH SYNOPSIS
+.B dpath [-C diablo.config] [-c] [-s] [-v] [-q] [id ...]
+
+.SH DESCRIPTION
+.IR DPath 
+processes the diablo.config file and prints out all configurable paths
+in a bourne-shell compatible format by default.   If you give it a single
+path identifier, it returns the path for that identifier without anything
+extra (i.e. suitable for backticked inclusion).
+.PP
+.B -c
+\- Generate the output in csh style 'set' commands.
+.PP
+.B -s
+\- Generate the output in bourne style 'var=data' commands.
+.PP
+.B -v
+\- Generate verbose output (csh or sh style set variable).  This option
+is implied by -c and -s.
+.PP
+.B -q
+\- Prevent complaints from being printed to stderr.
+.PP
+
+.SH "SEE ALSO"
+diablo(8), 
+dicmd(8),
+didump(8),
+diload(8),
+dnewslink(8),
+doutq(8),
+dexpire(8),
+dexpireover(8),
+diconvhist(8),
+dilookup(8),
+dspoolout(8),
+dkp(8),
+dpath(8),
+diablo-kp(5),
+diablo-files(5)
+.PP
+

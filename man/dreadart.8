@@ -1,0 +1,65 @@
+.\" $Revision: 1.4 $
+.TH DREADART 8
+.SH NAME
+dreadart \- Extract article from spool given message-id or hash / Run validity check on articles referenced by queue file
+.PP
+.SH SYNOPSIS
+.B dreadart
+[
+-v
+]
+[
+-h
+]
+[
+-f file/-
+]
+[
+message-id/h1.h2
+]
+
+.SH DESCRIPTION
+.IR DReadArt 
+will look a message-id or hash-code pair up in the dhistory database,
+access the article file in question, verify that it is a valid spool file,
+and dump it to the standard output.
+.PP
+.B \-v
+Tells dreadart to simply verify that it is a valid spool file and not
+bother dumping it to stdout.  Usually used in combination with didump
+pipingto dreadart.  By default, this will not verify header-only feeds...
+use the -v -h combination to do that.
+.PP
+.B \-h
+Tells dreadart to only display the article's headers.  Also allows dreadart
+to display articles that were fed-in in a header-only feed (otherwise it
+refuses to display such articles).
+.PP
+.B \-f file/-
+Specifies a queue file to obtain message-id's from or the standard input
+if '-' is specified.  You can also pipe the output of didump or  didump -f
+to dreadart as a diagnostic tool.
+.PP
+.B message-id/h1.h2
+Or you can simply specify a message-ID on the command line, enclosed in
+single quotes, or you can specify a hash key.
+.PP
+
+.SH "SEE ALSO"
+diablo(8), 
+dicmd(8),
+didump(8),
+diload(8),
+dnewslink(8),
+doutq(8),
+dexpire(8),
+dexpireover(8),
+diconvhist(8),
+dilookup(8),
+dspoolout(8),
+dkp(8),
+dpath(8),
+diablo-kp(5),
+diablo-files(5)
+.PP
+

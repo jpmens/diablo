@@ -1,0 +1,73 @@
+What is this?
+-------------
+	These scripts obtain data from Diablo's dfeedinfo output, store
+	them in an RRD database, and show detailed graphs for infeed and
+	outfeed peers in Diablo.  For a sample of what this outputs, visi
+	http://newsfeed.visi.com/stats/.
+
+Prerequisites
+-------------
+	py-rrdtool - FreeBSD port (/usr/ports/net/py-rrdtool_lgpl) or
+		website http://sourceforge.net/projects/py-rrdtool/
+
+stats.py
+--------
+	Configuration:
+
+		FEEDINFOCMD = '/news/dbin/dfeedinfo -i -o -r'
+		DATADIRECTORY = '/home/kpettijohn/stats/data'
+
+		FEEDINFOCMD - Command to Diablo's dfeedinfo, which will display
+			incoming and outgoing raw data.  The data MUST be raw, and
+			not formatted in MB/GB/TB...
+		DATADIRECTORY - The directory where the RRD files will be
+			kept.  Create this directory, as well as INFEED and
+			OUTFEED subdirectories underneath them.
+
+			mkdir /home/kpettijohn/stats/data/{,INFEED,OUTFEED}
+
+		Set up a cronjob to run this script every 5 minutes.
+
+		*/5 * * * *             /home/kpettijohn/stats/getdata.py
+
+index.py
+--------
+	This file is what your webserver will execute as a CGI script.
+	Rename it if you wish or desire.  Ensure your web server can
+	execute it as a CGI script.
+
+	Configuration:
+
+		DATADIRECTORY = '/home/kpettijohn/stats/data'
+		IMAGEDIRECTORY = '/news/www/stats/images'
+		IMAGEREF = '/stats/images'
+		SITEREF = '/stats/'
+		GRAPHLENGTH = '24 hours'
+		INDEXTITLE = 'VISI.com Transit Server Graphs'
+		BACK_URL = 'http://noc.visi.com/'
+		BACK_TEXT = 'Back to VISI.com NOC'
+
+		DATADIRECTORY - The directory where the RRD data files are
+			kept.  This should match the DATADIRECTORY variable
+			in stats.py.
+		IMAGEDIRECTORY - Where the script will generate images
+			when the webserver executes it.  Ensure this directory
+			is writeable by the user that the webserver will run
+			this script as.
+		IMAGEREF - This is prefixed to the file name in the <IMG SRC="">
+			so the HTML output by the script directs browsers to the
+			proper place to grab the image that was just created.
+		SITEREF - The URL used in reference with the "Go Back..." link
+			displayed at the top of the page.  This should link to
+			this CGI script.
+		GRAPHLENGTH - The default timespan of graphs if a value is
+			not obtained from form values by the script.
+		INDEXTITLE - The title of the page to be displayed
+		BACK_URL - The URL that BACK_TEST (below) referrs to
+		BACK_TEXT - The text for the URL above.
+
+Questions / Comments / Suggestions
+----------------------------------
+	If you have any problems, patches, questions, comments,
+	suggestions, or beer/pizza/cash donations, please send them
+	to kristofer AT cybernetik DOT net

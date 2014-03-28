@@ -1,0 +1,29 @@
+
+TODO	add timeouts for server requests and automatically back-off.
+
+TODO	add secondary priority to pick 'best' server so extremely slow
+	servers do not slow down users when other, faster servers are
+	available.
+
+LATER   server mode connections should be given their own process
+
+OK  conn reference on server command, what happens if original client
+    terminates ?????
+
+    XXX MBReadLine, case when newline non existent?  what happens ?
+    (in regards to spoolresponse3)
+
+    list active.times
+    newgroup
+
+OK  post to a moderated group, mail ?  no
+
+    expiration
+
+    KP remap may rip out a scan in-progress, changing memory pointers to
+    offsets and adding some complexity should fix it.
+
+    Overview over.* files -- check for link count of 0 indicating replacement
+    or resizing (copy + resize + mv combo)
+
+

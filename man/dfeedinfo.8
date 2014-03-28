@@ -1,0 +1,118 @@
+.\" $Revision: 1.1 $
+.TH DFEEDINFO 8
+.SH NAME
+dfeedinfo \- Display and manipulate the realtime feed statistics
+.PP
+.SH SYNOPSIS
+.B dfeedinfo
+[
+.B \-a
+]
+[
+.B \-f filename
+]
+[
+.B \-I
+]
+[
+.B \-i
+]
+[
+.B \-o
+]
+[
+.B \-P[ext]
+]
+[
+.B \-r
+]
+[
+.B \-S
+]
+[
+.B \-s
+]
+[
+.B \-t
+]
+[
+.B \-z
+]
+.B hostname
+
+.SH DESCRIPTION
+.IR dfeedinfo
+allows one to manipulate the realtime feed statistics if enabled with
+the
+.B ``feederrtstats''
+option in diablo.config. The stats are updated
+in realtime by the diablo and dnewslink processes and mmaped from a
+file so that they are persistant across restarts/reboots. dfeedinfo
+allows one to view, clear and snapshot the stats. Stats are kept for
+each hostname or label (depending on ``feederrtstats'' option).
+.PP
+.B \-a
+View incoming summary, outgoing and spool stats.
+.PP
+.B \-f filename
+Manipulate stats from the specified file (path_db relative).
+.PP
+.B \-I
+Display detailed incoming feed stats. This includes rejected and refused
+reason counts.
+.PP
+.B \-i
+Display a summary of incoming feed stats.
+.PP
+.B \-o
+Display outgoing feed stats.
+.PP
+.B \-P[ext]
+Create a snapshot file of the current feed statistics. The default extension
+for the snapshot file is ``.yyyymmdd-hhmmss''. This can be overidden by
+specifying the extension to use. Existing files will be overwritten.
+.PP
+.B \-r
+Show raw byte values (i.e: don't pretty-print the bytes values).
+.PP
+.B \-S
+Dump detailed spool statistics. This includes stats on expired and missing
+articles.
+.PP
+.B \-s
+Dump spool statistics. These are articles retrieved from the spool server.
+.PP
+.B \-t
+Only display the totals for any stats requested.
+.PP
+.B \-z
+Clear (zero) the statistics specified. This option has no effect unless used
+with one or more of the display type options (-a, -i, -o, -s). It can also
+be used with the snapshot option, although there is a small window between
+when the snapshot is made and the stats are cleared.
+.PP
+The default filename used to store the statistics is
+.B ``path_db/feedstats''
+and is created when the first incoming or outgoing connection is made.
+The file can be safely deleted if necessary - it will be recreated the
+next time a connection is made, although any existing live connections will
+not detect the new file and their stats will be lost.
+.PP
+.SH "SEE ALSO"
+diablo(8), 
+dicmd(8),
+didump(8),
+diload(8),
+dnewslink(8),
+doutq(8),
+dexpire(8),
+dexpireover(8),
+diconvhist(8),
+dilookup(8),
+dspoolout(8),
+dkp(8),
+dpath(8),
+diablo-kp(5),
+diablo-files(5)
+.PP
+

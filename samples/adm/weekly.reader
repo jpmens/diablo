@@ -1,0 +1,26 @@
+#!/bin/csh -f
+#
+# weekly.reader
+#
+# The weekly reader runs dexpireover with the -R option, which truely cleans
+# up the overview database.  It rewrites the entire database which can take
+# a while but only needs to be run once a week or possibly even once a month.
+#
+# dexpireover -a -R is able to cleanout more data from the data.* files whereas
+#
+# dexpireover -a is only able to remove whole data.* files (i.e. it cannot
+# remove the file until the entire contents of the file has expired).
+
+cd ~
+
+echo "`date` - $0 BEGIN"
+
+set group = `dbin/dpath group`
+set news = `dbin/dpath home`
+
+if ( -d ${group}/. ) then
+    ${news}/dbin/plock -t ~/.dexpireover ${news}/dbin/dexpireover -a -R -l720
+endif
+
+echo "`date` - $0 END"  
+

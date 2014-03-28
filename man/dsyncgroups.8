@@ -1,0 +1,212 @@
+.\" $Revision: 1.11 $
+.TH DSYNCGROUPS 8
+.SH NAME
+dsyncgroups \- Obtain active file and group description info from a remote NNTP host and update the local dactive.kp (or specified KP database).
+.PP
+.SH SYNOPSIS
+.B dsyncgroups
+-h remotehost | -G filename
+[
+-p port
+]
+[
+-f/F file.kp
+]
+[
+-a
+]
+[
+-o
+]
+[
+-g
+]
+[
+-i
+]
+[
+-m
+]
+[
+-M flag
+]
+[
+-D
+]
+[
+-N[B][E,X]
+]
+[
+-X[E,X]
+]
+[
+-w wildcard
+]
+[
+-d[#]
+]
+[
+-n[#]
+]
+[
+-P[#]
+]
+[
+-z
+]
+
+.SH DESCRIPTION
+.IR DSyncGroups 
+will connect to a remote NNTP server and download some or all of the remote
+machine's active file and newsgroup descriptions file.  The information is
+then used to update a local active file KP database.  By default, 
+/news/dactive.kp will be updated.  Options control how the update is handled.
+Note that dsyncgroups is specifically designed to allow you to sync to remote
+active files without having to synchronize your article numbers to them.
+Carefully read the available options and make a backup of your dactive.kp
+file if you aren't sure.  Also note that you can create an initial dactive.kp
+file with dsyncgroups based on the active file from some other host, but that
+this operation will take a significant amount of time (30 minutes to an hour)
+due to inefficiencies in the database resort routine.  These inefficiencies
+do not effect normal database operation.
+.PP
+.B \-h remotehost
+Specify the remote NNTP host to connect to.  This is a required option.
+.PP
+.B \-p port
+Specify the port number on the remote host to connect to.  The default is
+port 119.
+.PP
+.B \-G filename
+Specify the filename to use as input that would normally come from
+a remote host. The input format is the same as that returned from
+a 'list active' on a remote server. i.e:
+.PP
+groupname artend artbegin modstatus
+.PP
+.B \-f/F file.kp
+Specify the local KP database to work on.  The uppercase -F will create the
+file if it did not previously exist.  The lowercase -f requires that file
+to already exist.
+.PP
+.B \-a
+A shortcut to turn on the -o, -g, -i and -m options, see those options below.
+Note that the -D and -N options are NOT turned on by -a.
+.PP
+.B \-o
+Overwrite option.  Causes the group description and, if -m is specified, the
+moderation flags from the remote NNTP host to overwrite any preexisting 
+values in the local database.
+.PP
+.B \-g
+Causes groups on the remote NNTP host which do not exist in the local database
+to be added to the local database.
+.PP
+.B \-i
+Sync the newsgroup descriptions.
+.PP
+.B \-m
+Allows the moderation status on the local KP database to be updated from 
+the remote NNTP host.
+.PP
+.B \-M flag
+Set the group flags to the specified flag. The flag is a single character
+being one of:
+.PP
+.RS
+.nf
+.ta \w'=foo.bar   'u
+y        Local postings are allowed
+m        The group is moderated and all postings must be approved
+x        Articles cannot be posted to this newsgroup
+.fi
+.RE
+.PP
+.B \-D
+Specifies that any groups not found on the remote NNTP host be DELETED from
+the local KP database.  Groups outside a wildcard specification are not 
+effected.
+.PP
+.B \-N[B][E,X]
+Specifies that the article begin and end range in the local KP database be
+OVERWRITTEN by the article range on the remote NNTP host.  Like -D, this
+is a dangerous option and should be used with care.  
+.PP
+If -N is given alone, both the beginning and ending article number in the
+range is effected.  -NB causes only the beginning article number in the range
+to be effected, and -NE causes only the ending article number in the range
+to be effected.  -NX is like -NE but only adjusts the ending number upwards.
+-NBX is often used in slaved-cache situation to keep the range synchronized 
+with the remote NNTP host's expiration.  -NR is like -NB but adjusts the
+beginning article number based on the current ending article number minus
+the number of articles on the remote site.  -NR can be used to adjust the
+beginning article even if the local dactive.kp database is not in sync with
+the remote machine's active file.
+.PP
+.B \-X[E,X]
+Specifies that the NX field in the local KP database be OVERWRITTEN
+by the ending article number on the remote NNTP host.  The NX field is like
+the NE field, but it is used by the diablo feeder to assign article numbers
+for Xref:.  If you are running a feeder-side article number assignment
+via the 'active on' option in diablo.config rather then a reader-side article
+number assignment and you want to synchronize.
+.PP
+If -X is given alone, the NX field is synced to the remote NNTP host's 
+ending article number.  -XE also accomplishes this.  -XX will cause the NX
+field to be synchronized in an upward fashion only.
+.PP
+Note that if the article numbers are being maintained locally (by diablo
+or dreaderd) there is a race condition between obtaining the number from
+the remote server and updating the number locally.
+.PP
+.B \-w wildcard
+Specify a group wildcard.  Only groups matching the wildcard are effected
+by the program.
+.PP
+.B \-d[#]
+Turn on debugging.  An optional debug level may be specified.
+.PP
+.B \-n#
+When syncing the end article number (see -N option), increase the local
+value by this number before storing it. WARNING: Setting this value
+too high can cause all your current overview records to expire in
+the next dexpireover run as it is equivalent to receiving that
+number of extra articles - rather sync slowly by using a small
+value (e.g: 10) per dexpireover run. This value is applied to either/both of
+NX and NE fields, depending on the -N options used.
+.PP
+.B \-P#
+When syncing the end article number (see -N option), don't increase
+the value by more than # % of the original value. This value is useful
+in preventing dexpireover from wiping out too much of the overview for big
+jumps in the end article number. When used in that context, don't use a
+percentage greater than 20% and ensure that dsyncgroups is only run
+once for every few dexpireover runs.
+.B \-z
+Run through the motions, but don't actually make any changes.
+.PP
+DSyncGroups is used to update Diablo's active file, /news/dactive.kp, from
+a remote source.  It may also be used to create an initial active file from
+a remote source.  DSyncGroups may be run without shutting down diablo.
+However, if you are doing a major update, it is recommended that you shutdown
+diablo and follow the DSyncGroups command with a dkp -t command to trim the
+deleted records out of the dactive.kp database, making it smaller.
+.PP
+.SH "SEE ALSO"
+diablo(8), 
+dicmd(8),
+didump(8),
+diload(8),
+dnewslink(8),
+doutq(8),
+dexpire(8),
+dexpireover(8),
+diconvhist(8),
+dilookup(8),
+dspoolout(8),
+dkp(8),
+dpath(8),
+diablo-kp(5),
+diablo-files(5)
+.PP
+

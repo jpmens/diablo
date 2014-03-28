@@ -1,0 +1,16 @@
+#!/bin/sh
+
+spool=/news/spool/news
+dbin=/news/dbin
+log=/news/log
+dqueue=/news/dqueue
+
+echo "=== hourly inpaths extraction running ==="
+if [ -f $dqueue/inpaths ]; then
+	mv $dqueue/inpaths $dqueue/inpaths.work
+	$dbin/dicmd flush
+	$dbin/extract_path $dqueue/inpaths.work $spool >>$log/inpaths
+fi
+echo "=== hourly inpaths extraction done at `date` ==="
+
+exit 0
