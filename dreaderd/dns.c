@@ -3205,6 +3205,7 @@ ReadAccessCache() {
     oldaccessmap.AuthList = accessmap.AuthList;
     oldaccessmap.ReaderList = accessmap.ReaderList;
     oldaccessmap.GroupMap = accessmap.GroupMap;
+    oldaccessmap.GroupMapSize = accessmap.GroupMapSize;
     oldaccessmap.AccessList = accessmap.AccessList;
 
     accessmap.VServerList = NULL;
@@ -3233,6 +3234,8 @@ ReadAccessCache() {
 	GroupList *pgl = NULL;
 
 	accessmap.GroupMap = xmap(NULL, st.st_size, PROT_READ, MAP_SHARED, grf, 0);
+	accessmap.GroupMapSize = st.st_size;
+
 	mapptr = accessmap.GroupMap;
 	while (*mapptr) {
 	    gp = zalloc(&DnsMemPool, sizeof(GroupDef));
