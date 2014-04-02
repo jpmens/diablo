@@ -561,6 +561,7 @@ WriteOverview(Connection *conn, ArtNumAss *an, const char *group, const char *xr
 	hash_t hv = hhash(msgid);
 	int actLen = 0;
 	int iovLen = 0;
+	int prealloc_ov, prealloc_oh;
 	struct iovec iov[3];
 
 	if ((ov = GetOverInfo(group)) == NULL) {
@@ -572,6 +573,8 @@ WriteOverview(Connection *conn, ArtNumAss *an, const char *group, const char *xr
 	    NNTerminate(conn);
 	    return(1);
 	}
+	prealloc_ov = (ov->ov_MaxArts * sizeof(OverArt)) / 8;
+	prealloc_oh = (1024 * ov->ov_Head->oh_DataEntries) / 8;
 
 	if (MakeOverHFile(ov, artNo, 1) == NULL) {
 	    logit(LOG_ERR, "Error in MakeOverHFile() msgid=%s", msgid);
@@ -654,7 +657,9 @@ WriteOverview(Connection *conn, ArtNumAss *an, const char *group, const char *xr
 	    ; /* EMPTY */
 	} else if (
 	    DOpts.ReaderXOverMode == 2 ||
-	    writev(ov->ov_HCache->od_HFd, iov, iovLen) == actLen
+	    (FilePreAllocSpace(ov->ov_HCache->od_HFd, pos,
+	     prealloc_oh, iovLen) == 0 &&
+	     writev(ov->ov_HCache->od_HFd, iov, iovLen) == actLen)
 	) {
 	    /*
 	     * Our write of the overview data succeeded or we were asked not
@@ -679,6 +684,7 @@ WriteOverview(Connection *conn, ArtNumAss *an, const char *group, const char *xr
 	    ovart.oa_ArtSize = (conn->co_ByteCounter > 0.0 ? conn->co_ByteCounter : conn->co_BytesHeader);
 
 	    lseek(ov->ov_OFd, ovpos, 0);
+	    FilePreAllocSpace(ov->ov_OFd, ovpos, prealloc_ov, sizeof(ovart));
 	    write(ov->ov_OFd, &ovart, sizeof(ovart));
 	    hflock(ov->ov_OFd, 0, XLOCK_UN);
 	    LogCmd(conn, '+', logbuf);
@@ -866,7 +872,7 @@ again:
 
 		    ftruncate(ov->ov_OFd, 0);
 		    st.st_size = sizeof(oh) + sizeof(OverArt) * save.oe_InitArts;
-		    ftruncate(ov->ov_OFd, st.st_size);
+		    FileAllocSpace(ov->ov_OFd, 0, st.st_size);
 		    fsync(ov->ov_OFd);
 		    lseek(ov->ov_OFd, 0L, 0);
 		    bzero(&oh, sizeof(oh));
