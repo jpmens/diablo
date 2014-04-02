@@ -100,7 +100,16 @@ typedef struct direct den_t;
 #include	<radlib.h>
 #endif
 #ifdef	USE_ZLIB
+#if _FILE_OFFSET_BITS == 64 && !defined(_LARGEFILE64_SOURCE)
+/* work around 64 bit confusion in zlib.h */
+#define _LARGEFILE64_SOURCE
+#define off64_t off_t
 #include	<zlib.h>
+#undef _LARGEFILE64_SOURCE
+#undef off64_t
+#else
+#include	<zlib.h>
+#endif
 #endif
 
 /* For libfarse compatibility */
