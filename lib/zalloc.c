@@ -50,7 +50,7 @@ nzalloc(MemPool **pmp, int bytes)
     /* 8 or 16-byte alignment required, depending on the pointer size */
     bytes = (bytes + MEMNODE_SIZE_MASK) & ~MEMNODE_SIZE_MASK;
 
-    while ((mp = *pmp) != NULL) {
+    for(mp = *pmp; mp != NULL; mp = mp->mp_Next) {
 	if (bytes <= mp->mp_Size - mp->mp_Used) {
             MemNode **pmn;
             MemNode *mn;
@@ -75,7 +75,6 @@ nzalloc(MemPool **pmp, int bytes)
                 }
             }
         }
-	pmp = &mp->mp_Next;
     }
     /*
      * Failed to locate sufficient memory, allocate another
@@ -149,13 +148,17 @@ zallocStrTrim(MemPool **pmp, const char *s, int l)
     return(r);
 }
 
-/* Brainteaser by Miquel van Smoorenburg <miquels@cistron.nl> */
-
+/*
+ * Same as zallocStrTrim, but also removes embedded \r and \n,
+ * and removes whitespace after the 'trimwsafter' character.
+ * For example with trimwsafter set to ',':
+ * foo.bar1, foo.bar2,\r\n\tfoo.bar3 => foo.bar1,foo.bar2,foo.bar3
+ */
 char *
 zallocStrTrim2(MemPool **pmp, int trimwsafter, const char *s, int l)
 {
-    char *r, *q;
-    int i;
+    char *r = NULL;
+    int i, n, doit;
     int trimws = 0;
 
     while (l && (*s == ' ' || *s == '\t')) {
@@ -170,19 +173,26 @@ zallocStrTrim2(MemPool **pmp, int trimwsafter, const char *s, int l)
     }
     ++l;
 
-    q = r = zalloc(pmp, l + 1);
-    for (i = 0; i < l; i++) {
-	/* skip cr and lf */
-	if (s[i] == '\r' || s[i] == '\n')
-	    continue;
-	/* skip whitespace after the 'trimwsafter' character */
-	if (trimws && (s[i] == ' ' || s[i] == '\t'))
-	    continue;
-	*q++ = s[i];
-	trimws = (s[i] == trimwsafter);
+    n = 0;
+    for (doit = 0; doit < 2; doit++) {
+	if (doit) {
+	    r = zalloc(pmp, n + 1);
+	    n = 0;
+	}
+	for (i = 0; i < l; i++) {
+	    /* skip cr and lf */
+	    if (s[i] == '\r' || s[i] == '\n')
+		continue;
+	    /* skip whitespace after the 'trimwsafter' character */
+	    if (trimws && (s[i] == ' ' || s[i] == '\t'))
+		continue;
+	    if (doit)
+		r[n] = s[i];
+	    n++;
+	    trimws = (s[i] == trimwsafter);
+	}
     }
-    *q = 0;
-
+    r[n] = 0;
     return(r);
 }
 
