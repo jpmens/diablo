@@ -22,6 +22,10 @@
 
 #include "defs.h"
 
+#if defined(__GLIBC__) && !defined(_XOPEN_SOURCE)
+  char *strptime(const char *s, const char *format, struct tm *tm);
+#endif
+
 int VerboseOpt;
 int QuietOpt;
 int LoadDupCount;
