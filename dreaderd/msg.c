@@ -24,7 +24,6 @@ SendMsg(int to_fd, int send_fd, DnsRes *dres)
     char tbuf[CMSG_SPACE(sizeof(int))];
     struct cmsghdr *cmsg;
     int res = 0;
-    int cmsgsize;
     int sent = 0;
          
     bzero(&msg, sizeof(msg));
@@ -34,21 +33,17 @@ SendMsg(int to_fd, int send_fd, DnsRes *dres)
                 
     msg.msg_iov = &iov;
     msg.msg_iovlen = 1;
-    if (send_fd >= 0) {
-      cmsgsize = 1;
-    } else {
-      cmsgsize = 0;
-    }
-    msg.msg_control = tbuf;
-    msg.msg_controllen = sizeof(tbuf);
     msg.msg_flags = 0;
-    cmsg = CMSG_FIRSTHDR(&msg);
-    cmsg->cmsg_level = SOL_SOCKET;
-    cmsg->cmsg_type = SCM_RIGHTS;
-    cmsg->cmsg_len = CMSG_LEN(sizeof(int) * cmsgsize);
-    memcpy((int *)CMSG_DATA(cmsg), &send_fd, sizeof(int));
-    msg.msg_controllen = cmsg->cmsg_len;
-
+    if (send_fd >= 0) {
+        msg.msg_control = tbuf;
+        msg.msg_controllen = sizeof(tbuf);
+        cmsg = CMSG_FIRSTHDR(&msg);
+        cmsg->cmsg_level = SOL_SOCKET;
+        cmsg->cmsg_type = SCM_RIGHTS;
+        cmsg->cmsg_len = CMSG_LEN(sizeof(int));
+        memcpy((int *)CMSG_DATA(cmsg), &send_fd, sizeof(int));
+	msg.msg_controllen = cmsg->cmsg_len;
+    }
     errno = 0;
         
     /*
@@ -117,21 +112,26 @@ RecvMsg(int from_fd, int *recv_fd, DnsRes *dres)
      */
 
     result = recvmsg(from_fd, &msg, MSG_EOR|MSG_WAITALL);
-    if (result >= 0 || errno == EAGAIN) {
+    if (result <= 0) {
+	if (result < 0 && errno != EAGAIN)
+		logit(LOG_ERR, "recvmsg error (%s)", strerror(errno));
+	return(result);
+    }
+
+    if (msg.msg_controllen) {
 	if ((cmsg = CMSG_FIRSTHDR(&msg))) {
             if (! cmsg->cmsg_type == SCM_RIGHTS) {
 	        logit(LOG_ERR, "recvmsg got unknown control message %d", cmsg->cmsg_type);
 	        return(-1);
 	    }
-	    *recv_fd = *(int *)CMSG_DATA(cmsg);
+	    memcpy(recv_fd, CMSG_DATA(cmsg), sizeof(*recv_fd));
 	    if (DebugOpt && errno != EAGAIN)
 	        printf("RecvMsg() pid=%d fd=%d size=%d\n",
 					(int)getpid(), *recv_fd, result);
 	} else {
 	    logit(LOG_ERR, "recvmsg CMSG_FIRSTHDR null, msg_flags=%d", msg.msg_flags);
+	    return -1;
 	}
-    } else {
-	logit(LOG_ERR, "recvmsg error (%s)", strerror(errno));
     }
     return(result);
 }
