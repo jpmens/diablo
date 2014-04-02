@@ -16,7 +16,11 @@
 #include <ldap.h>
 #endif
 #ifdef DB_ENABLED
-#include <db.h>
+#  ifdef __linux__
+#    include <db_185.h>
+#  else
+#    include <db.h>
+#  endif
 #endif
 #ifdef PERL_ENABLED
 #include <EXTERN.h>
