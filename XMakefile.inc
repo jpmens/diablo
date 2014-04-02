@@ -12,7 +12,7 @@
 .set CDEFINES	'-DVERS="$(VERS)"' '-DSUBREV="$(SUBREV)"'
 #if __GNUC__
 .set CFLAGS	-g -O2 -Wall -Wstrict-prototypes "-I$(BD)" $(CDEFINES)
-.set LSTATIC	-static
+.set LSTATIC
 .set CC		gcc
 #else
 .set CFLAGS	-g -O "-I$(BD)." $(CDEFINES)
