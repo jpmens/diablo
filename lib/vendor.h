@@ -313,3 +313,20 @@
  * reducing system load.
  */
 #undef	BIG_MBUF
+
+/*
+ * MAXFORKS is the max # of incoming feeds - 512 by default.
+ * MAXFEEDS is the max # of outgoing feeds - 128 by default.
+ */
+#undef MAXFORKS		/* 512 */
+#undef MAXFEEDS		/* 128 */
+
+/*
+ * If you increase MAXFORKS and/or MAXFEEDS so that the total
+ * (plus a fudge of 32 - see defs.h for details) is bigger than 1024,
+ * there's a problem - the standard fd_set type used by select() can
+ * usually only contain 1024 filedescriptors. On some systems you can
+ * increase this (for example Linux and FreeBSD). Must be a power of two!
+ */
+#undef LARGE_FD_SETSIZE /* 1024 */
+

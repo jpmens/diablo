@@ -17,6 +17,27 @@
 
 #include "config.h"
 
+/*
+ * Cannot increase FD_SETSIZE on Linux, but we can increase __FD_SETSIZE
+ * with glibc 2.2 and 2.3 at least. We do this by including
+ * bits/types.h which defines __FD_SETSIZE first (before any other include),
+ * then we redefine __FD_SETSIZE. Ofcourse a user program may NEVER
+ * include bits/whatever.h directly, so this is a dirty hack!
+ */
+#if LARGE_FD_SETSIZE > 1024
+#  ifdef __linux__
+#    include <features.h>
+#    if (__GLIBC__ > 2) || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 2)
+#      include <bits/types.h>
+#      undef __FD_SETSIZE
+#      define __FD_SETSIZE LARGE_FD_SETSIZE
+#    endif
+#  else
+     /* Works on most BSDs */
+#    define FD_SETSIZE LARGE_FD_SETSIZE
+#  endif
+#endif
+
 #include <sys/types.h>
 #include <sys/file.h>
 #include <sys/time.h>
