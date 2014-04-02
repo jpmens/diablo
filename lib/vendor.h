@@ -76,7 +76,7 @@
  * highly recommended.
  */
 
-#undef	POST_CRYPTXTRACE
+#define	POST_CRYPTXTRACE
 
 /*
  * Enable RADIUS authentication.  Works on FreeBSD or similar libradius.
@@ -156,6 +156,26 @@
  */
 
 #undef	NEW_LDAP
+
+/*
+ * Enable an ever newer form of LDAP authentication: the above mechanisms
+ * search for the password and compare them; this is unacceptable. This
+ * method search for a user object (mail=xxx) and binds to the directory
+ * as that user.
+ *
+ * Configuration is done via an `ldap.params' file which contains four (4)
+ * lines of text:
+ * 1. ldap URI
+ * 2. ldap search BASE
+ * 3. bindDN of a person allowed to search the directory for users at BASE
+ * 4. bindPW
+ *
+ * Requires LDAP_ENABLED
+ */
+
+#undef SRCH_LDAP
+#define LDAP_ENABLED
+#define SRCH_LDAP
 
 /*
  * Enable PAM authentication. Requires a PAM library and -lpam to be added

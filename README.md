@@ -49,3 +49,7 @@ A bug in xmake (which was supposedly fixed in 1.06) makes it skip continuation l
 
 The result compiles cleanly (with some warning which can be ignored, it seems) on a CentOS 6.3 with
 gcc version 4.4.7 20120313 (Red Hat 4.4.7-4) (GCC) .
+
+### New LDAP module by JPMens
+
+I've included a new LDAP module (which does **NOT** compare passwords -- sigh) which binds as a user to the directory, searches for `mail=`_username_ and then binds as that user with the password provided as part of the `AUTHINFO`. The source of the module (in `dreaderd/dns.c`) may have to be tweaked to specify the name/value of an LDAP attribute type which can be used to supply distinct _readerdefs` to the client.

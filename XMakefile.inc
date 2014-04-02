@@ -43,8 +43,8 @@
 #endif
 
 #ifdef __linux__
-.set CFLAGS	-g -O2 -Wall -Wstrict-prototypes "-I$(BD)" $(CDEFINES) -D_FILE_OFFSET_BITS=64
-.set LFLAGS "-L$(BD)obj" -lfilter -ldiablo -lm -lz -lrt
+.set CFLAGS	-g -O2 -Wall -Wstrict-prototypes "-I$(BD)" $(CDEFINES) "-I/usr/include/openssl" -D_FILE_OFFSET_BITS=64
+.set LFLAGS "-L$(BD)obj" -lfilter -ldiablo -lm -lz -lrt -lldap -lcrypto -lssl
 #endif
 
 #ifdef __osf__

@@ -1037,7 +1037,183 @@ LDAPAuthenticate(char *user, char *pass, char *realm, char *conf)
     free(confst);
     return(result);
 }
-#else
+#elif defined(SRCH_LDAP)	/* JPM */
+#define LDAP_DEPRECATED 1
+
+#define IDENT   "nldapauth"
+
+/*
+ * Copied from  www01:/usr/local/include/onlinedb.h
+ * (I use it as a string)
+ */
+
+#define UGROUPNUMBER_ATTR	      "description"
+#define UGROUPNUMBER_NEWS             "3002"
+
+#ifndef TRUE
+# define TRUE (1)
+#endif
+#ifndef FALSE
+# define FALSE (0)
+#endif
+
+static char ldap_uri[BUFSIZ] = "unset";      /* ldap://localhost:389 */
+static char base[BUFSIZ] = "unset";          /* ou=People, ... */
+static char binddn[BUFSIZ] = "unset";        /* somebody who can search for users: cn=manager, ... */
+static char bindpw[BUFSIZ] = "unset";
+
+static void trim(char *s)
+{
+    char *sp;
+
+    for (sp = s + strlen(s) - 1; sp > s; sp--) {
+        if (isspace(*sp))
+            *sp = 0;
+        else
+            break;
+    }
+}
+
+static int load_params(char *filename)
+{
+    FILE *fp = fopen(filename, "r");
+    char buf[BUFSIZ], *bp;
+
+    if (fp == NULL)
+        return (1);
+
+    if ((bp = fgets(buf, sizeof(buf), fp)) != NULL) {
+        trim(buf);
+        snprintf(ldap_uri, sizeof(ldap_uri), "%s", buf);
+    }
+    if ((bp = fgets(buf, sizeof(buf), fp)) != NULL) {
+        trim(buf);
+        snprintf(base, sizeof(base), "%s", buf);
+    }
+    if ((bp = fgets(buf, sizeof(buf), fp)) != NULL) {
+        trim(buf);
+        snprintf(binddn, sizeof(binddn), "%s", buf);
+    }
+    if ((bp = fgets(buf, sizeof(buf), fp)) != NULL) {
+        trim(buf);
+        snprintf(bindpw, sizeof(bindpw), "%s", buf);
+    }
+
+    fclose(fp);
+
+    return (0);
+}
+
+
+/*
+ * `user' is a username given us by a News client (e.g. an email address)
+ * `pass` is a clear-text password
+ * `conf' must point to a file containing four lines of text:
+ *          1. LDAP URI
+ *          2. Search BASE
+ *          3. Bind DN
+ *          4. Bind PW
+ */
+
+char *LDAPAuthenticate(char *user, char *pass, char *conf)
+{
+    LDAP *ld = NULL;
+    int rc, nent, authorized = FALSE;
+    char filter[BUFSIZ];
+    LDAPMessage *res, *e;
+    char *attrs[] = { UGROUPNUMBER_ATTR, NULL };
+    char *dn, *category = "freeuser";
+    static char authstr[BUFSIZ];
+    int opt;
+
+    openlog(IDENT, LOG_NDELAY|LOG_NOWAIT, LOG_NEWS);
+
+    authorized = FALSE;
+
+    if (load_params(conf) != 0) {
+        syslog(LOG_ERR, "Can't load params from `%s': %m", conf ? conf : "<NULL>");
+        goto fail;
+    }
+
+    if (ldap_initialize(&ld, ldap_uri) != LDAP_SUCCESS) {
+        syslog(LOG_ERR, "Can't initialize LDAP connection to %s: %m", ldap_uri);
+        goto fail;
+    }
+
+    opt = LDAP_VERSION3;
+    ldap_set_option(ld, LDAP_OPT_PROTOCOL_VERSION, &opt);
+
+    if ((rc = ldap_simple_bind_s(ld, binddn, bindpw)) != LDAP_SUCCESS) {
+       syslog(LOG_ERR, "Cannot bind to directory as %s: %s\n",
+                binddn, ldap_err2string(rc));
+       goto fail;
+    }
+
+    sprintf(filter, "(mail=%s)", user);
+    rc = ldap_search_s(ld, base, LDAP_SCOPE_SUB, filter, attrs, 0, &res);
+    if (rc != LDAP_SUCCESS) {
+       syslog(LOG_NOTICE, "Search for %s in %s: %s", user, base, ldap_err2string(rc));
+       goto fail;
+    }
+
+    if ((nent = ldap_count_entries(ld, res)) != 1) {
+        syslog(LOG_NOTICE, "Can't find %s: nent=%d", user, nent);
+        goto fail;
+    }
+
+    if ((e = ldap_first_entry(ld, res)) != NULL) {
+        dn = ldap_get_dn(ld, e);
+        if (dn != NULL) {
+            char **vals;
+
+            // printf("DN for %s is %s\n", user, dn);
+
+            if ((vals = ldap_get_values(ld, e, UGROUPNUMBER_ATTR)) != NULL) {
+                char **v;
+
+                for (v = vals; v && *v; v++) {
+                    if (!strcmp(*v, UGROUPNUMBER_NEWS)) {
+                        category = "PAYUSER";
+                        break;
+                    }
+                }
+            }
+
+
+
+            /*
+             * Attempt to bind as the user, using their DN and the password provided.
+             */
+
+            if ((rc =  ldap_simple_bind_s(ld, dn, pass)) != LDAP_SUCCESS) {
+                // syslog(LOG_NOTICE, "Cannot re-bind as user %s (dn: %s): %s", user, dn, ldap_err2string(rc));
+                goto fail;
+            }
+
+            authorized = TRUE;
+
+            ldap_memfree(dn);
+        }
+    }
+
+
+
+  fail:
+    if (ld) {
+        ldap_unbind(ld);
+    }
+
+    if (!authorized) {
+        snprintf(authstr, sizeof(authstr), "%s: FAILED", user);
+    } else {
+        snprintf(authstr, sizeof(authstr), "110 %s", category);
+    }
+    syslog(LOG_NOTICE, "NEWS-AUTH: %s", authstr);
+
+    closelog();
+    return (authstr);
+}
+#else /* !SRCH_LDAP */
 /*
  * Send an authenticate request to an LDAP server
  *
