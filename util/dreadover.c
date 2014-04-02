@@ -245,17 +245,18 @@ DReadOver(char *data)
 	}
 	if (oa.oa_ArtNo <= 0) {
 	    if (oa.oa_ArtNo == -1)
-		printf("\t(Article cancelled)(%lld)\n", oa.oa_ArtNo);
+		printf("\t(Article cancelled)(%lld)\n", artNo);
 	    else if (oa.oa_ArtNo == -2)
-		printf("\t(Article expired)(%lld)\n", oa.oa_ArtNo);
+		printf("\t(Article expired)(%lld)\n", artNo);
 	    else
-		printf("\t(Article not found)(%lld)\n", oa.oa_ArtNo);
+		printf("\t(Article not found)(%lld)\n", artNo);
 	    close(fd1);
 	    continue;
 	}
 
-	if (oa.oa_ArtNo != artNo) {
-	    printf("\tartNoMismatch(got=%lld  wanted=%lld)\n", oa.oa_ArtNo, artNo);
+	if (!OA_ARTNOEQ(artNo, oa.oa_ArtNo)) {
+	    printf("\tartNoMismatch(got=%d  wanted=%d)\n", oa.oa_ArtNo,
+		OA_ARTNOSET(artNo));
 	    if (!ForceOpt) {
 		close(fd1);
 		continue;

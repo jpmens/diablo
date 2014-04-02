@@ -334,7 +334,7 @@ GrpCtlGroupInfo(char *group)
 	    return(NULL);
 	}
 	if (oa.oa_ArtNo > 0) {
-	    printf("  StartNo=%lld\n", oa.oa_ArtNo);
+	    printf("  StartNo=%d\n", oa.oa_ArtNo);
 	} else if (oa.oa_ArtNo == -1) {
 	    printf("  Article cancelled\n");
 	} else if (oa.oa_ArtNo == -2) {
@@ -342,8 +342,9 @@ GrpCtlGroupInfo(char *group)
 	} else {
 	    printf("  Article not found\n");
 	}
-	if (oa.oa_ArtNo != nb) {
-	    printf("  artNoMismatch (got=%lld  wanted=%lld)\n", oa.oa_ArtNo, nb);
+	if (!OA_ARTNOEQ(nb, oa.oa_ArtNo)) {
+	    printf("  artNoMismatch (got=%d  wanted=%d)\n", oa.oa_ArtNo,
+			OA_ARTNOSET(nb));
 	}
 	printf("  Time received: %d = %s", oa.oa_TimeRcvd,
 					ctime((time_t *)&oa.oa_TimeRcvd));
@@ -1025,6 +1026,6 @@ GetOverArt(OverInfo *ov, artno_t artno, off_t *ppos)
 	*ppos = ovpos;
 
     if (DebugOpt > 2)
-	printf("OA %08lx %lld,%lld\n", (long)oa, oa->oa_ArtNo, artno);
+	printf("OA %08lx %d,%lld\n", (long)oa, oa->oa_ArtNo, artno);
     return(oa);
 }
