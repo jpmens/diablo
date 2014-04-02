@@ -302,7 +302,7 @@ PrintTrace(int fd, HistIndex index, int rsize)
 	    off = index;
 	lseek(fd, off, 0);
 	if (read(fd, &h, rsize) != rsize) {
-	    fprintf(stderr, "read error @ %d (%llu)", index, off);
+	    fprintf(stderr, "read error @ %d (%lld)", index, (long long)off);
 	    break;
 	} else {
 	    printf(" [%u,%u %08x.%08x.%04x gm=%d ex=%d boff=%d bsize=%d F=%s part=%d]",
@@ -424,8 +424,9 @@ DumpQuick(int fd, int hsize, int rsize)
     }
 
     if (!QuietOpt)
-	fprintf(stderr, "@%llu  %u records (%d bytes per record)\n",
-				lseek(fd, 0L, 1), totalentries, rsize);
+	fprintf(stderr, "@%lld  %u records (%d bytes per record)\n",
+				(long long)lseek(fd, 0L, 1),
+				totalentries, rsize);
 
 top:
     while ((n = read(fd, hbuf, hlen)) > 0) {

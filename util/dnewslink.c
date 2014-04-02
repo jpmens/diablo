@@ -2154,8 +2154,8 @@ StreamTransact(int cfd, const char *relPath, char *msgId, off_t off, int size, i
 		else
 		    cst[0] = 0;
 		sprintf(buf,"%s %s %lld,%d %c%s", s->st_RelPath, s->st_MsgId,
-			s->st_Off, s->st_Size, HeaderOnlyFeed ? 'H' : ' ',
-			cst);
+			(long long)s->st_Off, s->st_Size,
+			HeaderOnlyFeed ? 'H' : ' ', cst);
 		break;
 	    }
 	    /*
@@ -2972,7 +2972,7 @@ readretry(char *buf, int size)
 			"%s\t%s\t%lld,%d",
 			s->st_RelPath, 
 			s->st_MsgId, 
-			s->st_Off,
+			(long long)s->st_Off,
 			s->st_Size
 		    );
 		} else {
@@ -3493,8 +3493,11 @@ extractFeedLine(const char *buf, char *relPath, char *msgId, off_t *poff, int *p
      */
 
     b = s;
-    if (isdigit((int)*s))
-	sscanf(s, "%lld,%d", poff, psize);
+    if (isdigit((int)*s)) {
+	long long offtmp;
+	sscanf(s, "%lld,%d", &offtmp, psize);
+	*poff = offtmp;
+    }
     while ((s = strchr(s, ' ')) != NULL) {
 	while (ISWHITE(*s))
 	    ++s;

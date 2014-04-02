@@ -117,14 +117,17 @@ LockFeedRegion(FeedStats *Stats, int locktype, int stype)
 	switch (stype) {
 	case FSTATS_IN:
 	case FSTATS_INDETAIL:
-	    hflock(FSSFd, (int)&Stats->RecStats - (int)Stats, locktype);
+	    hflock(FSSFd, (int)((char *)&Stats->RecStats - (char *)Stats),
+								locktype);
 	    break;
 	case FSTATS_OUT:
-	    hflock(FSSFd, (int)&Stats->SentStats - (int)Stats, locktype);
+	    hflock(FSSFd, (int)((char *)&Stats->SentStats - (char *)Stats),
+								locktype);
 	    break;
 	case FSTATS_SPOOL:
 	case FSTATS_SPOOLDETAIL:
-	    hflock(FSSFd, (int)&Stats->SpoolStats - (int)Stats, locktype);
+	    hflock(FSSFd, (int)((char *)&Stats->SpoolStats - (char *)Stats),
+								locktype);
 	    break;
 	}
     }

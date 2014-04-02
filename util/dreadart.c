@@ -202,7 +202,7 @@ DumpFileHeader(int fd, off_t offset)
 	return(1);
     }
     printf("OK\n");
-    printf("Offset   : %llu\n", offset);
+    printf("Offset   : %lld\n", (long long)offset);
     printf("Version  : %d\n", artHdr.Version);
     printf("HeadLen  : %d\n", artHdr.HeadLen);
     printf("StoreType:%s%s%s\n",
@@ -284,12 +284,12 @@ MapArticle(int fd, char *fname, char **base, History *h, int *extra, int *artSiz
     }
 
     if (*base == NULL) {
-	fprintf(LogFo, "Unable to map file %s: %s (%llu,%d,%d)\n",
-					fname,
-					strerror(errno),
-					(off_t)(h->boffset - *extra),
-					 (int)(h->bsize + *extra + 1),
-					*extra
+	fprintf(LogFo, "Unable to map file %s: %s (%lld,%d,%d)\n",
+				fname,
+				strerror(errno),
+				(long long)(h->boffset - *extra),
+				 (int)(h->bsize + *extra + 1),
+				*extra
 	);
 	return(-1);
     }

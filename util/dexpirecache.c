@@ -210,9 +210,9 @@ addFile(char *name, long size, time_t atime, time_t mtime) {
 
 	if (!fileFree) {
 		struct FileQueue *fq;
-		int f;
+		char *f;
 		int i;
-		f = (int) malloc(1024*sizeof(struct FileQueue));
+		f = malloc(1024*sizeof(struct FileQueue));
 		fileFree = (struct FileQueue*)f;
 		for (i=0; i<1024 ; i++) {
 			fq = (struct FileQueue*) f;

@@ -73,7 +73,7 @@ SendMsg(int to_fd, int send_fd, DnsRes *dres)
      */
         
     if (DebugOpt)
-      printf("SendMsg() pid= %d fd=%d size=%d\n", (int)getpid(), send_fd, sizeof(DnsRes));
+      printf("SendMsg() pid= %d fd=%d size=%d\n", (int)getpid(), send_fd, (int)sizeof(DnsRes));
     while (!sent) {
       res = sendmsg(to_fd, &msg, 0);
       sent = 1;
@@ -214,7 +214,7 @@ SendMsg(int to_fd, int send_fd, DnsRes *dres)
      */
         
     if (DebugOpt)
-	printf("SendMsg() pid= %d fd=%d size=%d\n", (int)getpid(), cmsg.fd, sizeof(DnsRes));
+	printf("SendMsg() pid= %d fd=%d size=%d\n", (int)getpid(), cmsg.fd, (int)sizeof(DnsRes));
     while (!sent) {
 	res = sendmsg(to_fd, &msg, 0);
 	sent = 1;

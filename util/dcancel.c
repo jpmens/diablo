@@ -396,8 +396,9 @@ MapArticle(int fd, char *fname, off_t offset, uint32 size, int exp, int *artSize
 	    *artSize = size;
 	    *compressed = 0;
 	} else {
-	    fprintf(logFo, "Unable to map file %s: %s (%llu,%u)\n",
-					fname, strerror(errno), offset, size);
+	    fprintf(logFo, "Unable to map file %s: %s (%lld,%u)\n",
+					fname, strerror(errno),
+					(long long)offset, size);
 	 }
 	return(mmapBase);
     }
@@ -472,12 +473,13 @@ rewriteFile(HistoryList *hl_file)
 	}
 	if (n != sizeof(artHdr)) {
 	    fprintf(stderr, "Error reading article header at %lld in %s\n",
-							filepos, opath);
+						(long long)filepos, opath);
 	    break;
 	}
 	if (artHdr.Magic1 != STORE_MAGIC1 || artHdr.Magic2 != STORE_MAGIC2) {
 	    fprintf(stderr, "Invalid article header at %lld (%x.%x)in %s\n",
-				filepos, artHdr.Magic1, artHdr.Magic2, opath);
+					(long long)filepos,
+					artHdr.Magic1, artHdr.Magic2, opath);
 	    break;
 	}
 
@@ -527,7 +529,7 @@ rewriteFile(HistoryList *hl_file)
 	if (copyArt) {
 	    h.boffset = lseek(newf, 0, 1);
 	    printf("Copying article at offset %lld to offset %d\n",
-							filepos, h.boffset);
+					(long long)filepos, h.boffset);
 	    if (compressed) {
 		lseek(oldf, filepos, SEEK_SET);
 		read(oldf, artBuf, artHdr.StoreLen);
@@ -545,7 +547,7 @@ rewriteFile(HistoryList *hl_file)
 	    }
 	    filepos += artSize;
 	} else {
-	    printf("Skipping article at offset %lld\n", filepos);
+	    printf("Skipping article at offset %lld\n", (long long)filepos);
 	    filepos += artHdr.StoreLen;
 	    lseek(oldf, filepos, SEEK_SET);
 	    h.iter = (uint16)-1;

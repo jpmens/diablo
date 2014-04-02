@@ -137,11 +137,11 @@ main(int ac, char **av)
     }
 
     if (StructSizes) {
-	printf("History Header           : %2d bytes\n", sizeof(HistHead));
-	printf("History Hash Entry       : %2d bytes\n", sizeof(uint32));
-	printf("History Entry            : %2d bytes\n", sizeof(History));
+	printf("History Header           : %2d bytes\n", (int)sizeof(HistHead));
+	printf("History Hash Entry       : %2d bytes\n", (int)sizeof(uint32));
+	printf("History Entry            : %2d bytes\n", (int)sizeof(History));
 	printf("Hash Table Entries       : %d\n", DOpts.HashSize);
-	printf("Expected hash table size : %d bytes\n", DOpts.HashSize * sizeof(uint32));
+	printf("Expected hash table size : %d bytes\n", DOpts.HashSize * (int)sizeof(uint32));
 	exit(0);
     }
 
@@ -187,7 +187,7 @@ DumpHeader(int fd)
 	printf("Total Size      : %.0f Bytes (%s)\n", (double)sb.st_size,
 						ftos((double)sb.st_size));
 	printf("Hash Table Size : %d Bytes (%s)\n",
-				hh.hashSize * sizeof(HistIndex),
+				hh.hashSize * (int)sizeof(HistIndex),
 				ftos((double)hh.hashSize * sizeof(HistIndex)));
 	printf("Total Entries   : %.0f\n",
 	    ((double)sb.st_size - (double)hh.headSize -

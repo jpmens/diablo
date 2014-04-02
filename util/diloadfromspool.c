@@ -666,10 +666,10 @@ DoArticle(History *h, const char *id, char *nglist, char *dist,
     int r = 0;
     if (RequeueOpt) {
 	char path[PATH_MAX];
-	ArticleFileName(path, sizeof(path), h, ARTFILE_FILE_REL);
+	ArticleFileName(path, (int)sizeof(path), h, ARTFILE_FILE_REL);
 	printf("SOUT\t%s\t%lld,%ld\t%s\t%s\t%s\t%s\t%d\t%s\t%s\n",
-	    path, (off_t)h->boffset, (long)h->bsize, id, nglist, dist, npath,
-	    headOnly, artType, cSize
+	    path, (long long)h->boffset, (long)h->bsize, id, nglist, dist,
+	    npath, headOnly, artType, cSize
 	);
 	++LoadCount;
     } else {

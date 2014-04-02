@@ -293,7 +293,7 @@ DoExpire(int fd, int hsize, int rsize)
 	totalentries = (uint32)(((off_t)st.st_size - seekpos) / rsize);
 	if (!QuietOpt)
 	    printf("History entries start at offset %lld, %d records\n",
-						seekpos, totalentries);
+				(long long)seekpos, totalentries);
     }
 
     HistoryOpen(NewFileName, HGF_FAST|HGF_NOSEARCH|HGF_EXCHECK);

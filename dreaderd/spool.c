@@ -49,8 +49,8 @@ NNGetLocal1(Connection *conn)
     char *ptr;
     char *filename;
     int len;
-    int offset;
-    int size;
+    long offset;
+    long size;
     char smaxage[32];
 
     conn->co_Func = NNGetLocal1;
@@ -150,7 +150,7 @@ NNGetLocal1(Connection *conn)
 		int lf;
 		static char filepath[PATH_MAX];
 		if (DebugOpt)
-		    printf("NNGetLocal1 : whereis returned file %s offset %i size %i\n",
+		    printf("NNGetLocal1 : whereis returned file %s offset %ld size %ld\n",
 						filename, offset, size);
 		if (strcmp(conn->co_Desc->d_LocalSpool, "/") == 0)
 		    snprintf(filepath, sizeof(filepath), "%s", filename);

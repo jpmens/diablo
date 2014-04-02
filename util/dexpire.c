@@ -1012,7 +1012,7 @@ updateHistory(void)
 						HistoryFile, strerror(errno));
 	    else 
 		fprintf(stderr, "Read %d bytes from history %s, expected %d\n",
-						n, HistoryFile, sizeof(hh));
+					n, HistoryFile, (int)sizeof(hh));
 
 	    exit(1);
 	}
@@ -1058,9 +1058,9 @@ updateHistory(void)
 		if (VerboseOpt && numEnt > 0 &&
 				countEnt * 100 / numEnt >= lastPerc + 10) {
 		    lastPerc = countEnt * 100 / numEnt;
-		    printf("\t%-10ld of %-10d (%d%%) complete  %llu  %u   \n",
-					(long)countEnt, numEnt, lastPerc,
-					bpos, countExp);
+		    printf("\t%-10lld of %-10d (%d%%) complete  %lld  %u   \n",
+					(long long)countEnt, numEnt, lastPerc,
+					(long long)bpos, countExp);
 		    fflush(stdout);
 		}
 
@@ -1076,10 +1076,10 @@ updateHistory(void)
 		    if (res == 0) {
 			if (H_EXPIRED(h->exp)) {
 			    countTestSpool++;
-			    printf("%08x.%08x expired @%llu (index=%llu) but on spool (%s)\n",
-					h->hv.h1, h->hv.h2,
-					npos + i * sizeof(History),
-					countEnt, path);
+			    printf("%08x.%08x expired @%lld (index=%lld) but on spool (%s)\n",
+				h->hv.h1, h->hv.h2,
+				(long long)(npos + i * sizeof(History)),
+				(long long)countEnt, path);
 			    findNode(path, 0);
 			} else {
 			    countTestValid++;
@@ -1089,10 +1089,10 @@ updateHistory(void)
 			    countTestExpired++;
 			} else {
 			    countTestHistory++;
-			    printf("%08x.%08x not expired @%llu (index=%llu) and not on spool (%s)\n",
-					h->hv.h1, h->hv.h2,
-					npos + i * sizeof(History),
-					countEnt, path);
+			    printf("%08x.%08x not expired @%lld (index=%llu) and not on spool (%s)\n",
+				h->hv.h1, h->hv.h2,
+				(long long)(npos + i * sizeof(History)),
+				(long long)countEnt, path);
 			}
 		    }
 		    continue;
@@ -1153,11 +1153,16 @@ updateHistory(void)
 	fclose(DExpOverList);
 
     if (TestOpt) {
-	printf("Total entries scanned      : %12llu\n", countEnt);
-	printf("Total !expired + on spool  : %12llu\n", countTestValid);
-	printf("Total expired + ! on spool : %12llu\n", countTestExpired);
-	printf("Total expired + on spool   : %12llu\n", countTestSpool);
-	printf("Total !expired + ! on spool: %12llu\n", countTestHistory);
+	printf("Total entries scanned      : %12lld\n",
+				(long long)countEnt);
+	printf("Total !expired + on spool  : %12lld\n",
+				(long long)countTestValid);
+	printf("Total expired + ! on spool : %12lld\n",
+				(long long)countTestExpired);
+	printf("Total expired + on spool   : %12lld\n",
+				(long long)countTestSpool);
+	printf("Total !expired + ! on spool: %12lld\n",
+				(long long)countTestHistory);
     }
     return(countExp);
 }
@@ -1281,9 +1286,9 @@ findFileSys(char *path)
 time_t
 getAge(char *dirname)
 {
-    time_t t = 0;
+    unsigned long long t = 0;
 
-    sscanf(dirname, "D.%x", &t);
+    sscanf(dirname, "D.%llx", &t);
     if (t)
 	t = t * 60;
     return(t);
