@@ -1078,15 +1078,20 @@ NNServerTerminate(Connection *conn)
     while ((sreq = conn->co_SReq) != NULL) {
 	conn->co_SReq = sreq->sr_Next;
 	--conn->co_Desc->d_Count;
-	sreq->sr_Next = NULL;
-	sreq->sr_SConn = NULL;
-	sreq->sr_Time = time(NULL);
-	if (conn->co_Desc->d_Type == THREAD_POST) {
-	    *PSWrite = sreq;
-	    PSWrite = &sreq->sr_Next;
+	if (sreq->sr_CConn == NULL) {
+	    /* client has gone, don't requeue */
+	    FreeSReq(sreq);
 	} else {
-	    *PSRead = sreq;
-	    PSRead = &sreq->sr_Next;
+	    sreq->sr_Next = NULL;
+	    sreq->sr_SConn = NULL;
+	    sreq->sr_Time = time(NULL);
+	    if (conn->co_Desc->d_Type == THREAD_POST) {
+	        *PSWrite = sreq;
+	        PSWrite = &sreq->sr_Next;
+	    } else {
+	        *PSRead = sreq;
+	        PSRead = &sreq->sr_Next;
+	    }
 	}
 	if (conn->co_Desc->d_Type == THREAD_POST)
 	    --NWriteServAct;
