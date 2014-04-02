@@ -42,3 +42,10 @@ I have **not** applied these:
 42_diablo-CUR-xs4all-config.patch
 50_diablo-CUR-zalloc-debug.patch
 ```
+
+### Reformat `XMakefile`
+
+A bug in xmake (which was supposedly fixed in 1.06) makes it skip continuation lines and/or lines which end with a macro. I've joined long lines and have separated others with a blank line.
+
+The result compiles cleanly (with some warning which can be ignored, it seems) on a CentOS 6.3 with
+gcc version 4.4.7 20120313 (Red Hat 4.4.7-4) (GCC) .

@@ -1,19 +1,20 @@
 
 #include "XMakefile.inc"
 
-.set PROGS	dicmd drcmd didump dilookup dexpire didate diconvhist \
-		diload doutq dspaminfo dspoolout diloadfromspool \
-		dreadart dkp pgpverify dsyncgroups dexpireover \
-		dreadover dpath dprimehostcache dstart dclient \
-		dfeedinfo dlockhistory dfeedtest doverctl drequeue \
-		dhisbench dhisexpire dhisctl dexpirecache dcancel \
-		dexpirescoring
+.set PROGS	dicmd drcmd didump dilookup dexpire didate diconvhist diload doutq dspaminfo dspoolout diloadfromspool dreadart dkp pgpverify dsyncgroups dexpireover dreadover dpath dprimehostcache dstart dclient dfeedinfo dlockhistory dfeedtest doverctl drequeue dhisbench dhisexpire dhisctl dexpirecache dcancel dexpirescoring
+
 .set SPROGS	diablo dnewslink dgrpctl
+
 .set SRCS	$(PROGS:"*":"*.c") $(SPROGS:"*":"*.c")
+
 .set OBJS	$(PROGS:"*":"$(BD)obj/util_*.o") $(SPROGS:"*":"$(BD)obj/util_*.o")
+
 .set LOBJS	$(PROGS:"*":"$(BD)obj/util_*.o")
+
 .set XOBJS	$(SPROGS:"*":"$(BD)obj/util_*.o")
+
 .set LPROGS	$(PROGS:"*":"$(BD)dbin/*")
+
 .set XPROGS	$(SPROGS:"*":"$(BD)dbin/*")
 
 all: $(LPROGS) $(XPROGS)

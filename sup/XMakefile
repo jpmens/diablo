@@ -2,8 +2,11 @@
 #include "XMakefile.inc"
 
 .set PROGS	plock showlocks
+
 .set SRCS	$(PROGS:"*":"*.c")
+
 .set OBJS	$(PROGS:"*":"$(BD)obj/sup_*.o")
+
 .set LPROGS	$(PROGS:"*":"$(BD)dbin/*")
 
 all: $(LPROGS)
