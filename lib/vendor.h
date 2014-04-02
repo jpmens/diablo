@@ -254,7 +254,7 @@
  * of the IPv6 address could be taken for the port. e.g:
  *	-B[::1]:119
  */
-#undef INET6
+#define INET6
 
 /*
  * Experimental PERL authentication by an external script.  Requires
