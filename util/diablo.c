@@ -616,17 +616,14 @@ DiabloServer(int lfd)
 
 	/*
 	 * Open a wildcard listening socket
+	 * that listens on both v6 and v4.
 	 */
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_flags = AI_PASSIVE;
-	hints.ai_family = PF_UNSPEC;
+	hints.ai_family = DOpts.FeederBindHost ? PF_UNSPEC : PF_INET6;
 	hints.ai_socktype = SOCK_STREAM;
 	error = getaddrinfo(DOpts.FeederBindHost, DOpts.FeederPort,
 							&hints, &res);
-	if (error == EAI_NODATA) {
-	    hints.ai_flags = 0;
-	    error = getaddrinfo(DOpts.FeederBindHost, 0, &hints, &res);
-	}
 	if (error != 0) {
 	    fprintf(stderr, "getaddrinfo: %s:%s: %s\n",
 			DOpts.FeederBindHost ? DOpts.FeederBindHost : "ALL",
@@ -636,6 +633,11 @@ DiabloServer(int lfd)
 	if ((lfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0) {
 	    perror("socket");
 	    exit(1);
+	}
+	if (!DOpts.FeederBindHost && res->ai_family == PF_INET6) {
+	    int on = 0;
+	    setsockopt(lfd, IPPROTO_IPV6, IPV6_V6ONLY,
+		       (void *) &on, sizeof (on));
 	}
 #else
 	struct sockaddr_in sin;

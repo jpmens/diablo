@@ -407,6 +407,13 @@ main(int ac, char **av)
 	Usage();
 
     /*
+     * Can't do OpenLog() yet, but we do want to be able to log
+     * errors, so initialize standard syslog.
+     */
+    openlog("dreaderd", (DebugOpt ? LOG_PERROR : 0) | LOG_NDELAY | LOG_PID,
+            LOG_NEWS);
+
+    /*
      * bind to our socket prior to changing uid/gid
      */
 
@@ -421,26 +428,36 @@ main(int ac, char **av)
 	    int error;
 	    struct addrinfo hints;
 	    struct addrinfo *res;
+	    struct addrinfo *ai;
 
 	    /*
 	     * Open a wildcard listening socket
 	     */
 	    bzero(&hints, sizeof(hints));
-	    hints.ai_flags = AI_PASSIVE;
+	    hints.ai_flags = AI_PASSIVE | AI_ADDRCONFIG;
 	    hints.ai_family = PF_UNSPEC;
 	    hints.ai_socktype = SOCK_STREAM;
 	    error = getaddrinfo(bl->bl_Host, bl->bl_Port, &hints, &res);
-	    if (error == EAI_NODATA) {
-		hints.ai_flags = 0;
-		error = getaddrinfo(bl->bl_Host, 0, &hints, &res);
-	    }
 	    if (error != 0) {
 		fprintf(stderr, "getaddrinfo: %s:%s: %s\n",
 					bl->bl_Host ? bl->bl_Host : "ALL",
 					bl->bl_Port, gai_strerror(error));
 		exit(1);
 	    }
-	    lfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+
+	    for (ai = res; ai; ai = ai->ai_next) {
+
+	    lfd = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
+	    if (ai->ai_family == AF_INET6 && (bl->bl_Host || res->ai_next)) {
+		/*
+		 * set INET6 socket to V6ONLY if we bind to a specific
+		 * host or getaddrinfo tells us to use seperate wildcard
+		 * listening sockets for v4 and v6.
+		 */
+		int on = 1;
+		setsockopt(lfd, IPPROTO_IPV6, IPV6_V6ONLY, 
+			   (void *) &on, sizeof (on));
+	    }
 #else
 	    struct sockaddr_in lsin;
 
@@ -497,11 +514,10 @@ main(int ac, char **av)
 	        }
 
 #ifdef INET6
-	    if (bind(lfd, res->ai_addr, res->ai_addrlen) < 0) {
+	    if (bind(lfd, ai->ai_addr, ai->ai_addrlen) < 0) {
 		perror("bind");
 		exit(1);
 	    }
-	    freeaddrinfo(res);
 #else
 	    if (bind(lfd, (struct sockaddr *)&lsin, sizeof(lsin)) < 0) {
 		perror("bind");
@@ -510,15 +526,19 @@ main(int ac, char **av)
 #endif
 	    listen(lfd, 256);
 	    if (bl->bl_Host != NULL && strchr(bl->bl_Host, ':') != NULL)
-		logit(LOG_INFO, "Listening on [%s]:%s\n",
+		syslog(LOG_INFO, "Listening on [%s]:%s\n",
 					bl->bl_Host ? bl->bl_Host : "ALL",
 					bl->bl_Port);
 	    else
-		logit(LOG_INFO, "Listening on %s:%s\n",
+		syslog(LOG_INFO, "Listening on %s:%s\n",
 					bl->bl_Host ? bl->bl_Host : "ALL",
 					bl->bl_Port);
 	    AddThread("acceptor", lfd, -1, THREAD_LISTEN, -1, 0);
 	}
+#ifdef INET6
+        freeaddrinfo(res);
+        }
+#endif
     } else {
 	    {
 		int on = 1;
@@ -670,6 +690,7 @@ main(int ac, char **av)
      * open syslog
      */
 
+    closelog();
     OpenLog("dreaderd", (DebugOpt ? LOG_PERROR : 0) | LOG_NDELAY | LOG_PID);
     SysLogDesc = "dreaderd";
 
