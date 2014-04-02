@@ -350,10 +350,19 @@ TestForwardLookup(const char *hostName, const char *ipst, const struct sockaddr 
 {
 #ifdef INET6
     struct addrinfo *ai0;
+    struct addrinfo hints;
     int r = -1;
 
     stprintf("forward auth %s", hostName);
-    if (getaddrinfo(hostName, NULL, NULL, &ai0) == 0) {
+
+    /* Only do lookups for the family in ipst */
+    memset(&hints, 0, sizeof(hints));
+    if (strchr(ipst, ':'))
+	hints.ai_family = AF_INET6;
+    else if (strchr(ipst, '.'))
+	hints.ai_family = AF_INET;
+
+    if (getaddrinfo(hostName, NULL, &hints, &ai0) == 0) {
 	struct addrinfo *ai;
 
 	for (ai = ai0; ai; ai = ai->ai_next) {
