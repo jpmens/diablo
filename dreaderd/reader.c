@@ -1093,6 +1093,12 @@ NNCommand2(Connection *conn)
 
     if (conn->co_FCounter) {
 	FD_SET(conn->co_Desc->d_Fd, &WFds);
+	/*
+	 * if the other side closed the connection, select() is
+	 * not going to wake up for write(!) so set RFds too.
+	 */
+	if (conn->co_TMBuf.mh_WError)
+	    FD_SET(conn->co_Desc->d_Fd, &RFds);
 	return;
     }
     ++conn->co_FCounter;
@@ -1112,7 +1118,7 @@ NNCommand2(Connection *conn)
      * check EOF
      */
 
-    if (len < 0) {
+    if (len < 0 || conn->co_TMBuf.mh_WError) {
 	NNTerminate(conn);
 	return;
     }

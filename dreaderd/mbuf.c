@@ -117,6 +117,8 @@ MBFlush(Connection *conn, MBufHead *mh)
 		if (errno == ENOTCONN)
 		    break;	/* break while */
 		mh->mh_WError = 1;
+		if (desc->d_Timer)
+		    DelTimer(desc->d_Timer);
 	    } else {
 		conn->co_RateCounter += n;
 		conn->co_ClientTotalByteCount += n;
