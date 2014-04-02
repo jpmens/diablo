@@ -546,6 +546,7 @@ typedef struct GroupList {
 #define SPOOL_ALLOC_SEQ		0x01	/* Default sequential alloc */
 #define SPOOL_ALLOC_SPACE	0x02	/* Choose spool with most space free */
 #define SPOOL_ALLOC_SINGLE	0x03	/* Write all feeds to a single spool */
+#define SPOOL_ALLOC_WEIGHTED	0x04	/* Weighted alloc */
 
 #define	SPOOL_MAX_FILE_SIZE	1073741824	/* Max size of spool files */
 
@@ -565,6 +566,7 @@ typedef struct SpoolObject {
     int			so_SpoolDirs;
     int			so_ExpireMethod;
     int			so_CompressLvl;
+    int			so_Weight;
     char		so_Path[PATH_MAX];
     struct SpoolObject	*so_Next;
 } SpoolObject;

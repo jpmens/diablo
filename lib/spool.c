@@ -62,6 +62,7 @@ uint16 findSpoolGrp(const char *msgid, GroupList *groups, int size, int ngcount,
 int findLabel(LabelList *ll, char *label);
 void loadSpoolCtl(FILE *fi);
 double spaceFreeOn(char *part);
+int spoolSizeGb(char *part);
 void dumpSpoolConfig(void);
 
 /*
@@ -280,6 +281,7 @@ AllocateSpools(time_t t)
     uint32 gmt = t / 60;
     MetaSpool *ms;
     int i;
+    int w, n, totw;
     double space;
     double maxspace;
 
@@ -333,6 +335,31 @@ AllocateSpools(time_t t)
 		ms->ms_NextAllocation = (t / ms->ms_ReAllocInterval) %
 							ms->ms_NumSpoolObjects;
 		ms->ms_AllocatedSpool = ms->ms_SpoolObjects[ms->ms_NextAllocation];
+		break;
+	    case SPOOL_ALLOC_WEIGHTED:
+		/*
+		 *  Pick a random spool object using weights
+		 */
+		totw = 0;
+		for (i = 0; i < ms->ms_NumSpoolObjects; i++) {
+		    SpoolObject *so = ms->ms_SpoolObjects[i];
+		    if (so)
+			totw += so->so_Weight;
+		}
+		w = random() % totw;
+
+		n = 0;
+		ms->ms_AllocatedSpool = ms->ms_SpoolObjects[0];
+		for (i = 0; i < ms->ms_NumSpoolObjects; i++) {
+		    SpoolObject *so = ms->ms_SpoolObjects[i];
+		    if (!so)
+			continue;
+		    if (w >= n && w < n + so->so_Weight) {
+			ms->ms_AllocatedSpool = so;
+			break;
+		    }
+		    n += so->so_Weight;
+		}
 		break;
 	}
 
@@ -399,11 +426,17 @@ addSpool(SpoolObject *so)
     char *path;
     int i;
 
-    SpoolObjectMap[so->so_SpoolNum] = so;
-    so->so_Next = NULL;
+    if (so->so_SpoolNum > 0) {
+	SpoolObjectMap[so->so_SpoolNum] = so;
+	so->so_Next = NULL;
+    }
+
     if (!so->so_Path[0])
 	snprintf(so->so_Path, sizeof(so->so_Path), "P.%02d",
 				so->so_SpoolNum);
+    if (so->so_Weight < 0)
+	so->so_Weight = spoolSizeGb(so->so_Path);
+
     if (so->so_SpoolDirs) {
 	for (i = 0; i < so->so_SpoolDirs; i++) {
 	    path = GetSpoolPath(so->so_SpoolNum, 10 * i, ARTFILE_DIR);
@@ -424,6 +457,10 @@ addSpool(SpoolObject *so)
 	    exit(1);
 	}
     }
+
+    /* spool 00 is special */
+    if (so->so_SpoolNum == 0)
+	return;
 
     if (SpoolObjects == NULL) {
 	SpoolObjects = so;
@@ -529,6 +566,7 @@ loadSpoolCtl(FILE *fi)
 	spoolObj = zalloc(&SPMemPool, sizeof(SpoolObject));
 	spoolObj->so_SpoolNum = 0;
 	spoolObj->so_CompressLvl = -1;
+	spoolObj->so_Weight = -1;
 	spoolObj->so_Next = NULL;
 	strcpy(spoolObj->so_Path, PatExpand(SpoolHomePat));
 	SpoolObjects = spoolObj;
@@ -552,8 +590,7 @@ loadSpoolCtl(FILE *fi)
 	if (strcmp(cmd, "end") == 0) {
 	    switch (status) {
 		case EXSTAT_SPOOL:
-		     if (spoolObj->so_SpoolNum != 0)
-			addSpool(spoolObj);
+		     addSpool(spoolObj);
 		     spoolObj = NULL;
 		     break;
 		case EXSTAT_META:
@@ -592,6 +629,7 @@ loadSpoolCtl(FILE *fi)
 	    }
 	    status = EXSTAT_SPOOL;
 	    spoolObj->so_CompressLvl = -1;
+	    spoolObj->so_Weight = -1;
 	    continue;
 	}
 	if (!status && strcmp(cmd, "metaspool") == 0) {
@@ -683,6 +721,9 @@ loadSpoolCtl(FILE *fi)
 	    } else if (strcmp(cmd, "compresslvl") == 0) {
 		spoolObj->so_CompressLvl = strtol(arg, NULL, 0);
 		continue;
+	    } else if (strcmp(cmd, "weight") == 0) {
+		spoolObj->so_Weight = strtol(arg, NULL, 0);
+		continue;
 	    } else {
 		logit(LOG_ERR, "%s: Unknown spool option '%s' in line %d",
 					PatLibExpand(DSpoolCtlPat), cmd, line);
@@ -753,6 +794,8 @@ loadSpoolCtl(FILE *fi)
 		    metaSpool->ms_AllocationStrategy = SPOOL_ALLOC_SPACE;
 		else if (strcasecmp(arg, "single") == 0)
 		    metaSpool->ms_AllocationStrategy = SPOOL_ALLOC_SINGLE;
+		else if (strcasecmp(arg, "weighted") == 0)
+		    metaSpool->ms_AllocationStrategy = SPOOL_ALLOC_WEIGHTED;
 		else
 		    logit(LOG_ERR, "%s: Unknown alloc strategy in line %d\n",
 				PatLibExpand(DSpoolCtlPat), line);
@@ -909,6 +952,24 @@ spaceFreeOn(char *part)
         return(0.0);
     }
     return(stmp.f_bavail * 1.0 * stmp.f_bsize);
+}
+
+int
+spoolSizeGb(char *part)
+{
+    struct statfs stmp;
+    long tmp;
+
+#if USE_SYSV_STATFS
+    if (statfs(part, &stmp, sizeof(stmp), 0) != 0) {
+#else
+    if (statfs(part, &stmp) != 0) {
+#endif
+        logit(LOG_ERR, "unable to statfs %s (%s)", part, strerror(errno));   
+        return 1;
+    }
+    tmp = (1024*1024*1024) / stmp.f_bsize;
+    return stmp.f_blocks / tmp;
 }
 
 void

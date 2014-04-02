@@ -30,6 +30,7 @@
 #   maxsize		1g
 #   keeptime		10d
 #   compresslvl		0
+#   weight		20
 # end
 #
 #   path     : The path to the spool object. The path is relative to
@@ -85,6 +86,10 @@
 #			to know how much to expire. This option is
 #			probably faster on smaller spools.
 #
+#   weight: Used when allocstrat in the metaspool is set to 'weighted'.
+#           The default is the size in GB of the partition this
+#           spoolobject is located in.
+#
 # ---------------------------------------------------------------
 # metaspool: Define a group of spool objects and define the types
 #   of articles stored in the group.
@@ -130,6 +135,11 @@
 #			value to each new incoming connection.
 #		single: write all feeds to a single spool and only switch
 #			to the next spool after reallocint time.
+#               weighted: divide the connections over the spools
+#			randomly, but weighted by the weights of
+#			the spools. If there are 3 spools with weights
+#			2,2,4 then the result is 25% / 25% / 50%
+#
 # reallocint : Specify the maximum amount of time we are allowed
 #	       to write to a spool directory before moving on to
 #	       the next. This spreads the articles across multiple
