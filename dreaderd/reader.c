@@ -1104,6 +1104,13 @@ NNCommand2(Connection *conn)
     ++conn->co_FCounter;
 
     /*
+     * if there is still output pending, do not process the next
+     * command.
+     */
+    if (conn->co_TMBuf.mh_Bytes > 0 && !conn->co_TMBuf.mh_WError)
+	return;
+
+    /*
      * get command
      */
 
