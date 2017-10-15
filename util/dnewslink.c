@@ -3327,7 +3327,7 @@ cdmap(const char *path, off_t off, int *psize, int cSize, int *multiArtFile)
 	if (cSize > 0) {
 #ifdef USE_ZLIB
 	    char *p;
-	    gzFile *gzf;
+	    gzFile gzf;
 	    SpoolArtHdr tah = { 0 };
 
 	    lseek(mc->mc_Fd, off, 0);

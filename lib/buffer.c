@@ -33,7 +33,7 @@ Prototype int bsize(Buffer *b);
 Prototype int bunget(Buffer *b, int n);
 Prototype int bextfree(Buffer *b);
 #ifdef USE_ZLIB
-Prototype void bsetcompress(Buffer *b, gzFile *cfile);
+Prototype void bsetcompress(Buffer *b, gzFile cfile);
 Prototype int bzwrote(Buffer *b);
 #endif
 
@@ -75,7 +75,7 @@ bsetfd(Buffer *b, int fd)
 #ifdef USE_ZLIB
 
 void
-bsetcompress(Buffer *b, gzFile *cfile)
+bsetcompress(Buffer *b, gzFile cfile)
 {
     b->bu_gzFile = cfile;
 }

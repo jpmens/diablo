@@ -12,8 +12,6 @@
 
 #include <dreaderd/defs.h>
 
-typedef voidp gzFile;
-
 char * allocTmpCopy(const char *buf, int bufLen);
 void ShowHeader(char *path);
 void DReadOver(char *data);
