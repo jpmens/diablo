@@ -220,7 +220,7 @@ MapArticle(int fd, char *fname, char **base, History *h, int *extra, int *artSiz
 {
     if (SpoolCompressed(H_SPOOL(h->exp))) {
 #ifdef USE_ZLIB
-	gzFile *gzf;
+	gzFile gzf;
 	SpoolArtHdr tah = { 0 };
 	char *p;
 

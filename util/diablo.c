@@ -82,7 +82,7 @@ int LoadArticle(Buffer *bi, const char *msgid, int noWrite, int headerOnly, char
 int SendArticle(const char *data, int fsize, FILE *fo, int doHead, int doBody);
 void ArticleFileInit(void);
 #ifdef USE_ZLIB
-int ArticleFile(History *h, off_t *pbpos, int clvl, gzFile **cfile);
+int ArticleFile(History *h, off_t *pbpos, int clvl, gzFile *cfile);
 #else
 int ArticleFile(History *h, off_t *pbpos, int clvl, char **cfile);
 #endif
@@ -3299,7 +3299,7 @@ LoadArticle(Buffer *bi, const char *msgid, int noWrite, int headerOnly, char *re
 	    h.gmt = SpoolDirTime();
 	    if (spool <= 100) {
 #ifdef USE_ZLIB
-		gzFile *cfile = NULL;
+		gzFile cfile = NULL;
 #else
 		char *cfile = NULL;
 #endif
@@ -4396,7 +4396,7 @@ ArticleFileInit(void)
 
 int
 #ifdef USE_ZLIB
-ArticleFile(History *h, off_t *pbpos, int clvl, gzFile **cfile)
+ArticleFile(History *h, off_t *pbpos, int clvl, gzFile *cfile)
 #else
 ArticleFile(History *h, off_t *pbpos, int clvl, char **cfile)
 #endif
@@ -4651,7 +4651,7 @@ MapArticle(int fd, char *fname, char **base, History *h, int *extra, int *artSiz
 
     if (*compressedFormat) {
 #ifdef USE_ZLIB
-	gzFile *gzf;
+	gzFile gzf;
 	char *p;
 
 	if ((uint8)tah.Magic1 != STORE_MAGIC1 &&

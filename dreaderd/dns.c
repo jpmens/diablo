@@ -25,6 +25,7 @@
 #ifdef PERL_ENABLED
 #include <EXTERN.h>
 #include <perl.h>
+#include <XSUB.h>
 #endif
 
 Prototype void DnsTask(int fd, const char *id);

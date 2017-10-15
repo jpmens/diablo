@@ -775,7 +775,7 @@ typedef struct Buffer {
     int			bu_DataMax;	/* extended maximum	*/
     int			bu_Fd;
 #ifdef USE_ZLIB
-    gzFile		*bu_gzFile;
+    gzFile		bu_gzFile;
     int			bu_gzWrote;
     CompressBuffer	*bu_CBuf;
 #else

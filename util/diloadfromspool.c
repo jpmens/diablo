@@ -485,7 +485,7 @@ ScanSpoolFileMap(const char *base, int bytes, int gmt, int iter, char *dpath, ui
 	arthdrlen = ah.ArtHdrLen;
 	if (ah.StoreType & STORETYPE_GZIP) {
 #ifdef USE_ZLIB
-	    gzFile *gzf;
+	    gzFile gzf;
 	    long len = ah.ArtLen;
 
 	    artbase = (char *)malloc(ah.ArtLen + 2);
